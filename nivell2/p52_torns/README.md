@@ -38,10 +38,10 @@ It reuses the timetable engine of 5.3 (`nivell2/p53_imprevist/imprevist.py`) wit
 | | Today | 5.2 |
 |---|---|---|
 | Counted violations | R1-TORN 2,008 · R2 13 · R3 97 · R5 4,541 | **0** |
-| Idle gap minutes | 72,930 | **62,640** (−14 %) |
-| Sessions moved (slot / room) | — | 2,006 / 289 |
-| Room changes between consecutive classes | 2,977 before the local search | **2,209** |
-| TE↔PAUL changes outside the corridor | 1,397 before the local search | **560** |
+| Idle gap minutes | 72,930 | **56,790** (−22 %) |
+| Sessions moved (slot / room) | — | 2,006 / 291 |
+| Room changes between consecutive classes | 2,977 before the local search | **2,110** |
+| TE↔PAUL changes outside the corridor | 1,397 before the local search | **512** |
 
 Declared (460, all R1-TORN): 458 fixed GEI 1st/2nd-year sessions that are in the afternoon today (unavoidable: they
 can't move, and giving them the room they lack makes the verifier stop calling them inherited), plus **2 sessions
@@ -50,7 +50,7 @@ justification column of `lliuraments/relaxacions.csv`.
 
 ## Ideas to improve further (if there is time)
 
-- Fewer room changes between consecutive classes (2,209) and TE↔PAUL changes outside the corridor (560): already cut by the
+- Fewer room changes between consecutive classes (2,110) and TE↔PAUL changes outside the corridor (512): already cut by the
   local search `optimitza_aules` (phase 4b); a smarter
   room assignment (e.g. CP-SAT per day) instead of the greedy + neighbour pass.
-- Fewer idle gaps: let blocks that already moved be re-optimised once everything is placed.
+- Fewer idle gaps: done once (phase 3c, `replaca_blocs`: 62,640 → 56,790). Next: swap two blocks' slots when single moves stall.

@@ -1,13 +1,13 @@
 # Resum per a la Junta Permanent · Torns nous al 2n semestre
 
-**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.006 de les 7.739 sessions canvien de franja i 289 d'aula; les hores mortes baixen de 72.930 a 62.640 minuts (−14 %).
+**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.006 de les 7.739 sessions canvien de franja i 291 d'aula; les hores mortes baixen de 72.930 a 56.790 minuts (−22 %).
 
 ## 1. Pic de sessions simultànies davant de les aules ordinàries disponibles
 
 | Torn | Classes alhora que necessiten aula (pic) | Aules ordinàries ocupades (pic) | Disponibles (21 − 2 de reserva) | Marge |
 |---|---|---|---|---|
 | Matí | 16 (12/02 08:30); avui 22 | 14 (01/02 10:30) | 19 | 5 aules |
-| Tarda | 30 (03/02 16:30); avui 25 | 15 (19/04 16:30) | 19 | 4 aules |
+| Tarda | 30 (03/02 16:30); avui 25 | 14 (19/04 16:30) | 19 | 5 aules |
 
 Les classes que no van a una aula ordinària van a seminaris, laboratoris integrats i aules d'informàtica.
 

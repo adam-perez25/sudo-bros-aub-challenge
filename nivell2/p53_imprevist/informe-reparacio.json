@@ -1,21 +1,21 @@
 {
   "veredicte_entrada": "NO VALIDA",
   "veredicte_sortida": "VALIDA AMB RELAXACIONS DECLARADES",
-  "imprevistos_abans": 57,
+  "imprevistos_abans": 56,
   "imprevistos_despres": 0,
   "incompliments_nous": [],
   "declarats": 470,
   "objectius": {
-    "hores_mortes_min": 62400,
-    "desplacaments_aula": 2244,
+    "hores_mortes_min": 56550,
+    "desplacaments_aula": 2146,
     "desplacaments_edifici": 17,
     "canvis_franja": 2007,
-    "canvis_aula": 331,
-    "r6_aules_te_extra_per_grup": 85,
-    "r6_canvis_te_paul_fora_passadis": 572,
+    "canvis_aula": 333,
+    "r6_aules_te_extra_per_grup": 86,
+    "r6_canvis_te_paul_fora_passadis": 524,
     "sessions_avaluades": 7739,
     "canvis_franja_vs_referencia": 1,
-    "canvis_aula_vs_referencia": 56
+    "canvis_aula_vs_referencia": 55
   },
   "recompte": {
     "R1-FIXADA": {
@@ -62,10 +62,9 @@
     }
   },
   "accions": [
-    "Aula tancada: S02565 (102722 PAUL/322) 2027-03-10 19:30: Q1/1003 -> Q1/1007",
     "Aula tancada: S02580 (102722 TE/320) 2027-03-10 17:30: Q1/1003 -> Q1/1007",
     "Aula tancada: S02845 (102735 PAUL/321) 2027-03-10 16:30: Q1/1003 -> Q1/1007",
-    "Aula tancada: S03071 (102738 TE/320) 2027-03-10 14:30: Q1/1003 -> Q1/1007",
+    "Aula tancada: S03071 (102738 TE/320) 2027-03-10 14:30: Q1/1003 -> Q1/1011",
     "Aula tancada: S03945 (102746 PAUL/412) 2027-03-19 09:30: Q3/0013 -> Q4/1003",
     "Aula tancada: S03975 (102746 PAUL/432) 2027-03-19 10:30: Q3/0013 -> Q3/0003",
     "Aula tancada: S05520, S15034 (102764 PAUL/432) 2027-03-10 12:30: Q1/1003 -> Q1/1007",
@@ -82,7 +81,7 @@
     "Aula tancada: S15288 (107891 PAUL/431) 2027-03-16 12:30: Q3/0013 -> Q3/0009",
     "Aula tancada: S16858 (44734 PLAB/1) 2027-03-17 17:00: Q3/0013 -> Q3/0003",
     "Aula tancada: S16869 (44734 TE/1) 2027-03-15 15:00: Q3/0013 -> QC/0019",
-    "Aula tancada: S16879 (44735 PLAB/1) 2027-03-17 15:00: Q3/0013 -> QC/3115.4",
+    "Aula tancada: S16879 (44735 PLAB/1) 2027-03-17 15:00: Q3/0013 -> Q3/0003",
     "Aula tancada: S16890 (44735 TE/1) 2027-03-15 17:00: Q3/0013 -> QC/3115.2",
     "Aula tancada: S16909 (44736 TE/1) 2027-03-16 17:00: Q3/0013 -> Q3/0011",
     "Aula tancada: S16929 (44737 TE/1) 2027-03-16 15:00: Q3/0013 -> Q3/0011",
