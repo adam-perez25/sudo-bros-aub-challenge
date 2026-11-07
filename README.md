@@ -10,3 +10,4 @@ Per comprovar la implementació, anar a al directori `/nivell1` i obrir `nivell1
 
 ## Nivell 2
 
+![](/assets/claude.png)
