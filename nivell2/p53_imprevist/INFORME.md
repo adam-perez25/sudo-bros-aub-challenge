@@ -33,7 +33,7 @@ contingencies --referencia proposta-torns.csv`):
 | **Veredicte** | **VALIDA AMB RELAXACIONS DECLARADES**, cap incompliment que compti |
 | Imprevistos (R3-TANCADA, R3-AFORAMENT del grup, R5-RECUPERACIO) | 58 → **0** |
 | Incompliments nous introduïts per la reparació | **0** |
-| Canvis respecte del 5.2 | **1 franja** (la sessió recuperada) i **55 aules** |
+| Canvis respecte del 5.2 lliurat | **1 franja** (la sessió recuperada) i **10 aules** (les sessions fixades i els PLAB de les aules tancades) |
 | Relaxacions noves d'aquest apartat | 10: R1-FIXADA (8) i R7-PLAB (2), les sessions fixades que eren a les aules tancades |
 
 Què ha passat amb cada imprevist:
@@ -50,6 +50,12 @@ Què ha passat amb cada imprevist:
 
 El nombre de canvis és el mínim possible: cada canvi d'aula és d'una sessió que era en una aula tancada o on el grup
 ja no hi cabia, i l'únic canvi de franja és la sessió cancel·lada, que s'havia de recuperar.
+
+**El 5.2 lliurat ja s'anticipa als imprevistos.** Les aules d'aquesta reparació (TE/21 a una aula de 130 places tot el
+semestre i les sessions de Q3/0013 i Q1/1003 d'aquells dies a una altra aula) ja són al `proposta-torns.csv` lliurat
+(`imprevist.py --anticipa-52`), que continua sent vàlid. Al 5.2 només no es toquen les 10 sessions fixades/PLAB i la
+sessió cancel·lada, perquè allà no es poden moure. Per això el 5.3, respecte del 5.2 lliurat, només canvia **1 franja i
+10 aules**, que és el mínim possible (respecte del 5.2 sense anticipar serien 1 franja i 55 aules, les descrites a dalt).
 
 Abans de tenir el 5.2, l'eina es va provar sobre l'horari d'avui (42 → 0 imprevistos, 0 incompliments nous) i sobre
 un horari amb totes les aules plenes (57 → 0, 0 nous).
