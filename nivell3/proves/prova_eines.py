@@ -179,6 +179,17 @@ comprova('el prompt porta avui amb el dia de la setmana i els propers 15 dies',
          f'{A.prompts.NOMS_DIA[_dt.date.today().weekday()]} {_dt.date.today().isoformat()}' in p
          and f'{A.prompts.NOMS_DIA[demà.weekday()]} {demà.isoformat()}' in p and '{PROPERS}' not in p)
 
+avui_ = _dt.date(2026, 11, 7)   # dissabte
+nota = E.dates_resoltes('i per demà passat?', avui_)
+comprova('«demà passat» des de dissabte 7/11 = dilluns 2026-11-09', 'dilluns 2026-11-09' in nota and 'demà»' not in nota, nota)
+comprova('«demà» = diumenge 2026-11-08', 'diumenge 2026-11-08' in E.dates_resoltes('quines classes hi ha demà?', avui_))
+nota = E.dates_resoltes('i dilluns 14 de novembre?', avui_)
+comprova('«dilluns 14 de novembre» és dissabte: discrepància detectada', 'dissabte' in nota and 'no dilluns' in nota, nota)
+comprova('«dilluns 16 de novembre» és correcte', 'dilluns 2026-11-16' in E.dates_resoltes('dilluns 16 de novembre', avui_))
+comprova('«el proper dijous» des de dissabte 7/11 = dijous 2026-11-12', 'dijous 2026-11-12' in E.dates_resoltes('el proper dijous', avui_))
+comprova('sense dates: cap nota', E.dates_resoltes('quina aula té el grup 81?', avui_) == '')
+comprova('sense any: novembre és 2026 i març 2027', str(E._data('14 de novembre')) == '2026-11-14' and str(E._data('10 de març')) == '2027-03-10')
+
 comprova('SQL: no deixa modificar dades', 'error' in E.consulta_sql('DELETE FROM aules'))
 comprova('SQL: no deixa llegir fitxers', 'error' in E.consulta_sql("SELECT * FROM read_csv('requirements.txt')"))
 

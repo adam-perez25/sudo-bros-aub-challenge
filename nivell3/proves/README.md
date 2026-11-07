@@ -4,7 +4,7 @@ Preguntes com les del jurat, cada una amb la resposta correcta **calculada a par
 pandas, sense el codi de l'assistent) i els id_sessio que la demostren. Serveixen per comparar el que diu
 l'assistent. Horari: `lliuraments/proposta-torns.csv` (la proposta del 5.2 al 2n semestre; l'horari d'avui, sense canvis, al 1r).
 
-Comprovació automàtica de les eines (sense LLM): `python nivell3/proves/prova_eines.py` (ha de sortir tot «OK»; 56 comprovacions, 13 del 1r semestre) i del bucle de l'agent amb un LLM simulat: `python nivell3/proves/prova_agent.py` (15).
+Comprovació automàtica de les eines (sense LLM): `python nivell3/proves/prova_eines.py` (ha de sortir tot «OK»; 63 comprovacions, 13 del 1r semestre) i del bucle de l'agent amb un LLM simulat: `python nivell3/proves/prova_agent.py` (16).
 
 | # | Pregunta | Resposta esperada | Fonts / com es comprova |
 |---|---|---|---|

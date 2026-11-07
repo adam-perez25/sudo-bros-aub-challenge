@@ -57,7 +57,7 @@ MESOS = {'gener': 1, 'febrer': 2, 'marc': 3, 'març': 3, 'abril': 4, 'maig': 5, 
 
 
 def _data(x) -> dt.date | None:
-    """Accepta AAAA-MM-DD, DD/MM/AAAA, «10 de març (de 2027)» ... Sense any, el 2027 (el 2n semestre)."""
+    """Accepta AAAA-MM-DD, DD/MM/AAAA, «10 de març (de 2027)» ... Sense any: setembre-desembre és el 2026, gener-agost el 2027 (el curs 2026-27)."""
     if x in (None, ''):
         return None
     if isinstance(x, dt.date):
@@ -80,7 +80,7 @@ def _data(x) -> dt.date | None:
         if not m or m[2] not in MESOS:
             raise ValueError(f"Data no vàlida: «{x}». Feu servir AAAA-MM-DD (per exemple 2027-03-10).")
         dia, mes, any_ = int(m[1]), MESOS[m[2]], m[3]
-    any_ = int(any_) + (2000 if any_ and len(any_) == 2 else 0) if any_ else 2027
+    any_ = int(any_) + (2000 if any_ and len(any_) == 2 else 0) if any_ else (2026 if mes >= 9 else 2027)
     try:
         return dt.date(any_, mes, dia)
     except ValueError:
@@ -100,6 +100,48 @@ def _dia(x) -> str | None:
 
 
 NOMS_DIA = ['dilluns', 'dimarts', 'dimecres', 'dijous', 'divendres', 'dissabte', 'diumenge']
+
+_REL = [("abans d'ahir", -2), ("abans-d'ahir", -2), ('demà passat', 2), ('dema passat', 2), ('passat demà', 2),
+        ('demà', 1), ('dema', 1), ('avui', 0), ('ahir', -1)]
+_DIA_DATA = re.compile(r"\b(dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge)\s+(?:dia\s+)?(\d{1,2})\s*"
+                       r"(?:de |d')\s*([a-zç]+)(?:\s*(?:de |del |d')?\s*(\d{4}))?", re.I)
+# només «el proper dijous» / «dijous vinent»: un dia sol («grup 81 dimarts») és el patró setmanal, no una data
+_DIA_VINENT = re.compile(r"(?:el\s+proper\s+(dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge)"
+                         r"|(dilluns|dimarts|dimecres|dijous|divendres|dissabte|diumenge)\s+(?:vinent|que ve))", re.I)
+
+
+def dates_resoltes(pregunta: str, avui: dt.date | None = None) -> str:
+    """Nota amb les dates que el codi ha calculat a partir del text (avui/demà/demà passat/ahir, «dilluns 14 de
+    novembre», «el proper dijous»), perquè el LLM no les hagi de calcular. Cadena buida si no n'hi ha cap."""
+    avui = avui or dt.date.today()
+    t = pregunta.lower()
+    notes = []
+    resta = t
+    for mot, d in _REL:
+        if re.search(rf"(?<![a-zà-ú]){re.escape(mot)}(?![a-zà-ú])", resta):
+            x = avui + dt.timedelta(days=d)
+            notes.append(f'«{mot}» = {etiqueta_data(x)}')
+            resta = re.sub(rf"(?<![a-zà-ú]){re.escape(mot)}(?![a-zà-ú])", ' ', resta)
+    for m in _DIA_DATA.finditer(t):
+        nom, dia, mes, any_ = m[1], int(m[2]), m[3], m[4]
+        if mes not in MESOS:
+            continue
+        try:
+            x = _data(f'{dia} de {mes}' + (f' de {any_}' if any_ else ''))
+        except ValueError:
+            continue
+        real = NOMS_DIA[x.weekday()]
+        if real == nom:
+            notes.append(f'«{m[0].strip()}» = {etiqueta_data(x)}')
+        else:
+            notes.append(f"«{m[0].strip()}»: la data {x.isoformat()} és {real}, no {nom} (avisa l'usuari de la discrepància)")
+    t2 = _DIA_DATA.sub(' ', t)
+    for m in _DIA_VINENT.finditer(t2):
+        nom = (m[1] or m[2]).lower()
+        k = (NOMS_DIA.index(nom) - avui.weekday()) % 7 or 7
+        x = avui + dt.timedelta(days=k)
+        notes.append(f'«{m[0].strip()}» = {etiqueta_data(x)}')
+    return ('[Dates calculades pel codi, fes-les servir tal qual: ' + '; '.join(notes) + ']') if notes else ''
 
 
 def etiqueta_data(x: dt.date) -> str:

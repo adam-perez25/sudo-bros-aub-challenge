@@ -152,7 +152,8 @@ class Agent:
 
     def respon(self, pregunta: str) -> dict:
         """Respon una pregunta. Torna {'resposta', 'fonts', 'eines'} (eines = les crides fetes, per transparència)."""
-        self.missatges.append({'role': 'user', 'content': pregunta})
+        nota = eines.dates_resoltes(pregunta)
+        self.missatges.append({'role': 'user', 'content': f'{pregunta}\n{nota}' if nota else pregunta})
         self.ids_vistos |= set(ID_SESSIO.findall(pregunta))
         fonts, fetes = [], []
         corregit = False
