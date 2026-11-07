@@ -39,6 +39,8 @@ from horaris.check import (FRANGES, _alumnat_comparteix, _dins_finestra, _espai_
                            avalua, passadis)
 from horaris.model import DIES, MATI, TARDA, a_traslladar, carrega_base, fmt, llegeix_relaxacions  # noqa: E402
 from imprevist import Horari, a_fila, llegeix_files_csv  # noqa: E402  (motor compartit amb el 5.3 i el 5.4)
+sys.path.insert(0, str(AQUI))
+from aules_cpsat import reassigna_aules  # noqa: E402
 
 PAQUET = ROOT / 'repte-horaris-escola' / 'paquet'
 PAS_MIN = 30
@@ -871,6 +873,7 @@ def main(argv=None) -> int:
     ap.add_argument('--relaxacions', help='CSV de relaxacions a declarar')
     ap.add_argument('--informe', help='resum en JSON')
     ap.add_argument('--paquet', default=str(PAQUET))
+    ap.add_argument('--sense-cpsat', action='store_true', help="no passa la reassignació d'aules amb CP-SAT")
     a = ap.parse_args(argv)
 
     base = carrega_base(Path(a.paquet), semestre=2)
@@ -937,6 +940,8 @@ def main(argv=None) -> int:
     millora_aules(h, lliures, log)
     optimitza_aules(h, lliures, log)
     optimitza_aules(h, lliures, log, per_unitat=True)
+    if not a.sense_cpsat:
+        reassigna_aules(h, lliures, log)
 
     # sortida
     with open(a.sortida, 'w', encoding='utf-8', newline='') as f:
