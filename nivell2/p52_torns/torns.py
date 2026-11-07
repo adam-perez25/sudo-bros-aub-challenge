@@ -27,6 +27,7 @@ import collections
 import csv
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -817,12 +818,20 @@ def claus_bloc(h: HorariT, bloc: list[str]) -> set:
     return {(c, b.sessions[x].linia, h.pos[x][0]) for x in bloc if x in h.pos for c in b.sessions[x].cohorts}
 
 
-def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6) -> int:
+def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6, cost_canvi: float = 0.0,
+                  forcats: set | None = None) -> int:
     """Quan tot és col·locat, cada bloc mogut es treu i es torna a triar la franja amb la imatge completa:
     mateix criteri que l'indicador de hores mortes (contribució marginal del bloc), només canvis estrictament
-    millors i amb aula vàlida. Si no es pot col·locar, el bloc torna on era."""
+    millors i amb aula vàlida. Si no es pot col·locar, el bloc torna on era.
+    `cost_canvi`: minuts d'hores mortes que val cada sessió fora de la seva hora d'avui (`canvis_franja`): un
+    bloc només es mou si l'estalvi d'hores mortes supera aquest cost (0 = no es mira)."""
     b = h.base
     total = 0
+
+    def cost(pla) -> float:
+        if not cost_canvi or pla is None:
+            return 0.0
+        return cost_canvi * sum(1 for u, d, tt in pla for x in u if (d, tt) != (b.sessions[x].data, b.sessions[x].ini))
     for passada in range(passades):
         millores = 0
         for bloc in (bls if passada % 2 == 0 else bls[::-1]):
@@ -871,7 +880,10 @@ def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6
                 for x in bloc:
                     h.mou(x, data=guard[x][0], ini=guard[x][1], aula=guard[x][2])
                 continue
-            vell = marginal(pla0)
+            vell = marginal(pla0) + cost(pla0)
+            if forcats and bloc[0] in forcats and any(
+                    not h.persones_lliures(x, guard[x][0], guard[x][1], guard[x][1] + b.sessions[x].durada) for x in bloc):
+                vell = float('inf')   # avui ja hi ha un solapament de persones: es mou on no n'hi hagi cap
             cands = []
             for k in range(5):
                 for t in hores:
@@ -892,7 +904,7 @@ def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6
                         pla.append((u, d, t))
                     if not ok or [(d, t) for _, d, t in pla] == [(guard[u[0]][0], guard[u[0]][1]) for u in unitats]:
                         continue
-                    cands.append((marginal(pla), k, t, pla))
+                    cands.append((marginal(pla) + cost(pla), k, t, pla))
             cands.sort(key=lambda c: (c[0], c[1], c[2]))
             posat = False
             for m, k, t, pla in cands:
@@ -1003,6 +1015,29 @@ def main(argv=None) -> int:
         if not repara_residu(h, x, log):
             log.append(f'NO REPARAT: {x} ({b.sessions[x].codi} {b.sessions[x].grup}) {h.pos[x][0]}')
     replaca_blocs(h, [bl for bl in bls if bl not in no_mouen], log)
+    # opcional: també es poden moure activitats que ja eren al seu torn, si cada sessió moguda estalvia prou hores
+    # mortes (TORNS_COST_CANVI minuts per sessió fora de la seva hora d'avui); per defecte no es fa
+    cost_canvi = float(os.environ.get('TORNS_COST_CANVI', 0))
+    if cost_canvi:
+        ja = {x for bl in bls for x in bl}
+        resta = [x for x in h.pos if x not in ja and not b.sessions[x].fixada and b.sessions[x].tipus != 'PLAB'
+                 and not b.sessions[x].sense_espai]
+        extra = [bl for bl in blocs(b, sorted({y for x in resta for y in per_act[b.sessions[x].activitat or x]}))
+                 if not any(b.sessions[y].fixada or y in ja or y not in h.pos for y in bl)]
+        replaca_blocs(h, extra + [bl for bl in bls if bl not in no_mouen], log, cost_canvi=cost_canvi)
+    # opcional: resoldre solapaments de docent/alumnat/PLAB que ja hi eren a l'horari d'avui (el verificador els
+    # compta com a heretats) movent el bloc no fixat a una franja del seu torn on no xoqui amb ningú
+    if os.environ.get('TORNS_RESOL_SOLAP') == '1':
+        ja = {x for bl in bls for x in bl}
+        xoquen = {x for x, (d, i, au) in h.pos.items() if not b.sessions[x].fixada and b.sessions[x].tipus != 'PLAB'
+                  and not b.sessions[x].sense_espai and not h.persones_lliures(x, d, i, i + b.sessions[x].durada)}
+        cands_bl = [bl for bl in blocs(b, sorted({y for x in xoquen for y in per_act[b.sessions[x].activitat or x]}))
+                    if not any(b.sessions[y].fixada or y not in h.pos for y in bl)]
+        n0 = len(xoquen)
+        replaca_blocs(h, cands_bl, log, passades=2, cost_canvi=cost_canvi, forcats={bl[0] for bl in cands_bl})
+        n1 = sum(1 for x, (d, i, au) in h.pos.items() if not b.sessions[x].fixada and b.sessions[x].tipus != 'PLAB'
+                 and not b.sessions[x].sense_espai and not h.persones_lliures(x, d, i, i + b.sessions[x].durada))
+        log.append(f'Solapaments heretats: {n0} sessions no fixades amb xoc -> {n1}')
     # fase 4: qualitat de les aules (només les que hem triat nosaltres: les aules d'avui no es toquen)
     lliures = {x for x in h.pos if not b.sessions[x].sense_espai and b.sessions[x].tipus != 'PLAB'
                and not (b.sessions[x].aula and h.pos[x][2] == b.sessions[x].aula)

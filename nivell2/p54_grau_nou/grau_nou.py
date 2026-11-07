@@ -184,6 +184,7 @@ def main(argv=None) -> int:
     files_in = [a_fila(r, i) for i, r in enumerate(files_csv, start=2) if r['id_sessio'].strip() in base.sessions]
     noves = sessions_noves(base, files_in)
     h = Horari(base, files_in)
+    h.prefereix_grup = True   # com al 5.3: aules de teoria que el grup ja fa servir primer
     log: list[str] = []
 
     pendents = []

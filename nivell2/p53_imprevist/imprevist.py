@@ -149,7 +149,8 @@ class Horari:
         b = self.base
         alumnes = sum(b.sessions[x].alumnes for x in sids if not b.sessions[x].sense_espai)
         pas = passadis(aula_original) if aula_original else ''
-        del_grup = self.aules_te_grup(sids)
+        # només el 5.3 i el 5.4 ho activen (el 5.1 i el 5.2 es reprodueixen tal com es van lliurar)
+        del_grup = self.aules_te_grup(sids) if getattr(self, 'prefereix_grup', False) else set()
         return sorted((a for a, x in b.aules.items() if x.capacitat >= alumnes),
                       key=lambda a: (a not in del_grup, passadis(a) != pas, b.aules[a].capacitat, a))
 
@@ -395,6 +396,7 @@ def main(argv=None) -> int:
     files_in = [a_fila(r, i) for i, r in enumerate(files_csv, start=2) if r['id_sessio'].strip() in base.sessions]
 
     h = Horari(base, files_in)
+    h.prefereix_grup = True   # aules noves: primer les que el grup ja fa servir per a la teoria
     log: list[str] = []
     fixades = repara_tancades(h, log)
     sense_aula = repara_aforament(h, grups, log)
