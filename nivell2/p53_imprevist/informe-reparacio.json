@@ -1,0 +1,95 @@
+{
+  "veredicte_entrada": "NO VALIDA",
+  "veredicte_sortida": "VALIDA AMB RELAXACIONS DECLARADES",
+  "imprevistos_abans": 58,
+  "imprevistos_despres": 0,
+  "incompliments_nous": [],
+  "declarats": 470,
+  "objectius": {
+    "hores_mortes_min": 62400,
+    "desplacaments_aula": 3010,
+    "desplacaments_edifici": 17,
+    "canvis_franja": 2007,
+    "canvis_aula": 333,
+    "r6_aules_te_extra_per_grup": 89,
+    "r6_canvis_te_paul_fora_passadis": 1401,
+    "sessions_avaluades": 7739,
+    "canvis_franja_vs_referencia": 1,
+    "canvis_aula_vs_referencia": 57
+  },
+  "recompte": {
+    "R1-FIXADA": {
+      "total": 8,
+      "compten": 0,
+      "declarades": 8,
+      "heretades": 0
+    },
+    "R1-TORN": {
+      "total": 1240,
+      "compten": 0,
+      "declarades": 460,
+      "heretades": 780
+    },
+    "R3-AFORAMENT": {
+      "total": 57,
+      "compten": 0,
+      "declarades": 0,
+      "heretades": 57
+    },
+    "R4-ALUMNAT": {
+      "total": 190,
+      "compten": 0,
+      "declarades": 0,
+      "heretades": 190
+    },
+    "R4-DOCENT": {
+      "total": 418,
+      "compten": 0,
+      "declarades": 0,
+      "heretades": 418
+    },
+    "R4-PLAB": {
+      "total": 143,
+      "compten": 0,
+      "declarades": 0,
+      "heretades": 143
+    },
+    "R7-PLAB": {
+      "total": 2,
+      "compten": 0,
+      "declarades": 2,
+      "heretades": 0
+    }
+  },
+  "accions": [
+    "Aula tancada: S02580 (102722 TE/320) 2027-03-10 17:30: Q1/1003 -> Q1/1007",
+    "Aula tancada: S02845 (102735 PAUL/321) 2027-03-10 16:30: Q1/1003 -> Q1/1007",
+    "Aula tancada: S03071 (102738 TE/320) 2027-03-10 14:30: Q1/1003 -> Q1/1011",
+    "Aula tancada: S03945 (102746 PAUL/412) 2027-03-19 09:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S03975 (102746 PAUL/432) 2027-03-19 10:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S06575 (102772 PAUL/432) 2027-03-15 12:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S06630 (102772 TE/41) 2027-03-10 08:30: Q1/1003 -> Q1/1011",
+    "Aula tancada: S06644 (102772 TE/43) 2027-03-10 10:30: Q1/1003 -> Q1/1011",
+    "Aula tancada: S06971 (102775 PAUL/412) 2027-03-19 08:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S07016 (102775 PAUL/432) 2027-03-19 11:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S09634 (104343 PAUL/812) 2027-03-17 10:30: Q3/0013 -> Q3/0009",
+    "Aula tancada: S12124 (106063 PAUL/211) 2027-03-19 17:00: Q3/0013 -> Q3/0003",
+    "Aula tancada: S12139 (106063 TE/21) 2027-03-19 15:00: Q3/0013 -> Q3/0003",
+    "Aula tancada: S12492 (106929 PAUL/611) 2027-03-17 08:30: Q3/0013 -> Q3/0009",
+    "Aula tancada: S12655 (106933 PAUL/611) 2027-03-15 10:30: Q3/0013 -> Q4/1005",
+    "Aula tancada: S13730 (107846 PAUL/311) 2027-03-16 08:30: Q3/0013 -> Q3/0009",
+    "Aula tancada: S13744 (107846 PAUL/312) 2027-03-16 09:30: Q3/0013 -> Q3/0009",
+    "Aula tancada: S15262 (107891 PAUL/412) 2027-03-16 10:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S15288 (107891 PAUL/431) 2027-03-16 12:30: Q3/0013 -> Q3/0009",
+    "Aula tancada: S15725 (108083 PAUL/331) 2027-03-15 08:30: Q3/0013 -> Q3/0003",
+    "Aula tancada: S16858 (44734 PLAB/1) 2027-03-17 17:00: Q3/0013 -> Q3/0003",
+    "Aula tancada: S16869 (44734 TE/1) 2027-03-15 15:00: Q3/0013 -> QC/0019",
+    "Aula tancada: S16879 (44735 PLAB/1) 2027-03-17 15:00: Q3/0013 -> QC/3115.4",
+    "Aula tancada: S16890 (44735 TE/1) 2027-03-15 17:00: Q3/0013 -> QC/3115.2",
+    "Aula tancada: S16909 (44736 TE/1) 2027-03-16 17:00: Q3/0013 -> Q3/0011",
+    "Aula tancada: S16929 (44737 TE/1) 2027-03-16 15:00: Q3/0013 -> Q3/0011",
+    "Aforament: 31 sessions de [('106047', 'TE/21')] passen totes de Q4/0007 a Q3/1011",
+    "Recuperació: S11527 (106047 TE/21) cancel·lada el 2027-03-08 -> 2027-03-09 M 10:30-12:30 a Q3/1007"
+  ],
+  "relaxacions_declarades": 5
+}

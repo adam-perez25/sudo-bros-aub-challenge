@@ -1,6 +1,6 @@
 # 5.3 · Incidents: what do we propose?
 
-Owner: Claude (with Adam) · Branch: `nivell2/p53-imprevist` · Weight 10 % · **Tool ready; final run waits for 5.2**
+Owner: Claude (with Adam) · Branch: `nivell2/p53-imprevist` · Weight 10 % · **Done: final files in `lliuraments/` (see INFORME.md)**
 
 **Four things at once** (`paquet/escenaris/contingencies/`): Q3/0013 closed 15-19 March 2027 · Transmissió de
 Calor i Termotècnia TE/21 (GEQ 2n) grows to 130 students and no longer fits Q4/0011 · Q1/1003 broken on 10 March ·

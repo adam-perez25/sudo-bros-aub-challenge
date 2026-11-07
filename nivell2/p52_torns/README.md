@@ -1,26 +1,53 @@
 # 5.2 · New shifts: 1st/2nd year morning, 3rd/4th afternoon
 
-Owner: _?_ · Branch: `nivell2/p52-torns` · Weight 25 % · Starts from 5.1
+Owner: Adam (+ Claude) · Weight 25 % · **Done: `VALIDA AMB RELAXACIONS DECLARADES`, 0 counted violations**
 
-**Goal:** move day, hour and room of the movable sessions so every rule passes (`--semestre 2`), with the fewest
-idle gaps and changes. Starting point: R1-TORN 2,008, R2-FINESTRA 13, R3-AFORAMENT 43, R3-TIPUS 54,
-R5-SENSE-AULA 4,541. Rules we really can't meet go to `lliuraments/relaxacions.csv` with a justification
-(candidate: 248 double-degree sessions taught with a morning group).
+Jury-facing explanation (Catalan): [`INFORME.md`](INFORME.md) · one-page board summary: [`RESUM-JUNTA.md`](RESUM-JUNTA.md).
 
-**Also deliver:** a one-page summary for the Junta Permanent (in Catalan): peak simultaneous classes morning and
-afternoon vs available rooms, missing/spare rooms by size, sessions moved by degree and year, the exceptions to
-rule 1 we ask for and why.
+## Regenerate everything (from the repo root, `.venv` active)
 
-**Hints from level 1** (`nivell1/TROBALLES.md`): the morning fits in total (~60 % of room-hours) but Tuesday and
-10:30-13:30 are already at 15 of 19: put the classes that move to the morning on quiet days and hours. Room size
-is not a bottleneck. Day can change but not the ISO week; avoid holidays (`calendari.csv`).
+```bash
+python nivell2/p52_torns/torns.py --sortida lliuraments/proposta-torns.csv --relaxacions lliuraments/relaxacions.csv --informe nivell2/p52_torns/informe-torns.json
+python nivell2/p52_torns/resum_junta.py
+python nivell2/p52_torns/graella.py
+```
 
-**Check:** `python -m horaris check ../lliuraments/proposta-torns.csv --semestre 2`.
+The scheduler is deterministic and takes a couple of seconds. Then 5.3 and 5.4 are rebuilt on top of it (commands in
+their READMEs), and the jury check is:
 
-Run the check from inside `repte-horaris-escola/` with the `.venv` active.
+```bash
+cd repte-horaris-escola
+python -m horaris check ../lliuraments/proposta-torns.csv --semestre 2 --relaxacions ../lliuraments/relaxacions.csv --json ../lliuraments/informe-torns.json --violacions ../lliuraments/violacions-torns.csv
+```
 
-**Watch out (found while testing 5.3):** 458 fixed GEI 1st/2nd-year sessions are in the wrong shift **and have no
-room** today. While they have no room the verifier calls their R1-TORN error inherited; as soon as you give them a
-room (R5 requires it) the R1-TORN starts to count, and they can't move (R1-FIXADA). So 5.2 will need to declare those
-458 sessions as an R1-TORN relaxation ("fixed group that the School keeps in its current shift").
-For 5.3: the repair tool needs a free 130+ room for TE/21 of 106047 at all its times.
+## How `torns.py` works
+
+1. Keep every session already in its shift, and every valid room of today.
+2. Rooms first for the sessions that don't change time (least flexible): one room per weekly activity when possible.
+3. Move each wrong-shift activity **as a block** (same weekday and hour every week, shared sessions together) to the
+   free slot of its shift with the fewest idle gaps for its group, avoiding the peak slots and, if possible, keeping
+   the weekday.
+4. Local repair for leftovers (free a slot or a room by moving non-fixed classes; undo if anything fails).
+5. Room-quality pass: activities whose room we chose try the room of their group's neighbouring classes.
+6. Official verifier + relaxations file with the justification of each exception.
+
+It reuses the timetable engine of 5.3 (`nivell2/p53_imprevist/imprevist.py`) with extra per-person indexes.
+
+## Results
+
+| | Today | 5.2 |
+|---|---|---|
+| Counted violations | R1-TORN 2,008 · R2 13 · R3 97 · R5 4,541 | **0** |
+| Idle gap minutes | 72,930 | **62,640** (−14 %) |
+| Sessions moved (slot / room) | — | 2,006 / 291 |
+
+Declared (460, all R1-TORN): 458 fixed GEI 1st/2nd-year sessions that are in the afternoon today (unavoidable: they
+can't move, and giving them the room they lack makes the verifier stop calling them inherited), plus **2 sessions
+proven impossible** by counting (31/5 and 9/4, weeks with a single possible day). Details in `INFORME.md` and in the
+justification column of `lliuraments/relaxacions.csv`.
+
+## Ideas to improve further (if there is time)
+
+- Fewer room changes between consecutive classes (2,977) and TE↔PAUL changes outside the corridor (1,397): a smarter
+  room assignment (e.g. CP-SAT per day) instead of the greedy + neighbour pass.
+- Fewer idle gaps: let blocks that already moved be re-optimised once everything is placed.

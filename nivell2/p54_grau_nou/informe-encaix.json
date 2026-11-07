@@ -1,0 +1,72 @@
+{
+  "sessions_noves": 235,
+  "col_locades": 235,
+  "no_hi_caben": [],
+  "mogudes_de_franja": 0,
+  "aules_usades": {
+    "Q1/1011": 43,
+    "Q3/0011": 28,
+    "Q4/1005": 28,
+    "QC/3115.1": 27,
+    "Q2/1003": 26,
+    "Q3/0013": 15,
+    "QC/3115.2": 14,
+    "QC/3115.4": 14,
+    "Q2/1005": 13,
+    "Q4/1003": 13,
+    "Q1/1003": 13,
+    "Q3/0007": 1
+  },
+  "incompliments_de_les_noves": [],
+  "incompliments_nous_a_la_resta": [],
+  "veredicte_entrada": "NO VALIDA",
+  "veredicte_sortida": "VALIDA AMB RELAXACIONS DECLARADES",
+  "marge": {
+    "min_lliures_abans": 7,
+    "min_lliures_despres": 6,
+    "pitjor_franja": [
+      6,
+      "2027-02-02",
+      "10:30"
+    ],
+    "reserva": 2,
+    "franges_per_aules_lliures_despres": {
+      "6": 6,
+      "7": 12,
+      "8": 41,
+      "9": 18,
+      "10": 45,
+      "11": 89,
+      "12": 88,
+      "13": 47,
+      "14": 40,
+      "15": 15,
+      "16": 8,
+      "17": 4,
+      "18": 4,
+      "19": 11,
+      "20": 27,
+      "21": 2
+    }
+  },
+  "accions": [
+    "N006 TE/91 V 12:30: 15 sessions a Q3/0013",
+    "N005 TE/91 J 12:30: 13 sessions a Q2/1005",
+    "N008 TE/91 M 10:30: 13 sessions a Q4/1003",
+    "N009 TE/91 M 12:30: 13 sessions a Q1/1003",
+    "N002 PAUL/91 L 10:30: 14 sessions a QC/3115.2",
+    "N002 PAUL/91 X 10:30: 14 sessions a QC/3115.1",
+    "N002 PAUL/92 L 10:30: 14 sessions a QC/3115.4",
+    "N006 PAUL/911 L 13:30: 14 sessions a Q3/0011",
+    "N006 PAUL/912 L 12:30: 14 sessions a Q3/0011",
+    "N008 PAUL/911 L 12:30: 14 sessions a Q4/1005",
+    "N008 PAUL/912 L 13:30: 14 sessions a Q4/1005",
+    "N002 PAUL/92 X 12:30: 13 sessions a QC/3115.1",
+    "N005 PAUL/911 X 12:30: 13 sessions a Q2/1003",
+    "N005 PAUL/912 X 10:30: 13 sessions a Q2/1003",
+    "N006 PAUL/911 L 09:30: 1 sessions a Q3/0007",
+    "N009 PAUL/912 V 10:30: 15 sessions a Q1/1011",
+    "N009 PAUL/913 V 11:30: 15 sessions a Q1/1011",
+    "N009 PAUL/911 J 08:30: 13 sessions a Q1/1011"
+  ]
+}
