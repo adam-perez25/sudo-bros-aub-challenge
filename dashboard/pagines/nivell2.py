@@ -105,12 +105,15 @@ with t53:
     rec_txt = (f"{rec.iloc[0]['data_n']:%d/%m} a les {rec.iloc[0]['h_ini_n']} a {rec.iloc[0]['aula_n']}"
                if len(rec) else '—')
     te21 = ch[(ch['grup'] == 'TE/21') & (ch['codi'] == '106047')]
+    te21 = te21[te21['data_n'] == te21['data_n_ref']]          # sense la sessió recuperada
     te21_aula = te21['aula_n'].mode().iloc[0] if len(te21) else '—'
+    te21_base = int((te21['aula_n'] == te21_aula).sum())
+    te21_altres = ', '.join(sorted(set(te21['aula_n']) - {te21_aula}))
     taula = pd.DataFrame([
         ['Q3/0013 reservada del 15 al 19/3', 'Cada classe es queda el mateix dia i hora i canvia només d\'aula, '
          'a una del mateix passadís si n\'hi ha cap de lliure'],
-        ['Transmissió de Calor TE/21 passa a 130 alumnes', f'Totes les seves sessions van a una sola aula de 130 '
-         f'places: {te21_aula}'],
+        ['Transmissió de Calor TE/21 passa a 130 alumnes', f'{te21_base} de les seves {len(te21)} sessions van a {te21_aula} '
+         f'(130 places), la seva nova aula base; les altres, on {te21_aula} ja és ocupada, a {te21_altres}'],
         ['Avaria a Q1/1003 el 10/3', 'Com la sala reservada: mateix dia i hora, una altra aula'],
         ['S11527 cancel·lada (8/3)', f'Es recupera el {rec_txt}, amb l\'alumnat i els docents lliures'],
     ], columns=['Imprevist', 'Què fem'])
