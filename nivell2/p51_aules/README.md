@@ -1,17 +1,37 @@
 # 5.1 · Assign rooms without moving any time
 
-Owner: _?_ · Branch: `nivell2/p51-aules` · Weight 5 % (but 5.2-5.4 reuse this engine)
+Weight 5 % · **Done: `VALIDA` with `--nomes-aules`, no relaxations** · Jury-facing explanation (Catalan):
+[`INFORME.md`](INFORME.md)
 
-**Goal:** give a room to every semester-2 session that needs one (4,541 today), keeping today's day and hour:
-right type, enough seats, no two classes in a room at once, 2 ordinary rooms free in every hour slot. Also fix the
-43 over-capacity sessions and the 54 PAUL sessions in Q6 labs.
+## Regenerate (from the repo root, `.venv` active)
 
-**Scored on quality:** one stable home room per group, few room changes between consecutive classes, few changes
-vs today's rooms. A valid assignment is known to exist.
+```bash
+python nivell2/p51_aules/aules.py --sortida lliuraments/proposta-aules.csv --informe nivell2/p51_aules/informe-aules.json
+```
 
-**Suggested approach:** per `activitat_id` (same room all semester); keep today's room when valid; biggest classes
-first into the smallest valid free room; then improve (theory group and its PAULs in the same corridor). OR-Tools
-CP-SAT is in `requirements.txt` if needed.
+Jury check (from `repte-horaris-escola/`):
 
-**Check:** `python -m horaris check ../lliuraments/proposta-aules.csv --semestre 2 --nomes-aules` (from
-`repte-horaris-escola/`). Final file: `lliuraments/proposta-aules.csv`.
+```bash
+python -m horaris check ../lliuraments/proposta-aules.csv --semestre 2 --nomes-aules --json ../lliuraments/informe-aules.json --violacions ../lliuraments/violacions-aules.csv
+```
+
+## How `aules.py` works
+
+Times are frozen; only the `aula` column changes. It reuses the 5.2 engine (`nivell2/p52_torns/torns.py`):
+
+1. Keep every valid room of today (fewer changes).
+2. Sessions that need a room (empty or invalid, and changeable: not PLAB, not double degree, not fixed with a room):
+   theory first, biggest first; each weekly activity tries **one room for the whole semester**, preferring today's
+   room, then the group's **home room** (theory rooms already used by the same cohort + line), then the same corridor,
+   then the smallest room that fits. Type, capacity, no overlaps and the 2-free-rooms reserve always respected.
+3. Room-quality pass: each activity with a new room tries the room of its group's neighbouring classes.
+4. Official verifier in `--nomes-aules` mode. Deterministic (same output on every run).
+
+## Results vs the simple greedy the statement suggests
+
+| Objective (lower is better) | Simple greedy | 5.1 |
+|---|---|---|
+| Extra theory rooms per group (R6) | 130 | **55** |
+| TE↔PAUL changes outside the corridor (R6) | 1,675 | **698** |
+| Room changes between consecutive classes | 3,636 | **2,581** |
+| Room changes vs today | 132 | **97** |
