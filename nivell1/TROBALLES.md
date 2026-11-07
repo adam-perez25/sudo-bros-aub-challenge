@@ -85,8 +85,15 @@ lectius i cap esdeveniment a `calendari.csv` (11 de les 20 setmanes).
 
 ---
 
-**Pla contra realitat (apartat 6 del quadern):** la comparació amb l'ocupació real del GERES (setmana del 5 al
-9/10/2026) està implementada (`contrast_validacio()`): cobertura del paquet, sessions que es fan a l'aula prevista,
-on es fan les que no tenen aula i hores de reserves no docents. **Encara no té resultats**: el fitxer
-`validacio/geres-ocupacio-setmana-2026-10-05.csv` no era al zip que vam baixar. Quan hi sigui, n'hi ha prou de
-tornar a executar el quadern; les xifres d'aquest apartat s'afegiran aquí.
+**Pla contra realitat (apartat 6 del quadern):** comparació amb l'ocupació real del GERES (setmana del 5 al
+9/10/2026, 744 reserves a 50 espais; `contrast_validacio()`):
+
+- **Cobertura:** 645 de les 769 sessions del paquet d'aquella setmana (84 %) surten al GERES; 33 reserves docents del
+  GERES no tenen sessió al paquet.
+- **Mateixa aula:** 645 de 646 sessions amb aula al paquet es fan a l'aula prevista (només una canvia: `Q1/0019` →
+  `Q1/0007`, 9/10 a les 17.00). L'horari de partida del 1r semestre descriu bé la realitat.
+- **Sense aula:** cap. La setmana és del 1r semestre, on el paquet té aula per a tot; el GERES no aclareix on van les
+  sessions sense aula del 2n semestre.
+- **No docents:** 65 reserves, 195 hores d'espai que el pla no veu.
+
+Limitació: una sola setmana de classes normals del 1r semestre.

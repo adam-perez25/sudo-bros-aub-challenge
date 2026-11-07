@@ -24,7 +24,7 @@ Status: ⬜ to do · 🟡 in progress · ✅ done. Level 2 is always **semester 
 ### What "done" means for each task
 
 - **L1** (done): notebook `nivell1/nivell1.ipynb` + five findings in `nivell1/TROBALLES.md`. Section 6 (plan vs
-  reality) is ready but waits for the GERES file, which is not in the organisers' zip.
+  reality) now runs on the GERES file (645/769 sessions covered, 645/646 in the planned room, 195 h of non-teaching bookings).
 - **5.1**: `proposta-aules.csv` (`id_sessio,dia,h_ini,aula`, one row per session) that is `VALIDA` with
   `--semestre 2 --nomes-aules`, plus `informe.json` and `violacions.csv`. Validity is assumed; the score is the
   **quality**: one stable home room per group, few room changes between consecutive classes, few changes vs today.
@@ -146,7 +146,7 @@ Add people.
 | 4 | **Fewer idle gaps in 5.2**: after everything is placed, re-run the slot choice of moved blocks to close gaps | 5.2 | ~1-2 h | Idle gaps are another compared objective (62,640 min, already −14 %) |
 | 5 | **2D map of the 21 classrooms** (4 spines × 2 floors, page 5 of the statement) coloured by occupancy | board summary, presentation | ~1 h | Easy to read for the Junta; a 3D model from `planols/` is not worth it |
 | 6 | **5.1 quality** with the same CP-SAT idea as #3 | 5.1 (5 %) | small once #3 exists | Reuses #3 |
-| 7 | **L1 section 6** (plan vs reality) when the organisers share the GERES file | L1 | 15 min | Already coded; just run the notebook |
+| 7 | **L1 section 6** (plan vs reality) with the GERES file | L1 | 15 min | Done: notebook re-run with the file |
 | 8 | Translate `SETUP.md` / this plan to Catalan if the team prefers | team | 30 min | — |
 
 After any change to 5.2, rebuild 5.3, 5.4 and the grid on top of it (commands in each `nivell2/p5x_*/README.md`)
