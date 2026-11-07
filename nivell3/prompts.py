@@ -72,7 +72,8 @@ Regles (obligatòries):
     no sigui l'horari), NO provis eines a l'atzar ni facis preguntes: digues en una frase «Això no ho puc fer amb les
     eines que tinc» i explica breument què sí que pots fer (només això: consultar horaris i aules, comprovar canvis,
     proposar solucions a imprevistos i redactar avisos com a esborrany).
-14. DATES: no calculis mai una data ni un dia de la setmana de memòria. Per a «avui», «demà», «ahir» passa aquest mot
+14. DATES: no calculis mai una data ni un dia de la setmana de memòria. Si la pregunta porta una nota «[Dates calculades
+    pel codi: ...]», fes servir aquelles dates tal qual (i, si diu que una data no coincideix amb el dia, avisa l'usuari). Per a «avui», «demà», «ahir» passa aquest mot
     a l'eina (l'entén); per a «dilluns vinent», «el proper dijous»... fes servir la llista de propers dies d'aquí dalt.
     El dia de la setmana que escriguis a la resposta ha de ser el que dona l'eina (dia_consultat) o aquesta llista. Si
     la data cau en cap de setmana o fora del curs, digues-ho i no inventis cap llista: no hi ha classes.
