@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT / 'nivell2' / 'p52_torns'))
 from horaris.check import avalua, passadis  # noqa: E402
 from horaris.model import DIES, a_traslladar, carrega_base, fmt  # noqa: E402
 from imprevist import a_fila, llegeix_files_csv  # noqa: E402
-from torns import HorariT, aula_ok_avui, millora_aules  # noqa: E402  (motor compartit amb el 5.2)
+from torns import HorariT, aula_ok_avui, millora_aules, optimitza_aules  # noqa: E402  (motor compartit amb el 5.2)
 
 PAQUET = ROOT / 'repte-horaris-escola' / 'paquet'
 
@@ -126,6 +126,8 @@ def main(argv=None) -> int:
 
     log: list[str] = []
     millora_aules(h, lliures, log)
+    optimitza_aules(h, lliures, log)
+    optimitza_aules(h, lliures, log, per_unitat=True)
 
     with open(a.sortida, 'w', encoding='utf-8', newline='') as f:
         w = csv.writer(f)
