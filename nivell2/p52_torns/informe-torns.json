@@ -6,12 +6,12 @@
   },
   "objectius": {
     "hores_mortes_min": 62640,
-    "desplacaments_aula": 2977,
+    "desplacaments_aula": 2209,
     "desplacaments_edifici": 17,
     "canvis_franja": 2006,
-    "canvis_aula": 291,
-    "r6_aules_te_extra_per_grup": 79,
-    "r6_canvis_te_paul_fora_passadis": 1397,
+    "canvis_aula": 289,
+    "r6_aules_te_extra_per_grup": 76,
+    "r6_canvis_te_paul_fora_passadis": 560,
     "sessions_avaluades": 7739
   },
   "blocs": 152,
@@ -176,6 +176,8 @@
     "Reparat (incompliment desplaçat): S01504 (102699 TE/51) -> 2027-05-31 17:30; ['S02839'] (102730 TE/7) torna a la seva hora d'avui (1 fila en lloc de 2)",
     "Reparat: S01994 (102710 TE/51) -> 2027-04-09 18:30; recol·locades 2 classes",
     "NO REPARAT: S04511 (102750 PAUL/452) 2027-04-09",
-    "Millora d'aules: 132 activitats canviades a l'aula dels seus veïns"
+    "Millora d'aules: 132 activitats canviades a l'aula dels seus veïns",
+    "Optimització d'aules (per activitat): 81 canvis d'activitat en 5 passades",
+    "Optimització d'aules (per sessió): 150 canvis d'activitat en 3 passades"
   ]
 }
