@@ -828,10 +828,23 @@ def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6
     b = h.base
     total = 0
 
+    cost_aula = float(os.environ.get('TORNS_COST_AULA', 0))
+
     def cost(pla) -> float:
-        if not cost_canvi or pla is None:
+        if pla is None:
             return 0.0
-        return cost_canvi * sum(1 for u, d, tt in pla for x in u if (d, tt) != (b.sessions[x].data, b.sessions[x].ini))
+        c = 0.0
+        if cost_canvi:
+            c += cost_canvi * sum(1 for u, d, tt in pla for x in u if (d, tt) != (b.sessions[x].data, b.sessions[x].ini))
+        if cost_aula:
+            # experiment: cada sessió que a la nova franja no pot fer-se a la seva aula d'avui (`canvis_aula`)
+            for u, d, tt in pla:
+                s = b.sessions[u[0]]
+                if s.aula and s.aula in b.aules and not s.sense_espai and not (
+                        h.aula_lliure(s.aula, d, tt, tt + s.durada, s.unitat)
+                        and h.aula_valida(u, s.aula, d, tt, tt + s.durada)):
+                    c += cost_aula * len(u)
+        return c
     for passada in range(passades):
         millores = 0
         for bloc in (bls if passada % 2 == 0 else bls[::-1]):
@@ -1042,6 +1055,10 @@ def main(argv=None) -> int:
     lliures = {x for x in h.pos if not b.sessions[x].sense_espai and b.sessions[x].tipus != 'PLAB'
                and not (b.sessions[x].aula and h.pos[x][2] == b.sessions[x].aula)
                and not (b.sessions[x].fixada and b.sessions[x].aula)}
+    if os.environ.get('TORNS_AULES_AVUI_LLIURES') == '1':
+        # experiment: també es poden canviar les aules d'avui (no les de sessions fixades amb aula ni els PLAB)
+        lliures = {x for x in h.pos if not b.sessions[x].sense_espai and b.sessions[x].tipus != 'PLAB'
+                   and not (b.sessions[x].fixada and b.sessions[x].aula)}
     millora_aules(h, lliures, log)
     optimitza_aules(h, lliures, log)
     optimitza_aules(h, lliures, log, per_unitat=True)
