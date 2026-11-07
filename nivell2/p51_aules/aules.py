@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT / 'nivell2' / 'p52_torns'))
 from horaris.check import avalua, passadis  # noqa: E402
 from horaris.model import DIES, a_traslladar, carrega_base, fmt  # noqa: E402
 from imprevist import a_fila, llegeix_files_csv  # noqa: E402
-from torns import HorariT, aula_ok_avui, millora_aules, optimitza_aules  # noqa: E402  (motor compartit amb el 5.2)
+from torns import HorariT, acosta_edifici, aula_ok_avui, millora_aules, optimitza_aules  # noqa: E402  (motor compartit amb el 5.2)
 from aules_cpsat import reassigna_aules  # noqa: E402  (CP-SAT dia a dia, també del 5.2)
 
 PAQUET = ROOT / 'repte-horaris-escola' / 'paquet'
@@ -130,6 +130,7 @@ def main(argv=None) -> int:
     optimitza_aules(h, lliures, log)
     optimitza_aules(h, lliures, log, per_unitat=True)
     reassigna_aules(h, lliures, log)
+    acosta_edifici(h, log)   # GED 4t fora de B3/0021, al costat dels seus laboratoris (canvis d'edifici 17 -> 0)
 
     with open(a.sortida, 'w', encoding='utf-8', newline='') as f:
         w = csv.writer(f)
