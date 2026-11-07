@@ -37,8 +37,8 @@ A més:
 
 ## Com l'hem provat
 
-- **Eines:** 11 preguntes com les del jurat, amb la resposta calculada a part (verificador oficial + pandas, sense el
-  codi de l'assistent): totes les eines hi coincideixen (`proves/prova_eines.py`, 16 de 16 comprovacions). Les
+- **Eines:** 13 preguntes com les del jurat, amb la resposta calculada a part (verificador oficial + pandas, sense el
+  codi de l'assistent): totes les eines hi coincideixen (`proves/prova_eines.py`, 19 de 19 comprovacions). Les
   preguntes i les respostes són a `proves/README.md`.
 - **Agent:** el bucle amb un LLM simulat: crides a eines, l'imprevist en dos passos (solució i avís), el mode de
   reserva quan el servidor no accepta eines, i errors d'arguments retornats al LLM perquè es corregeixi.

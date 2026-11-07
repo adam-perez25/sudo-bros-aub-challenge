@@ -20,7 +20,9 @@ python nivell3/main.py
 
 or one question: `python nivell3/main.py -p "Quina aula de 60 places està lliure dijous a les 10?"`
 
-Check the tools without the LLM (must print 16 of 16): `python nivell3/proves/prova_eines.py`
+Answers show only the text and its sources. Add `--detall` to also see which tools were called (for debugging).
+
+Check the tools without the LLM (must print 19 of 19): `python nivell3/proves/prova_eines.py`
 
 ## Files
 
@@ -52,7 +54,7 @@ Check the tools without the LLM (must print 16 of 16): `python nivell3/proves/pr
 
 ## Tested so far
 
-- Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 16/16.
+- Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 19/19.
 - The agent loop with a scripted **fake LLM**: tool calling, the 2-step incident flow, the automatic switch to JSON
   mode, and bad tool calls returned as errors.
 - **Not yet tested with the real event LLM** (needs your key in `nivell3/.env`). First thing to do: run
@@ -60,7 +62,7 @@ Check the tools without the LLM (must print 16 of 16): `python nivell3/proves/pr
 
 ## Next
 
-- Run the 11 questions of `proves/README.md` through the real LLM and fix any wrong answer in the **tool**, not the
+- Run the 13 questions of `proves/README.md` through the real LLM and fix any wrong answer in the **tool**, not the
   prompt.
 - Optional: a small web chat (Streamlit/Gradio) showing answer + sources, for the live demo.
 - Demo script (3-4 min): question 1 → 2 → 6 → 7 + 8 of `proves/README.md`.

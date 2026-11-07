@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import collections
 import datetime as dt
+import difflib
 import sys
 from pathlib import Path
 
@@ -157,7 +158,7 @@ def horari_aula(aula: str, data: str = '', dia: str = '', setmana: str = '', sem
     """Què passa en una aula: les seves classes (per a una data concreta, o el patró setmanal)."""
     aula = aula.strip().upper()
     if aula not in set(d.aules['aula']):
-        return {'trobat': False, 'avis': f'{aula} no és cap aula de l\'aulari.', 'fonts': []}
+        return _aula_inexistent(aula)
     info = d.aules[d.aules['aula'] == aula].iloc[0]
     h = _filtra(semestre, data, dia, setmana)
     h = h[(h['aula_nova'] == aula) & (h['sense_espai'] != '1')]
@@ -180,10 +181,27 @@ def _calendari(data: dt.date, ini: int, fi: int) -> str:
     return ''
 
 
-def aules_lliures(hora_inici: str, durada_min: int = 60, data: str = '', dia: str = '', places_min: int = 0,
-                  tipus: str = '', semestre: int = 2) -> dict:
+def _aula_inexistent(text: str) -> dict:
+    """Resposta estàndard quan una aula no existeix, amb els codis existents més semblants."""
+    codis = sorted(d.aules['aula'])
+    t = str(text).strip().upper()
+    semblants = difflib.get_close_matches(t, codis, n=4, cutoff=0.6)
+    semblants += [c for c in codis if t and t in c and c not in semblants][:4 - len(semblants)]
+    return {'trobat': False, 'avis': f"No hi ha cap aula «{text}» a l'aulari.", 'aules_semblants': semblants,
+            'fonts': []}
+
+
+def aules_lliures(hora_inici: str = '', durada_min: int = 60, data: str = '', dia: str = '', places_min: int = 0,
+                  tipus: str = '', aula: str = '', semestre: int = 2) -> dict:
     """Aules de l'aulari lliures a una hora: en una data concreta, o tots els dies d'aquell dia de la setmana del
-    semestre. Comprova capacitat, solapaments i la reserva de 2 aules ordinàries lliures (regla 8)."""
+    semestre. Comprova capacitat, solapaments i la reserva de 2 aules ordinàries lliures (regla 8).
+    Amb `aula`, comprova només aquella aula (i, si no existeix, ho diu i en proposa de semblants)."""
+    if aula:
+        codi_aula = aula.strip().upper()
+        if codi_aula not in set(d.aules['aula']):
+            return _aula_inexistent(aula)
+    if not hora_inici:
+        return {'error': "Cal l'hora d'inici (HH:MM) per saber si una aula és lliure.", 'fonts': []}
     ini = _hora(hora_inici)
     fi = ini + int(durada_min)
     if data:
@@ -195,9 +213,12 @@ def aules_lliures(hora_inici: str, durada_min: int = 60, data: str = '', dia: st
     else:
         return {'error': 'Cal una data (AAAA-MM-DD) o un dia de la setmana.', 'fonts': []}
     aules = d.aules
-    if tipus:
-        aules = aules[aules['tipus'] == TIPUS.get(tipus.lower(), tipus)]
-    aules = aules[aules['capacitat'] >= int(places_min)]
+    if aula:
+        aules = aules[aules['aula'] == aula.strip().upper()]
+    else:
+        if tipus:
+            aules = aules[aules['tipus'] == TIPUS.get(tipus.lower(), tipus)]
+        aules = aules[aules['capacitat'] >= int(places_min)]
     ordinaries = set(d.aules.loc[d.aules['ordinaria'] == 1, 'aula'])
     h = d.horari[(d.horari['aula_nova'] != '') & (d.horari['sense_espai'] != '1')]
     h = h[h['data_nova'].isin(dates)]
@@ -434,10 +455,11 @@ ESQUEMES = [
     {'name': 'aules_lliures', 'description': (
         "Aules lliures a una hora a l'horari actual, amb capacitat mínima i tipus opcional (aula, seminari, "
         "laboratori, informatica). Amb data comprova aquell dia; amb dia (L..V) comprova tots els dies d'aquell dia "
-        "de la setmana del semestre. Respecta la reserva de 2 aules ordinàries (regla 8)."),
+        "de la setmana del semestre. Respecta la reserva de 2 aules ordinàries (regla 8). Amb 'aula' comprova només "
+        "aquella aula; si no existeix, ho diu i en proposa de semblants (encara que no es doni l'hora)."),
      'parameters': {'type': 'object', 'properties': {
-         'hora_inici': _S, 'durada_min': _I, 'data': _S, 'dia': _S, 'places_min': _I, 'tipus': _S, 'semestre': _I},
-         'required': ['hora_inici']}},
+         'hora_inici': _S, 'durada_min': _I, 'data': _S, 'dia': _S, 'places_min': _I, 'tipus': _S, 'aula': _S,
+         'semestre': _I}}},
     {'name': 'verifica', 'description': (
         "Passa el verificador oficial a una proposta: torns (5.2, l'horari actual), aules (5.1), imprevist (5.3), "
         "grau-nou (5.4) o partida (l'horari d'avui). Torna el veredicte, els incompliments per regla i exemples."),

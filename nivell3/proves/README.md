@@ -19,3 +19,5 @@ Comprovació automàtica de les eines (sense LLM): `python nivell3/proves/prova_
 | 9 | Quines classes té el docent D380 el 9 d'abril? | Tres PAUL de 102750 a Q1/0019: PAUL/452 a les 12.30, PAUL/453 a les 19.00 i PAUL/451 a les 20.00 | S04511, S04526, S04496 |
 | 10 | Quina capacitat té Q4/0011? Quantes aules ordinàries hi ha? | 117 places; 21 aules ordinàries | aules.csv |
 | 11 | Quines classes hi ha a Q1/1011 el dilluns 1 de febrer? | Cap. L'assistent ha de dir que no n'hi ha, no inventar-ne | horari_aula('Q1/1011', data='2027-02-01') |
+| 12 | La classe -2 està lliure? | «No hi ha cap aula -2 a l'aulari.» Directe, sense mostrar consultes ni demanar l'hora | aules_lliures(aula='-2') |
+| 13 | L'aula Q1/1003 està lliure el 2 de febrer a les 10.30? | No: hi ha 104349 TE/81 (Grafs, Topologia i Geometria Discreta) de 10.30 a 12.30 | S09923 |

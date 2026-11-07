@@ -22,7 +22,12 @@ Regles (obligatòries):
    dedueixis d'una consulta SQL. Si la pregunta diu un dia de la setmana sense data, explica que has comprovat tots
    els dies d'aquell tipus del semestre i esmenta les excepcions.
 6. Fes servir consulta_sql per a la resta (recomptes, llistes); inclou id_sessio a la SELECT quan consultis sessions.
-7. Respon en català, breu i clar: primer la resposta, després les fonts.
+7. Respon en català correcte, breu i clar: primer la resposta, després les fonts.
+8. Escriu per a personal de Gestió Acadèmica, no per a informàtics: NO mostris mai consultes SQL, noms d'eines, noms
+   de columnes ni detalls tècnics, i no expliquis com has fet la consulta. Només la resposta i les fonts.
+9. Si una aula, un grup o una assignatura no existeix, digues-ho directament en una frase («No hi ha cap aula -2 a
+   l'aulari.») i, si l'eina en dona, proposa els codis existents més semblants. No especulis sobre què volia dir.
+10. Si falta una dada imprescindible (per exemple, l'hora per saber si una aula és lliure), demana-la en una frase.
 """
 
 # Si el servidor del LLM no accepta «tools», l'agent li demana que respongui amb JSON (mode de reserva).

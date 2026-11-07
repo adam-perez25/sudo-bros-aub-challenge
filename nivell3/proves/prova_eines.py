@@ -65,6 +65,13 @@ comprova('10. Q4/0011 té 117 places', r['files'] == [['117']], r.get('files'))
 r = E.horari_aula('Q1/1011', data='2027-02-01')
 comprova('11. Q1/1011 l\'1/2: cap classe', r['sessions'] == 0 and 'avis' in r, r.get('sessions'))
 
+r = E.aules_lliures(aula='-2')
+comprova("12. aula inexistent: ho diu sense demanar l'hora", r.get('trobat') is False and 'No hi ha cap aula' in r['avis'])
+r = E.aules_lliures(aula='Q2-1009')
+comprova('12. proposa el codi semblant Q2/1009', r.get('aules_semblants', [''])[0] == 'Q2/1009', r.get('aules_semblants'))
+r = E.aules_lliures(aula='Q1/1003', hora_inici='10:30', data='2027-02-02')
+comprova('13. Q1/1003 el 2/2 a les 10.30 ocupada per S09923', r['n_lliures'] == 0 and r['fonts'] == ['S09923'], r['fonts'])
+
 comprova('SQL: no deixa modificar dades', 'error' in E.consulta_sql('DELETE FROM aules'))
 comprova('SQL: no deixa llegir fitxers', 'error' in E.consulta_sql("SELECT * FROM read_csv('requirements.txt')"))
 
