@@ -1,15 +1,15 @@
-"""Level 1 analysis: how are the School's rooms used today, and does the new shift model fit?
+"""Nivell 1: com s'usen avui les aules de l'Escola, i hi cap el model nou de torns?
 
-All the calculations live here so the notebook (nivell1.ipynb) only calls them and draws charts.
-Run from the project root or from this folder; the data is read from repte-horaris-escola/paquet/.
+Tots els càlculs són aquí, perquè el quadern (nivell1.ipynb) només els cridi i en dibuixi els gràfics.
+Les dades es llegeixen de repte-horaris-escola/paquet/.
 
-Conventions (the same as the official verifier, repte-horaris-escola/horaris/check.py):
-- Semester by date: Sep-Jan = 1, Feb-Aug = 2 (the Sigma T/V field is not reliable).
-- Shift (torn) is decided by the start time: before 14:30 = morning.
-- A shared session (same id_compartida) is ONE physical class: counted once for room usage.
-- Double-degree groups (sense_espai = 1) need no room: left out of room demand.
-- PLAB labs are fixed and use department labs: left out of classroom demand.
-- Hour slots ("franges") for the 2-free-rooms reserve rule: every hour from 8:30 to 20:30.
+Convencions (les mateixes que el verificador oficial, repte-horaris-escola/horaris/check.py):
+- Semestre per data: de setembre a gener = 1, de febrer a agost = 2 (el camp T/V de Sigma no és fiable).
+- El torn el marca l'hora d'inici: abans de les 14.30 = matí.
+- Una sessió compartida (mateix id_compartida) és UNA sola classe física: compta un cop per a l'ús d'aules.
+- Els grups de doble titulació (sense_espai = 1) no necessiten aula: queden fora de la demanda d'aules.
+- Els laboratoris PLAB estan fixats i van a laboratoris de departament: queden fora de la demanda d'aules.
+- Franges d'una hora per a la reserva de dues aules lliures (regla 8): cada hora de 8.30 a 20.30.
 """
 from __future__ import annotations
 
@@ -21,13 +21,13 @@ ROOT = Path(__file__).resolve().parents[1]
 PAQUET = ROOT / 'repte-horaris-escola' / 'paquet'
 
 DIES = ['L', 'M', 'X', 'J', 'V']
-NOM_DIA = {'L': 'Mon', 'M': 'Tue', 'X': 'Wed', 'J': 'Thu', 'V': 'Fri'}
-MATI_FI = 14 * 60 + 30                          # 14:30, end of the morning window
-FRANGES = [8 * 60 + 30 + 60 * i for i in range(13)]   # 8:30, 9:30, ... 20:30
-FRANGES_MATI = [f for f in FRANGES if f < MATI_FI]     # 6 morning slots
-RESERVA = 2                                     # ordinary rooms that must stay free (rule 8)
-CLASSROOM_TYPES = {'Aules docents', 'Seminaris'}
-PRACTICE_TYPES = {'Laboratoris docents', 'Aules informàtiques'}
+NOM_DIA = {'L': 'Dl', 'M': 'Dt', 'X': 'Dc', 'J': 'Dj', 'V': 'Dv'}
+MATI_FI = 14 * 60 + 30                                  # 14.30, final de la finestra de matí
+FRANGES = [8 * 60 + 30 + 60 * i for i in range(13)]     # 8.30, 9.30, ... 20.30
+FRANGES_MATI = [f for f in FRANGES if f < MATI_FI]      # les 6 franges de matí
+RESERVA = 2                                             # aules ordinàries que han de quedar lliures (regla 8)
+TIPUS_AULA = {'Aules docents', 'Seminaris'}
+TIPUS_PRACTIQUES = {'Laboratoris docents', 'Aules informàtiques'}
 
 
 def hm(s: str) -> int:
@@ -39,9 +39,9 @@ def fmt(m: int) -> str:
     return f'{m // 60:02d}:{m % 60:02d}'
 
 
-# ----------------------------------------------------------------------------------------------- loading
+# ------------------------------------------------------------------------------------------- càrrega
 def carrega(paquet: Path = PAQUET) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """sessions and rooms, with a few helper columns added to sessions."""
+    """Sessions i aules, amb unes quantes columnes d'ajuda afegides a les sessions."""
     s = pd.read_csv(paquet / 'sessions.csv', dtype=str, keep_default_na=False)
     a = pd.read_csv(paquet / 'aules.csv')
     for c in ('durada_min', 'alumnes', 'capacitat_grup'):
@@ -61,13 +61,13 @@ def carrega(paquet: Path = PAQUET) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def _curs(tc: str) -> str:
-    """'GEI:3r|GEI:4t' -> '3r/4t'; the year(s) of the session."""
+    """'GEI:3r|GEI:4t' -> '3r/4t': el curs o cursos de la sessió."""
     cursos = sorted({x.split(':')[1] for x in tc.split('|') if ':' in x})
     return '/'.join(cursos) or '?'
 
 
 def explode_cohorts(s: pd.DataFrame) -> pd.DataFrame:
-    """One row per (session, cohort): a session of 'GEI:3r|GEI:4t' counts for both cohorts."""
+    """Una fila per (sessió, cohort): una sessió de 'GEI:3r|GEI:4t' compta per a totes dues cohorts."""
     e = s.assign(cohort=s['titulacions_curs'].str.split('|')).explode('cohort')
     e['titulacio'] = e['cohort'].str.split(':').str[0]
     e['curs_c'] = e['cohort'].str.split(':').str[1]
@@ -75,24 +75,25 @@ def explode_cohorts(s: pd.DataFrame) -> pd.DataFrame:
 
 
 def demanda_aula(s: pd.DataFrame, inclou_practiques: bool = False) -> pd.DataFrame:
-    """Sessions that need a classroom (ordinary room or seminar), one row per physical class.
+    """Sessions que necessiten una aula (aula docent o seminari), una fila per classe física.
 
-    Left out: PLAB (fixed department labs), double-degree groups (no room needed), sessions in rooms
-    outside the building that may stay there (B3/0021, QC/1082) and, unless `inclou_practiques`, sessions
-    that today are in a lab / computer room (PAUL that do everything there and can keep doing so).
-    The statement's 67-70 % figure uses inclou_practiques=True."""
+    Queden fora: els PLAB (laboratoris de departament, fixats), els grups de doble titulació (no necessiten
+    aula), les sessions en aules de fora de l'aulari que s'hi poden quedar (B3/0021, QC/1082) i, si no es
+    demana `inclou_practiques`, les sessions que avui són en un laboratori o aula d'informàtica (PAUL que hi
+    fan tota la docència i s'hi poden quedar). La xifra del 67-70 % de l'enunciat correspon a
+    inclou_practiques=True."""
     d = s[(s['tipus'] != 'PLAB') & ~s['doble']]
-    ok = d['tipus_aula'].isin(CLASSROOM_TYPES | {'sense aula'}) | d['aula_partida'].str.startswith('J/')
+    ok = d['tipus_aula'].isin(TIPUS_AULA | {'sense aula'}) | d['aula_partida'].str.startswith('J/')
     if inclou_practiques:
-        ok |= d['tipus_aula'].isin(PRACTICE_TYPES)
+        ok |= d['tipus_aula'].isin(TIPUS_PRACTIQUES)
     return d[ok].drop_duplicates('unitat')
 
 
-# ---------------------------------------------------------------------------------------- 1. occupancy
+# ------------------------------------------------------------------------------------------ 1. ocupació
 def ocupacio_aules(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
-    """Share of teaching weeks in which each room is busy, per weekday and hour slot (0-1).
+    """Proporció de setmanes lectives en què cada aula està ocupada, per dia i franja horària (0-1).
 
-    Rows = rooms of the building (sorted by type and capacity), columns = (day, slot)."""
+    Files = aules (ordenades per tipus i capacitat), columnes = (dia, franja)."""
     x = s[(s['smt'] == smt) & (s['aula_partida'] != '')]
     files = []
     for r in x.itertuples():
@@ -100,7 +101,7 @@ def ocupacio_aules(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
             if r.ini < f0 + 60 and r.fi > f0:
                 files.append((r.aula_partida, r.data, r.dia, f0))
     occ = pd.DataFrame(files, columns=['aula', 'data', 'dia', 'franja']).drop_duplicates()
-    # how many dates with classes each weekday has (the denominator)
+    # quantes dates amb classe té cada dia de la setmana (el denominador)
     dates = s[s['smt'] == smt].groupby('dia')['data'].nunique()
     t = occ.groupby(['aula', 'dia', 'franja']).size().unstack(['dia', 'franja'], fill_value=0)
     cols = pd.MultiIndex.from_product([DIES, FRANGES], names=['dia', 'franja'])
@@ -111,7 +112,7 @@ def ocupacio_aules(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
 
 
 def resum_aules(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
-    """Per room: average occupancy over the whole week (morning, afternoon, total) and capacity."""
+    """Per aula: ocupació mitjana de tota la setmana (matí, tarda i total) i capacitat."""
     o = ocupacio_aules(s, a, smt)
     mati = o.loc[:, [c for c in o.columns if c[1] < MATI_FI]].mean(axis=1)
     tarda = o.loc[:, [c for c in o.columns if c[1] >= MATI_FI]].mean(axis=1)
@@ -119,20 +120,21 @@ def resum_aules(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
     return r.join(a.set_index('aula')[['tipus', 'capacitat']], how='left').sort_values('ocup_total', ascending=False)
 
 
-# ------------------------------------------------------------------------------- 2. sessions without room
+# ---------------------------------------------------------------------------------- 2. sessions sense aula
 def sense_aula(s: pd.DataFrame, smt: int) -> pd.Series:
-    """Why sessions have no room: PLAB (department labs), double degree (no room needed) or really missing."""
+    """Per què hi ha sessions sense aula: PLAB (laboratori de departament), doble titulació (no en necessita)
+    o realment els en falta una."""
     x = s[(s['smt'] == smt) & (s['aula_partida'] == '')]
-    motiu = pd.Series('needs a room', index=x.index)
-    motiu[x['doble'] & (x['tipus'] != 'PLAB')] = 'double degree (no room needed)'
-    motiu[x['tipus'] == 'PLAB'] = 'PLAB (department lab, fixed)'
+    motiu = pd.Series('necessita aula', index=x.index)
+    motiu[x['doble'] & (x['tipus'] != 'PLAB')] = 'doble titulació (no en necessita)'
+    motiu[x['tipus'] == 'PLAB'] = 'PLAB (laboratori de departament, fixat)'
     return motiu.value_counts()
 
 
 def simultanies(s: pd.DataFrame, smt: int, filtre=None) -> pd.DataFrame:
-    """Number of classes needing a classroom at the same time, per date and hour slot.
+    """Nombre de classes que necessiten aula alhora, per data i franja horària.
 
-    Returns one row per (date, slot) with: total, with_room, without_room."""
+    Retorna una fila per (data, franja) amb: total, amb_aula, sense_aula."""
     d = demanda_aula(s[s['smt'] == smt])
     if filtre is not None:
         d = d[filtre(d)]
@@ -147,12 +149,12 @@ def simultanies(s: pd.DataFrame, smt: int, filtre=None) -> pd.DataFrame:
     return g
 
 
-# ------------------------------------------------------------------------------------- 3. wrong shift
+# ---------------------------------------------------------------------------------------- 3. fora de torn
 def fora_de_torn(s: pd.DataFrame, smt: int) -> pd.DataFrame:
-    """Sessions today in the shift that the new model does NOT give them, per degree and year.
+    """Sessions que avui són al torn que el model nou NO els dona, per titulació i curs.
 
-    A session of two cohorts counts once for each. 'movable' excludes fixed groups (R1 GEI/GEET 1r-2n and
-    PLAB), which cannot be moved and so are not the proposal's fault."""
+    Una sessió de dues cohorts compta un cop per a cadascuna. 'movibles' exclou els grups fixats (R1 GEI/GEET
+    de 1r i 2n i els PLAB), que no es poden moure i per tant no són responsabilitat de la proposta."""
     e = explode_cohorts(s[s['smt'] == smt])
     e['fora_torn_movible'] = e['fora_torn'] & (e['fixada'] == '')
     g = e.groupby(['titulacio', 'curs_c']).agg(
@@ -164,9 +166,9 @@ def fora_de_torn(s: pd.DataFrame, smt: int) -> pd.DataFrame:
     return g.reset_index().sort_values('fora_torn', ascending=False)
 
 
-# --------------------------------------------------------------------------------- 4. does the morning fit?
+# ---------------------------------------------------------------------------------------- 4. hi cap el matí?
 def setmanes_normals(s: pd.DataFrame, smt: int, paquet: Path = PAQUET) -> list[str]:
-    """Teaching weeks with 5 days of classes and no event in calendari.csv (holiday, stoppage, assessment)."""
+    """Setmanes lectives amb 5 dies de classe i cap esdeveniment a calendari.csv (festiu, aturada, avaluació)."""
     cal = pd.read_csv(paquet / 'calendari.csv')
     amb_event = set(pd.to_datetime(cal['data']).dt.strftime('%G-W%V'))
     x = s[s['smt'] == smt]
@@ -174,12 +176,11 @@ def setmanes_normals(s: pd.DataFrame, smt: int, paquet: Path = PAQUET) -> list[s
     return [w for w, n in dies.items() if n == 5 and w not in amb_event]
 
 
-
 def hores_aula_setmana(s: pd.DataFrame, smt: int, torn: str) -> pd.DataFrame:
-    """Room-hours per week that the sessions of a required shift ask for, against what the building offers.
+    """Hores-aula per setmana que demanen les sessions d'un torn requerit, davant de les que ofereix l'aulari.
 
-    Offer = (21 ordinary rooms - 2 reserve) x hours of the window x teaching days of that week.
-    Demand = sum of durations of the classes (one per physical class) whose torn_requerit is `torn`."""
+    Oferta = (21 aules ordinàries - 2 de reserva) x hores de la finestra x dies lectius de la setmana.
+    Demanda = suma de durades de les classes (una per classe física) amb torn_requerit = `torn`."""
     x = s[s['smt'] == smt]
     dies_lectius = x.groupby('setmana')['data'].nunique()
     d = demanda_aula(x)
@@ -197,32 +198,33 @@ def hores_aula_setmana(s: pd.DataFrame, smt: int, torn: str) -> pd.DataFrame:
 
 
 def mida_mati(s: pd.DataFrame, a: pd.DataFrame, smt: int, setmana: str) -> pd.DataFrame:
-    """Size check for one week: morning classes that need at least N seats vs rooms with at least N seats.
+    """Comprovació de mida per a una setmana: classes de matí que necessiten com a mínim N places davant de les
+    aules que tenen com a mínim N places.
 
-    For each room size N: room-hours demanded by morning-required classes with more than the next smaller
-    room's capacity, against (rooms >= N) x 6 h x days. If demand > offer for some N, the morning cannot fit
-    whatever the timetable (a counting argument). The 2 reserve rooms are taken from the smallest ones,
-    the most favourable case for big classes."""
+    Per a cada mida d'aula N: hores-aula que demanen les classes de matí amb més alumnes que la capacitat de
+    l'aula immediatament més petita, davant de (aules >= N) x 6 h x dies. Si per a alguna N la demanda superés
+    l'oferta, el matí no hi cabria fos quin fos l'horari (argument de recompte). Les 2 aules de reserva es
+    prenen de les més petites, el cas més favorable per a les classes grans."""
     x = s[(s['smt'] == smt) & (s['setmana'] == setmana)]
     dies = x['data'].nunique()
     d = demanda_aula(x)
     d = d[d['torn_requerit'] == 'mati']
     caps = sorted(a.loc[a['ordinaria'] == 1, 'capacitat'])
-    caps_disp = caps[RESERVA:]   # the 2 smallest rooms kept as reserve
+    caps_disp = caps[RESERVA:]   # les 2 aules més petites queden de reserva
     files = []
     for n in sorted(set(caps_disp)):
         aules = sum(1 for c in caps_disp if c >= n)
         menor = max([c for c in caps_disp if c < n], default=0)
         dem = d.loc[d['alumnes'] > menor, 'durada_min'].sum() / 60 if menor else d['durada_min'].sum() / 60
-        files.append({'seats_at_least': n, 'classes_with_more_than': menor, 'rooms_available': aules,
-                      'demand_h': round(dem, 1), 'offer_h': aules * 6 * dies,
-                      'use_pct': round(100 * dem / (aules * 6 * dies), 1)})
+        files.append({'places_minim': n, 'classes_de_mes_de': menor, 'aules_disponibles': aules,
+                      'demanda_h': round(dem, 1), 'oferta_h': aules * 6 * dies,
+                      'us_pct': round(100 * dem / (aules * 6 * dies), 1)})
     return pd.DataFrame(files)
 
 
-# ------------------------------------------------------------------------------------- 5. over capacity
+# --------------------------------------------------------------------------------------- 5. sobre aforament
 def sobre_aforament(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
-    """Groups with more students than seats in today's room (one physical class: students summed)."""
+    """Grups amb més alumnes que places a l'aula on són avui (classe física: alumnes sumats)."""
     cap = dict(zip(a['aula'], a['capacitat']))
     x = s[(s['smt'] == smt) & (s['aula_partida'].isin(cap)) & ~s['doble']]
     g = x.groupby(['unitat', 'aula_partida']).agg(

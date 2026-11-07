@@ -1,82 +1,89 @@
-# Level 1 · The five key findings
+# Nivell 1 · Les cinc troballes principals
 
-**Question:** how are the School's rooms used today, and does the new model fit
-(1st/2nd year in the morning; 3rd, 4th, double degrees and master's in the afternoon; 2 ordinary rooms always free)?
+**Pregunta:** com s'usen avui els espais de l'Escola, i hi cap el model nou (1r i 2n al matí; 3r, 4t, dobles
+titulacions i màsters a la tarda; sempre dues aules ordinàries lliures)?
 
-**Short answer:** **yes, the morning fits, but only if the peak hours are spread out.** The weekly total is not the
-problem (about 60 % of the morning room-hours); the problem is Tuesday and the 10:30-13:30 slots. Room size is not a
-bottleneck, and the afternoon is left with a lot of spare capacity.
+**Resposta curta:** **sí, el matí hi cap, però només si es reparteixen les hores punta.** El total setmanal no és el
+problema (al voltant del 60 % de les hores-aula de matí); el problema és el dimarts i les franges de 10.30 a 13.30.
+La mida de les aules no fa de coll d'ampolla, i la tarda es queda amb molta capacitat de sobres.
 
-All figures are for **semester 2** (the one level 2 works on) unless stated otherwise. They come from
-[`analisi.py`](analisi.py) and are drawn in [`nivell1.ipynb`](nivell1.ipynb), with the same conventions as the
-official verifier: semester by date, shift by start time (before 14:30 = morning), a shared session counted once,
-double-degree groups (`sense_espai = 1`) need no room, PLAB labs are fixed. "Usable rooms" = 21 ordinary classrooms
-minus the 2 that must stay free = **19**. "Normal week" = 5 teaching days and nothing in `calendari.csv`
-(11 of the 20 weeks).
-
----
-
-### 1. The data hides three quarters of the room demand: 74 % of sessions have no room
-
-- **5,722 of 7,739** semester-2 sessions have an empty `aula_partida`. Of those, **919 are PLAB** (department labs,
-  fixed, assigned by departments) and **262 are double-degree groups** (no room needed): **4,541 really need a room.**
-- Because of this, the ordinary classrooms *look* 23 % busy in the morning and 4 % in the afternoon in semester 2,
-  against 50 % and 27 % in semester 1. Rooms like Q2/1009 and Q2/1013 (90 seats) look almost unused.
-- **How:** `sense_aula()` classifies the empty-room sessions by `tipus` and `sense_espai`; `ocupacio_aules()` counts,
-  for each room and hour slot, the share of teaching weeks it is busy (heatmap, section 1 of the notebook).
-- **Why it matters:** any "this room is free" conclusion drawn from semester-2 room data is wrong. Real demand must be
-  counted from the sessions, not from the rooms (finding 3).
-
-### 2. 3,246 sessions are in the wrong shift; 2,008 can be moved, mainly 3rd and 4th year to the afternoon
-
-- **2,008 movable**: 1,774 must go to the afternoon, 234 to the morning. 248 of them are double-degree sessions taught
-  today together with a morning group: candidates for a declared exception.
-- By cohort (share of that cohort's sessions in the wrong shift): **GEI 3r 89 %, GEI 4t 92 %, GEST 3r 99 %,
-  GEET 3r 98 %, GEQ 3r 100 %** (to the afternoon); **GCIS 2n 100 %, GIA 1r 100 %, GIA 2n 100 %** (to the morning).
-- **1,238 are fixed** and can never comply: **600 GEI 1r/2n class sessions** ("not touched"; 573 of them in the
-  afternoon, plus 27 double-degree sessions in the morning) and **638 fixed PLAB labs** in the other shift
-  (349 GEI 3r/4t labs in the morning; 148 GEI 1r/2n and 94 GIA 1r/2n labs in the afternoon; 47 GEET/GEST).
-  The verifier calls them inherited, but they are real exceptions to rule 1 that the Junta should know about.
-- **How:** `fora_torn` = start time on the wrong side of 14:30 compared with `torn_requerit`; `fora_de_torn()` splits it
-  per degree and year (a session shared by two cohorts counts for both); movable = `fixada` empty. The 2,008 total
-  matches the verifier's R1-TORN count.
-
-### 3. The morning fits on paper: the new model needs ~60 % of the morning room-hours
-
-- In normal weeks, 1st and 2nd year need **59-64 % of the morning room-hours** of the 19 usable rooms
-  (19 rooms x 6 h x 5 days = 570 room-hours/week), up from 47-52 % with only the classes already in the morning.
-  With the statement's definition (also counting classes in computer rooms) it is 64-70 %, matching the 67-70 % quoted.
-- That is **12.2 classes at once on average** against the limit of 19 (week 2027-W06).
-- Each student subgroup has **at most 20 h** of class a week against the 30 morning hours: the student timetables
-  are not the limit either.
-- The afternoon (3rd, 4th, master's) is left at **35-40 %**: plenty of spare room.
-- **How:** `hores_aula_setmana()` adds up the durations of the classes that need a classroom (one per physical class;
-  no PLAB, no double degrees, not the ones that can stay in a lab or computer room) per week, and divides by the offer.
-
-### 4. The real limit is the peak: Tuesday and 10:30-13:30 are already at 15 of 19
-
-- With today's hours, the 1st/2nd-year classes already in the morning reach **15 at once** (Tuesday 10:30). Keeping
-  today's weekdays, Tuesday would average **14.5 classes at once** over the whole morning, against 10.8 on Wednesday.
-- Even today's timetable (all shifts) needs **more than 19 classrooms in 23 of 894** semester-2 hour slots (up to 21,
-  at Tue 10:30 and 16:30): small groups already have to go to seminars.
-- **Implication for 5.2:** the classes that come to the morning must go to the quiet days and hours (Wednesday,
-  Friday, 8:30), not to the slots they would naturally take.
-- **How:** `simultanies()` counts, for each date and hour slot, the classes that need a classroom at the same time
-  (with the verifier's overlap rule), then takes the maximum per slot.
-
-### 5. Room size is not a bottleneck; only 2 movable groups are over capacity today
-
-- Counting check for a normal week: for every room size N, the morning classes that need at least N seats use at most
-  **33 %** of the room-hours of the rooms with at least N seats (2 reserve rooms taken from the smallest). Classes of
-  more than 117 students need 2 room-hours a week out of the 90 offered by the three 130-160 rooms.
-- **101 sessions (6 groups)** have more students than seats in today's room, but **58 are fixed** GEI PAUL groups only
-  1-2 students over a 48-50 seat room (inherited). The **43 movable** ones are two groups, both easy to fix:
-  - **Física TE/21 (GEQ 1r): 125 students in Q4/0011 (117 seats)** -> Q1/1011 (160), Q3/1007 or Q3/1011 (130).
-  - **Sistemes i Tecnologies Web TE/450 (GEI 3r/4t): 103 in Q3/0003 (100)** -> any 117+ room.
-- **How:** `mida_mati()` (demand vs offer by size class) and `sobre_aforament()` (students of a physical class summed
-  and compared with the capacity in `aules.csv`; the 43 and 58 match the verifier's R3-AFORAMENT counts).
+Totes les xifres són del **2n semestre** (el del nivell 2) si no es diu el contrari. Surten de
+[`analisi.py`](analisi.py) i es dibuixen a [`nivell1.ipynb`](nivell1.ipynb), amb les mateixes convencions que el
+verificador oficial: semestre per data, torn per hora d'inici (abans de les 14.30 = matí), una sessió compartida
+compta un cop, els grups de doble titulació (`sense_espai = 1`) no necessiten aula i els PLAB estan fixats.
+«Aules disponibles» = 21 aules ordinàries menys les 2 que han de quedar lliures = **19**. «Setmana normal» = 5 dies
+lectius i cap esdeveniment a `calendari.csv` (11 de les 20 setmanes).
 
 ---
 
-**Not done:** the "plan vs reality" comparison with `validacio/`: the real-occupancy CSV is not in the package we
-received (only its README).
+### 1. Les dades amaguen tres quartes parts de la demanda d'aules: el 74 % de les sessions no tenen aula
+
+- **5.722 de les 7.739** sessions del 2n semestre tenen `aula_partida` buida. D'aquestes, **919 són PLAB**
+  (laboratoris de departament, fixats, que assignen els departaments) i **262 són grups de doble titulació** (no
+  necessiten aula): **4.541 necessiten aula de veritat.**
+- Per això, al 2n semestre les aules ordinàries *semblen* ocupades un 23 % al matí i un 4 % a la tarda, davant del
+  50 % i el 27 % del 1r semestre. Aules com Q2/1009 i Q2/1013 (90 places) semblen gairebé sense ús.
+- **Com:** `sense_aula()` classifica les sessions sense aula per `tipus` i `sense_espai`; `ocupacio_aules()` compta,
+  per a cada aula i franja, la proporció de setmanes lectives en què està ocupada (mapa de calor, apartat 1 del
+  quadern).
+- **Per què importa:** qualsevol conclusió del tipus «aquesta aula és lliure» treta de les aules del 2n semestre és
+  falsa. La demanda real s'ha de comptar des de les sessions, no des de les aules (troballa 3).
+
+### 2. 3.246 sessions són fora de torn; se'n poden moure 2.008, sobretot de 3r i 4t cap a la tarda
+
+- **2.008 movibles**: 1.774 han d'anar a la tarda i 234 al matí. 248 d'aquestes són sessions de doble titulació que
+  avui es fan juntament amb un grup de matí: candidates a una excepció declarada.
+- Per cohort (proporció de les sessions de la cohort que són fora de torn): **GEI 3r 89 %, GEI 4t 92 %, GEST 3r 99 %,
+  GEET 3r 98 %, GEQ 3r 100 %** (cap a la tarda); **GCIS 2n 100 %, GIA 1r 100 %, GIA 2n 100 %** (cap al matí).
+- **1.238 són fixades** i no podran complir mai: **600 sessions de classe de GEI 1r i 2n** («no es toquen»; 573 a la
+  tarda, més 27 de doble titulació al matí) i **638 laboratoris PLAB fixats** a l'altre torn (349 de GEI 3r i 4t al
+  matí; 148 de GEI 1r i 2n i 94 de GIA 1r i 2n a la tarda; 47 de GEET/GEST). El verificador les marca com a heretades,
+  però són excepcions reals a la regla 1 que la Junta ha de conèixer.
+- **Com:** `fora_torn` = hora d'inici a l'altra banda de les 14.30 respecte de `torn_requerit`; `fora_de_torn()` ho
+  reparteix per titulació i curs (una sessió compartida per dues cohorts compta per a totes dues); movible = `fixada`
+  buit. El total de 2.008 coincideix amb el recompte R1-TORN del verificador.
+
+### 3. Sobre el paper el matí hi cap: el model nou necessita ~60 % de les hores-aula de matí
+
+- A les setmanes normals, 1r i 2n necessiten el **59-64 % de les hores-aula de matí** de les 19 aules disponibles
+  (19 aules × 6 h × 5 dies = 570 hores-aula per setmana), quan avui, només amb les classes que ja són al matí, és el
+  47-52 %. Amb la definició de l'enunciat (comptant també les classes que es fan en aules d'informàtica) és el
+  64-70 %, en línia amb el 67-70 % que s'hi cita.
+- Això són **12,2 classes alhora de mitjana** davant del límit de 19 (setmana 2027-W06).
+- Cada subgrup d'alumnes té **com a molt 20 h** de classe a la setmana davant de les 30 hores de matí: els horaris
+  dels alumnes tampoc no són el límit.
+- La tarda (3r, 4t i màsters) es queda al **35-40 %**: molt d'espai de sobres.
+- **Com:** `hores_aula_setmana()` suma les durades de les classes que necessiten aula (una per classe física; sense
+  PLAB, sense dobles titulacions i sense les que es poden quedar en un laboratori o aula d'informàtica) per setmana,
+  i les divideix per l'oferta.
+
+### 4. El límit real és el pic: el dimarts i la franja de 10.30 a 13.30 ja són a 15 de 19
+
+- Amb les hores d'avui, les classes de 1r i 2n que ja són al matí arriben a **15 alhora** (dimarts a les 10.30).
+  Mantenint els dies d'avui, el dimarts faria de mitjana **14,5 classes alhora** durant tot el matí, davant de les
+  10,8 del dimecres.
+- Fins i tot l'horari d'avui (tots els torns) necessita **més de 19 aules en 23 de les 894** franges del 2n semestre
+  (fins a 21, dimarts a les 10.30 i a les 16.30): els grups petits ja han d'anar a seminaris.
+- **Implicació per al 5.2:** les classes que passen al matí han d'anar als dies i les hores més tranquils (dimecres,
+  divendres, 8.30), no a les franges que agafarien de manera natural.
+- **Com:** `simultanies()` compta, per a cada data i franja, les classes que necessiten aula alhora (amb la regla de
+  solapament del verificador) i en pren el màxim per franja.
+
+### 5. La mida de les aules no és un coll d'ampolla; avui només hi ha 2 grups movibles per sobre de l'aforament
+
+- Comprovació de recompte en una setmana normal: per a cada mida d'aula N, les classes de matí que necessiten com a
+  mínim N places fan servir com a molt el **33 %** de les hores-aula de les aules amb N places o més (les 2 de reserva,
+  preses de les més petites). Les classes de més de 117 alumnes necessiten 2 hores-aula a la setmana de les 90 que
+  ofereixen les tres aules de 130-160 places.
+- **101 sessions (6 grups)** tenen més alumnes que places a l'aula d'avui, però **58 són de grups PAUL fixats** de GEI
+  que només passen d'1 o 2 alumnes una aula de 48-50 places (heretades). Les **43 movibles** són de dos grups, tots
+  dos fàcils de resoldre:
+  - **Física TE/21 (GEQ 1r): 125 alumnes a Q4/0011 (117 places)** → Q1/1011 (160), Q3/1007 o Q3/1011 (130).
+  - **Sistemes i Tecnologies Web TE/450 (GEI 3r i 4t): 103 a Q3/0003 (100)** → qualsevol aula de 117 places o més.
+- **Com:** `mida_mati()` (demanda i oferta per mida) i `sobre_aforament()` (alumnes d'una classe física sumats i
+  comparats amb la capacitat d'`aules.csv`; els 43 i 58 coincideixen amb els recomptes R3-AFORAMENT del verificador).
+
+---
+
+**No fet:** la comparació «pla contra realitat» amb `validacio/`: el CSV d'ocupació real no és al paquet que hem
+rebut (només n'hi ha el LLEGIU-ME).
