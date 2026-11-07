@@ -1,0 +1,36 @@
+/* Estil del xat web (nivell3/web.py). Es carrega amb xat.vistes.carrega_estils().
+   Amaga l'animació esportiva de Streamlit (el ninot que corre/pedala/neda mentre l'script s'executa), el botó
+   Deploy, el menú i el peu, i dona un aspecte més net al xat. */
+
+/* Elements de Streamlit que s'amaguen */
+[data-testid="stStatusWidget"],
+[data-testid="stAppDeployButton"],
+[data-testid="stDecoration"],
+#MainMenu,
+footer {
+    display: none !important;
+}
+
+/* Pàgina i capçalera */
+.block-container { max-width: 980px; padding-top: 2rem; }
+h1 { font-size: 1.7rem !important; font-weight: 700; letter-spacing: -0.01em; }
+.subtitol { color: #5b6675; margin: -0.6rem 0 1.2rem 0; font-size: 0.98rem; }
+
+/* Missatges del xat */
+[data-testid="stChatMessage"] {
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.6rem;
+    border: 1px solid #e3e9f2;
+}
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { background: #eef4ff; border-color: #d4e3ff; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) { background: #ffffff; }
+[data-testid="stChatInput"] { border-radius: 14px; }
+
+/* Botons */
+.stButton > button { border-radius: 10px; }
+[data-testid="stSidebar"] .stButton > button { text-align: left; justify-content: flex-start; border-radius: 10px; }
+
+/* Pantalla inicial (xat buit) */
+.targeta-buida { text-align: center; padding: 1.5rem 0 0.5rem 0; color: #5b6675; }
+.targeta-buida .gran { font-size: 2.4rem; }
