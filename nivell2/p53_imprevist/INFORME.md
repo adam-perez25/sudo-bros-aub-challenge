@@ -22,15 +22,31 @@ màster RICSE, que les regles diuen que no es toquen. Però una aula tancada no 
 aquestes 10 sessions s'han de canviar d'aula per força. Les declarem com a relaxació de R1-FIXADA (8) i R7-PLAB (2),
 amb la justificació, i **només en canviem l'aula**: el dia i l'hora es mantenen.
 
-## Resultats
+## Resultat sobre la nostra proposta del 5.2
 
-> **Pendent:** les xifres finals s'obtindran en executar l'eina sobre la proposta definitiva del 5.2
-> (`lliuraments/proposta-torns.csv`). Mentrestant, l'eina s'ha provat sobre dues propostes:
+Fitxers: `lliuraments/proposta-imprevist.csv`, `relaxacions-imprevist.csv` (les del 5.2 + les 10 d'aquest
+apartat), `informe-imprevist.json` i `violacions-imprevist.csv`. Comprovat amb l'ordre del jurat (`--escenari
+contingencies --referencia proposta-torns.csv`):
 
-| Proposta d'entrada | Imprevistos abans → després | Incompliments nous | Canvis de franja | Canvis d'aula |
-|---|---|---|---|---|
-| Horari d'avui (`proposta_partida.csv`) | 42 → 0 | 0 | 1 | 41 |
-| Horari amb totes les aules assignades (prova de densitat) | 57 → 0 | 0 | 1 | 56 |
+| | |
+|---|---|
+| **Veredicte** | **VALIDA AMB RELAXACIONS DECLARADES**, cap incompliment que compti |
+| Imprevistos (R3-TANCADA, R3-AFORAMENT del grup, R5-RECUPERACIO) | 58 → **0** |
+| Incompliments nous introduïts per la reparació | **0** |
+| Canvis respecte del 5.2 | **1 franja** (la sessió recuperada) i **57 aules** |
+| Relaxacions noves d'aquest apartat | 10: R1-FIXADA (8) i R7-PLAB (2), les sessions fixades que eren a les aules tancades |
 
-En tots dos casos el nombre de canvis és el mínim possible: cada canvi d'aula és d'una sessió que era en una aula
-tancada o en què el grup ja no hi cabia, i l'únic canvi de franja és la sessió cancel·lada, que s'havia de recuperar.
+Què ha passat amb cada imprevist:
+
+- **Q3/0013 (15-19/3) i Q1/1003 (10/3):** 26 classes canvien d'aula al mateix dia i hora, a una aula lliure del tipus i la mida
+  que toca, del mateix passadís quan n'hi ha cap de lliure (Q1/1007, Q1/1011, Q3/0003, Q3/0009, Q3/0011, Q4/1005, QC/0019, QC/3115.2, QC/3115.4).
+- **TE/21 de Transmissió de Calor (130 alumnes):** les seves 31 sessions passen totes de Q4/0007 (117 places) a
+  **Q3/1011** (130), sempre la mateixa aula.
+- **S11527:** es recupera el **dimarts 9 de març de 10.30 a 12.30 a Q3/1007** (130 places), l'endemà de la
+  cancel·lació, amb l'alumnat i els docents lliures.
+
+El nombre de canvis és el mínim possible: cada canvi d'aula és d'una sessió que era en una aula tancada o on el grup
+ja no hi cabia, i l'únic canvi de franja és la sessió cancel·lada, que s'havia de recuperar.
+
+Abans de tenir el 5.2, l'eina es va provar sobre l'horari d'avui (42 → 0 imprevistos, 0 incompliments nous) i sobre
+un horari amb totes les aules plenes (57 → 0, 0 nous).

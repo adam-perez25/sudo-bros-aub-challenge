@@ -26,15 +26,25 @@ Ho fa l'eina [`grau_nou.py`](grau_nou.py), sobre la nostra proposta del 5.2 i se
   lliures** (1 per a la teoria i les 2 de reserva). Al nivell 1 hem vist que el model nou ocupa de mitjana unes 12
   de les 19 aules disponibles al matí: el marge hi és.
 
-## Resultats
+## Resultat sobre la nostra proposta del 5.2
 
-> **Pendent:** les xifres finals s'obtindran en executar l'eina sobre la proposta definitiva del 5.2
-> (`lliuraments/proposta-torns.csv`). Mentrestant, l'eina s'ha provat sobre dues propostes:
+Fitxers: `lliuraments/proposta-grau-nou.csv`, `informe-grau-nou.json` i `violacions-grau-nou.csv`. Comprovat amb
+l'ordre del jurat (`--escenari grau-nou-40`, amb les relaxacions del 5.2):
 
-| Proposta de partida | Sessions col·locades | Mogudes de franja | Incompliments de les noves | Incompliments nous a la resta | Aules ordinàries lliures a la pitjor franja de matí |
-|---|---|---|---|---|---|
-| Horari d'avui (`proposta_partida.csv`, l'alternativa que dona l'enunciat) | 235 de 235 | 0 | 0 | 0 | 12 |
-| Horari d'avui amb totes les aules assignades (prova de densitat) | 235 de 235 | 0 | 0 | 0 | 4 abans → 3 després (la regla en demana 2) |
+| | |
+|---|---|
+| **Veredicte** | **VALIDA AMB RELAXACIONS DECLARADES**: les mateixes 460 del 5.2, **cap de nova** per al grau nou |
+| Sessions del grau nou col·locades | **235 de 235**, totes al dia i a l'hora que porten (0 mogudes) |
+| Sessions dels graus actuals que canvien | **0** |
+| Incompliments de les sessions noves / nous a la resta | **0 / 0** |
+| Aules ordinàries lliures a la franja de matí més plena | 7 abans → **6 després** (la regla 8 en demana 2) |
+
+Cada una de les 4 teories setmanals (40 alumnes) té la seva aula fixa tot el semestre, de 48 a 63 places (Q3/0009,
+Q2/1005, Q4/1003 i Q4/1005), i els PAUL van sobretot a seminaris (QC/3115.x) i aules petites. Per això, a la franja
+de matí més plena el grau nou només ocupa una aula ordinària més.
+
+Abans de tenir el 5.2, l'eina es va provar sobre l'horari d'avui (235 de 235, 0 incompliments) i sobre un horari amb
+totes les aules plenes (235 de 235, 0 incompliments, 3 aules ordinàries lliures a la pitjor franja).
 
 **Quant n'hi cabria?** Prova d'estrès sobre l'horari amb totes les aules assignades, afegint-hi còpies del grau nou
 (cohorts i docents diferents): **hi caben fins a 10 graus com aquest** (2.350 sessions) sense cap incompliment; amb

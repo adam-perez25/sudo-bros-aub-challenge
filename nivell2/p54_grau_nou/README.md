@@ -1,6 +1,6 @@
 # 5.4 · A new 40-student degree: does it fit?
 
-Owner: Claude (with Adam) · Branch: `nivell2/p54-grau-nou` · Weight 10 % · **Tool ready; final run waits for 5.2**
+Owner: Claude (with Adam) · Branch: `nivell2/p54-grau-nou` · Weight 10 % · **Done: final files in `lliuraments/` (see INFORME.md)**
 
 The fictional degree (`paquet/escenaris/grau-nou-40/`) has 235 semester-2 sessions, all in the morning, no room:
 54 theory classes (TE/91, 40 students) and 181 PAUL (14-20 students). Its teachers (N…) and cohort (`GNOU:1r`) are
