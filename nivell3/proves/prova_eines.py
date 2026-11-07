@@ -72,6 +72,57 @@ comprova('12. proposa el codi semblant Q2/1009', r.get('aules_semblants', [''])[
 r = E.aules_lliures(aula='Q1/1003', hora_inici='10:30', data='2027-02-02')
 comprova('13. Q1/1003 el 2/2 a les 10.30 ocupada per S09923', r['n_lliures'] == 0 and r['fonts'] == ['S09923'], r['fonts'])
 
+# --- eines d'ús quotidià (comparades amb pandas directament, sense el codi de les eines)
+import agent as A  # noqa: E402
+
+h2 = E.d.horari[E.d.horari['semestre'] == 2]
+x = h2[(h2['data_nova'].astype(str) == '2027-02-02') & (h2['ini_min'] < 720) & (h2['fi_min'] > 660)]
+r = E.ocupacio('11:00', data='2027-02-02')
+comprova('14. ocupacio dimarts 2/2 a les 11: mateix nombre de sessions que pandas', r['sessions'] == len(x) > 0, r.get('sessions'))
+r = E.ocupacio('11:00', data='2026-11-10')
+comprova('14. ocupacio fora del semestre: ho diu', r['trobat'] is False and 'fora del 2n semestre' in r['avis'])
+r = E.ocupacio('11:00', dia='M', tipus_sessio='PLAB')
+comprova('14. ocupacio per dia de la setmana: patró setmanal', r['trobat'] and 'setmanal' in r)
+
+r = E.horari_docent('D380', data='2027-04-09')
+comprova('15. docent D380 el 9/4: 3 classes', r['sessions'] == 3 and r['fonts'] == ['S04496', 'S04511', 'S04526'], r.get('fonts'))
+comprova('15. docent inexistent: ho diu', E.horari_docent('D99999')['trobat'] is False)
+
+r = E.cerca_assignatura('Grafs')
+comprova('16. cerca assignatura: Grafs -> 104349', r['trobat'] and r['assignatures'][0]['codi'] == '104349')
+comprova('16. assignatura inexistent: ho diu', E.cerca_assignatura('Quimica quantica')['trobat'] is False)
+
+r = E.info_aules(places_min=150)
+comprova('17. aules de 150+ places: només Q1/1011', [a['aula'] for a in r['aules']] == ['Q1/1011'], r.get('aules'))
+
+r = E.reserva_aules()
+comprova('18. reserva de 2 aules: es compleix tot el semestre', r['compleix_regla_8'] and r['dates_comprovades'] == 83, r)
+
+r = E.sessions_canviades(cohort='GEI:3r')
+canv = h2[h2['titulacions_curs'].str.contains('GEI:3r', regex=False) & ((h2['dia'] != h2['dia_nou']) | (h2['h_ini'] != h2['h_ini_nou']))]
+comprova('19. sessions canviades de GEI:3r: mateix nombre que pandas', r['canviades'] == len(canv) > 0, (r.get('canviades'), len(canv)))
+
+r = E.calendari_info('2027-03-26')
+comprova('20. calendari: 26/3 és festiu (Divendres Sant)', 'Divendres Sant' in r['consulta']['avis'], r['consulta'])
+
+r = E.aturada('2027-03-09', '11:00')
+y = h2[(h2['data_nova'].astype(str) == '2027-03-09') & (h2['ini_min'] >= 660) & (h2['sense_espai'] != '1')]
+comprova('21. aturada 9/3 des de les 11: sessions que comencen a partir de les 11', r['sessions_afectades'] == len(y) > 0,
+         r.get('sessions_afectades'))
+comprova('21. aturada fora del semestre: error clar', 'fora del 2n semestre' in E.aturada('2026-11-10', '11:00')['error'])
+a = E.esborrany_avis(r['canvis'], 'aturada general')
+comprova("21. avís d'aturada: esborrany no enviat, diu «cancel·lada»",
+         a['enviat'] is False and len(a['registre']) == r['sessions_afectades'] and 'cancel·lada' in a['registre'][0]['a'])
+
+ag = A.Agent(cridar=lambda m, e: {'content': ''})
+res = ag.executa('aturada', {'data': '2027-03-09', 'h_ini': '11:00'})
+comprova("22. l'agent no reenvia al LLM la llista completa de l'aturada, però la guarda per a l'avís",
+         'canvis' not in res and ag.ultim_imprevist and len(ag.ultim_imprevist['canvis']) == r['sessions_afectades'])
+comprova('22. eina inexistent: error net (no cau)', 'error' in ag.executa('envia_correu', {'a': 'x'}))
+comprova("23. ajuda: diu què no pot fer (enviar, canviar l'horari oficial)",
+         any('Enviar' in t for t in E.ajuda()['no_pot_fer']) and any('oficial' in t for t in E.ajuda()['no_pot_fer']))
+comprova('23. el prompt inclou la regla de «cap eina encaixa»', 'CAP EINA NO ENCAIXA' in A.prompts.SISTEMA)
+
 comprova('SQL: no deixa modificar dades', 'error' in E.consulta_sql('DELETE FROM aules'))
 comprova('SQL: no deixa llegir fitxers', 'error' in E.consulta_sql("SELECT * FROM read_csv('requirements.txt')"))
 

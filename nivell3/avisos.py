@@ -12,9 +12,11 @@ NOM_DIA = {'L': 'dilluns', 'M': 'dimarts', 'X': 'dimecres', 'J': 'dijous', 'V': 
 
 
 def _franja(c: dict) -> str:
-    """'dimarts 09/03/2027 de 10:30 a 12:30 a Q3/1007'"""
+    """'dimarts 09/03/2027 de 10:30 a 12:30 a Q3/1007' (o '... — cancel·lada' si la sessió es cancel·la)"""
     d = dt.date.fromisoformat(c['data'])
     dia = NOM_DIA.get('LMXJV'[d.weekday()] if d.weekday() < 5 else '', '')
+    if c.get('cancellada'):
+        return f"{dia} {d.strftime('%d/%m/%Y')} de {c['h_ini']} a {c['h_fi']}: cancel·lada"
     return f"{dia} {d.strftime('%d/%m/%Y')} de {c['h_ini']} a {c['h_fi']} a {c['aula'] or '(sense aula)'}"
 
 

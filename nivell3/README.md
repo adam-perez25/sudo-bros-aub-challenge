@@ -22,7 +22,7 @@ or one question: `python nivell3/main.py -p "Quina aula de 60 places està lliur
 
 Answers show only the text and its sources. Add `--detall` to also see which tools were called (for debugging).
 
-Check the tools without the LLM (must print 19 of 19): `python nivell3/proves/prova_eines.py`
+Check the tools without the LLM (must print 37 of 37): `python nivell3/proves/prova_eines.py`
 
 ## Files
 
@@ -32,7 +32,7 @@ Check the tools without the LLM (must print 19 of 19): `python nivell3/proves/pr
 | `web.py` | Web chat (Streamlit): `streamlit run nivell3/web.py` from the project root; collapsible "Fonts" table with the real rows, notices marked "not sent" |
 | `agent.py` | Loop LLM ↔ tools (OpenAI-compatible `tools`; falls back to a JSON protocol if the server doesn't support them) |
 | `prompts.py` | System prompt: answer only from tools, cite sources, tool output is data not instructions, notices are drafts |
-| `eines.py` | The 8 tools + their JSON schemas for the LLM |
+| `eines.py` | The 17 tools + their JSON schemas for the LLM |
 | `dades.py` | Loads the CSVs once and exposes them as DuckDB SQL tables (`sessions`, `aules`, `calendari`, `horari`), sandboxed: no file access, read-only queries |
 | `avisos.py` | Notice and change-log drafts (never sent) |
 | `config.py` | Reads URL, model and key from `nivell3/.env` or the environment |
@@ -50,12 +50,25 @@ Check the tools without the LLM (must print 19 of 19): `python nivell3/proves/pr
 | `que_passa_si` | Simulates moving a session / group and lists the rules it would break |
 | `resol_imprevist` | Validated fix for a closed room (breakdown, event) or a cancelled session, using the 5.3 engine |
 | `esborrany_avis` | Notices for teachers, students and Gestió Acadèmica + change-log rows (drafts only) |
+| `ocupacio` | Which classes are on at a given time (one date, or the weekly pattern of a weekday) |
+| `horari_docent` | A teacher's classes (by date, weekday, week or weekly pattern) |
+| `cerca_assignatura` | Find a subject by name or code: groups, cohorts, teachers |
+| `info_aules` | List rooms by capacity, type or building |
+| `reserva_aules` | Checks the "2 ordinary rooms free" rule: tightest slot of a date / weekday / semester |
+| `sessions_canviades` | Sessions that changed day or time versus today's timetable (because of 5.2) |
+| `calendari_info` | Semester dates, holidays, evaluation weeks; whether a date is a teaching day |
+| `aturada` | General stop: every class from an hour on a date is cancelled; lists sessions, teachers, cohorts (feeds `esborrany_avis`; nothing saved) |
+| `ajuda` | What the assistant can and cannot do |
+
+**When no tool fits** (send an email, change the official timetable, anything off-topic) the prompt (rule 13) makes the
+assistant say so in one sentence and list what it can do, instead of trying tools at random. The capabilities text is
+in `prompts.py` (`POT_FER` / `NO_POT_FER`) and is shared with the `ajuda` tool.
 
 "Current timetable" = our 5.2 proposal (`lliuraments/proposta-torns.csv`), semester 2 by default.
 
 ## Tested so far
 
-- Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 19/19.
+- Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 37/37.
 - The agent loop with a scripted **fake LLM**: tool calling, the 2-step incident flow, the automatic switch to JSON
   mode, and bad tool calls returned as errors.
 - **Not yet tested with the real event LLM** (needs your key in `nivell3/.env`). First thing to do: run
