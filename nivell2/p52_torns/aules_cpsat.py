@@ -22,10 +22,13 @@ from ortools.sat.python import cp_model
 from horaris.check import FRANGES, RESERVA_MIN, _espai_ok, passadis
 from horaris.model import MATI, a_traslladar
 
-PES_PARELLA = 10      # un canvi d'aula (o de passadís) entre classes consecutives
-PES_ORIGEN = 10       # una classe que deixa l'aula d'avui
-PES_TE_BASE = 3
-RESTRINGEIX_TE = True   # la teoria només usa aules que el seu grup ja usa: l'indicador d'aules extra no pot créixer
+import os
+
+# Pesos ajustables per entorn (per fer experiments sense tocar el codi); els valors per defecte són els de sempre.
+PES_PARELLA = int(os.environ.get('CPSAT_PES_PARELLA', 10))   # un canvi d'aula (o de passadís) entre classes consecutives
+PES_ORIGEN = int(os.environ.get('CPSAT_PES_ORIGEN', 10))     # una classe que deixa l'aula d'avui
+PES_TE_BASE = int(os.environ.get('CPSAT_PES_TE_BASE', 3))
+RESTRINGEIX_TE = os.environ.get('CPSAT_RESTRINGEIX_TE', '1') == '1'   # la teoria només usa aules que el seu grup ja usa: l'indicador d'aules extra no pot créixer
 
 
 def _parelles_dia(h, data: dt.date) -> dict[tuple[str, str], int]:
@@ -52,8 +55,10 @@ def _parelles_dia(h, data: dt.date) -> dict[tuple[str, str], int]:
     return out
 
 
-def reassigna_aules(h, lliures: set[str], log: list, temps_dia: float = 10.0, rondes: int = 2,
+def reassigna_aules(h, lliures: set[str], log: list, temps_dia: float | None = None, rondes: int | None = None,
                     workers: int = 8) -> int:
+    temps_dia = temps_dia if temps_dia is not None else float(os.environ.get('CPSAT_TEMPS_DIA', 10.0))
+    rondes = rondes if rondes is not None else int(os.environ.get('CPSAT_RONDES', 2))
     b = h.base
     ordinaries = set(h.ordinaries)
     canvis_tot = 0
