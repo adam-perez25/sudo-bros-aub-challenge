@@ -18,3 +18,9 @@ is not a bottleneck. Day can change but not the ISO week; avoid holidays (`calen
 **Check:** `python -m horaris check ../lliuraments/proposta-torns.csv --semestre 2`.
 
 Run the check from inside `repte-horaris-escola/` with the `.venv` active.
+
+**Watch out (found while testing 5.3):** 458 fixed GEI 1st/2nd-year sessions are in the wrong shift **and have no
+room** today. While they have no room the verifier calls their R1-TORN error inherited; as soon as you give them a
+room (R5 requires it) the R1-TORN starts to count, and they can't move (R1-FIXADA). So 5.2 will need to declare those
+458 sessions as an R1-TORN relaxation ("fixed group that the School keeps in its current shift").
+For 5.3: the repair tool needs a free 130+ room for TE/21 of 106047 at all its times.

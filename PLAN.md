@@ -13,7 +13,7 @@ First time here? Do [SETUP.md](SETUP.md) first (clone, data from SharePoint, `.v
 | L1 | Data analysis: how rooms are used, does the new model fit? | 25 % | `nivell1/` | ✅ Done | Adam |
 | 5.1 | Assign rooms without moving any time | 5 % | `nivell2/p51_aules/` | ⬜ To do | _?_ |
 | 5.2 | New shifts (1st/2nd morning, 3rd/4th afternoon) + board summary | 25 % | `nivell2/p52_torns/` | ⬜ To do | _?_ |
-| 5.3 | Incidents: closed room, bigger group, broken projector, cancelled session | 10 % | `nivell2/p53_imprevist/` | ⬜ To do | _?_ |
+| 5.3 | Incidents: closed room, bigger group, broken projector, cancelled session | 10 % | `nivell2/p53_imprevist/` | 🟡 Tool ready, final run waits for 5.2 | Adam (+ Claude) |
 | 5.4 | New 40-student degree: does it fit? | 10 % | `nivell2/p54_grau_nou/` | ⬜ To do | _?_ |
 | L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ⬜ To do | _?_ |
 | — | Weekly grid per room (one, from the most advanced proposal) | in 5.x | `lliuraments/` | ⬜ To do | _?_ |
