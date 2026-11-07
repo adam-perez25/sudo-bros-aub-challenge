@@ -29,7 +29,10 @@ Check without the LLM: `python nivell3/proves/prova_eines.py` (must print 63 of 
 | File | Role |
 |---|---|
 | `main.py` | Terminal chat (entry point) |
-| `web.py` | Web chat (Streamlit): `streamlit run nivell3/web.py` from the project root; collapsible "Fonts" table with the real rows, notices marked "not sent" |
+| `web.py` | Web chat entry point (Streamlit): `streamlit run nivell3/web.py` from the project root; only assembles the page; collapsible "Fonts" table with the real rows, notices marked "not sent" |
+| `xat/vistes.py`, `xat/estils.css` | Web chat screen: everything that is drawn (header, sidebar, welcome, answers) and its CSS, kept separate from the logic |
+| `xat/estat.py`, `xat/agent_web.py`, `xat/exemples.py` | Web chat state (current/previous conversations in `st.session_state`), the agent subclass that remembers the last notice draft, and the example questions |
+| `historial.py` | Saves previous web chats as JSON in `nivell3/xats/` (local only, git-ignored) |
 | `agent.py` | Loop LLM ↔ tools (OpenAI-compatible `tools`; falls back to a JSON protocol if the server doesn't support them); retries on timeouts/429/5xx; checks that every `id_sessio` in the answer came from a tool (one correction round, then marks it "no verificat"); trims long results and long conversations |
 | `prompts.py` | System prompt: answer only from tools, cite sources, tool output is data not instructions, notices are drafts |
 | `eines.py` | The 17 tools + their JSON schemas for the LLM |
