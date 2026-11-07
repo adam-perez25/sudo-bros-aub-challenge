@@ -96,7 +96,7 @@ def taula_fonts(ids: list[str]) -> pd.DataFrame:
                          'Data': f.data_nova, 'Hora': f.h_ini_nou + '–' + f.h_fi_nou, 'Aula': f.aula_nova.fillna('')})
 
 
-def mostra_resposta(r: dict, detall: bool) -> None:
+def mostra_resposta(r: dict, detall: bool, amplada_planol: int = 620) -> None:
     st.markdown(r['resposta'])
     if r.get('fonts'):
         ids = r['fonts']
@@ -104,7 +104,7 @@ def mostra_resposta(r: dict, detall: bool) -> None:
             st.dataframe(taula_fonts(ids[:MAX_FONTS]), hide_index=True, use_container_width=True)
             if len(ids) > MAX_FONTS:
                 st.caption(f'Es mostren les primeres {MAX_FONTS} de {len(ids)}.')
-    mostra_planol(r)
+    mostra_planol(r, amplada_planol)
     av = r.get('avis')
     if av:
         with st.expander("Esborranys d'avís (esborrany, no enviat)", expanded=True):
@@ -130,12 +130,12 @@ def aules_de(r: dict) -> list[str]:
     return []
 
 
-def mostra_planol(r: dict) -> None:
+def mostra_planol(r: dict, amplada: int = 620) -> None:
     aules = aules_de(r)
     pl = _planol() if aules else None
     if pl is None:
         return
-    plans = pl.destaca(aules)
+    plans = pl.destaca(aules, amplada)
     if not plans:
         return
     with st.expander('Al plànol (' + ', '.join(a for a in aules if pl.planta_de(a)) + ')'):
@@ -146,14 +146,14 @@ def mostra_planol(r: dict) -> None:
             st.caption('No surten en aquests plànols: ' + ', '.join(fora))
 
 
-def missatge_assistent(r: dict, detall: bool) -> None:
+def missatge_assistent(r: dict, detall: bool, amplada_planol: int = 620) -> None:
     with st.chat_message('assistant', avatar=AVATAR['assistant']):
-        mostra_resposta(r, detall)
+        mostra_resposta(r, detall, amplada_planol)
 
 
-def historial_xat(detall: bool) -> None:
+def historial_xat(detall: bool, amplada_planol: int = 620) -> None:
     for m in st.session_state.historial:
         if m['rol'] == 'user':
             missatge_usuari(m['text'])
         else:
-            missatge_assistent(m['r'], detall)
+            missatge_assistent(m['r'], detall, amplada_planol)

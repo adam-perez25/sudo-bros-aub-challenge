@@ -29,3 +29,23 @@ h3 { margin-top: 0.6rem !important; }
 .targeta .peu { color: #52514e; font-size: 0.95rem; }
 .ok { color: #006300; }
 .nota { color: #52514e; font-size: 0.93rem; }
+
+/* Bombolla de l'assistent: botó flotant a baix a la dreta i xat que s'hi obre a sobre */
+.st-key-bombolla { position: fixed; bottom: 1.3rem; right: 1.5rem; z-index: 1000; width: auto !important; }
+.st-key-bombolla button {
+    background: #1f6feb; color: #ffffff; border: none; border-radius: 999px; padding: 0.7rem 1.3rem;
+    font-weight: 600; box-shadow: 0 6px 22px rgba(31, 111, 235, 0.38);
+}
+.st-key-bombolla button:hover { background: #1a5fcb; color: #ffffff; }
+.st-key-bombolla button p { color: #ffffff; font-size: 1.02rem; }
+[data-testid="stPopoverBody"] { width: min(540px, 94vw); max-height: 88vh; border-radius: 16px; padding: 1rem 1.1rem; }
+[data-testid="stPopoverBody"] [data-testid="stForm"] { padding: 0; }
+[data-testid="stPopoverBody"] [data-testid="stChatMessage"] {
+    border-radius: 14px; padding: 0.7rem 0.9rem; margin-bottom: 0.5rem; border: 1px solid #e3e9f2;
+}
+[data-testid="stPopoverBody"] [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
+    background: #eef4ff; border-color: #d4e3ff;
+}
+.targeta-buida { text-align: center; padding: 0.6rem 0 0.8rem 0; color: #52514e; }
+.targeta-buida .gran { font-size: 2rem; }
+[data-testid="stPopoverBody"] [data-testid="InputInstructions"] { display: none; }

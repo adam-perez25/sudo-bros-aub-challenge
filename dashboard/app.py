@@ -1,5 +1,5 @@
-# Tauler per a la presentació: nivell 1 (les dades d'avui), nivell 2 (els horaris nous), el plànol de l'edifici Q i
-# l'assistent del nivell 3, en aquest ordre (menú de dalt).
+# Tauler per a la presentació: nivell 1 (les dades d'avui), nivell 2 (els horaris nous) i el plànol de l'edifici Q, en
+# aquest ordre (menú de dalt). L'assistent del nivell 3 és una bombolla flotant a baix a la dreta, a totes les pàgines.
 #
 #   streamlit run dashboard/app.py        (des de l'arrel del projecte, amb el .venv actiu)
 #
@@ -13,6 +13,7 @@ import streamlit as st
 AQUI = Path(__file__).resolve().parent
 sys.path.insert(0, str(AQUI))
 
+import bombolla  # noqa: E402
 import comu  # noqa: E402
 
 st.set_page_config(page_title="Horaris · Escola d'Enginyeria", page_icon='🗓️', layout='wide')
@@ -29,6 +30,6 @@ pg = st.navigation([
     st.Page(PAGINES / 'nivell1.py', title="1 · Les dades d'avui", icon=':material/query_stats:'),
     st.Page(PAGINES / 'nivell2.py', title='2 · Els horaris nous', icon=':material/calendar_month:'),
     st.Page(PAGINES / 'planol.py', title="3 · L'edifici Q", icon=':material/map:'),
-    st.Page(PAGINES / 'assistent.py', title='4 · Assistent', icon=':material/chat:'),
 ], position='top')
+bombolla.munta()      # abans de pg.run(): una pàgina que fa st.stop() no pot amagar la bombolla
 pg.run()

@@ -15,15 +15,19 @@ TARGETES = [
      'amb 56 canvis i el grau nou hi cap sense moure res.'),
     ('pagines/planol.py', "3 · L'edifici Q", 'Els plànols, amb l\'horari a sobre',
      'Qui hi ha a cada aula a qualsevol hora, avui i amb cada proposta. També les aules tancades del 5.3.'),
-    ('pagines/assistent.py', '4 · Assistent', 'Preguntes en directe',
-     "Respon només amb dades de les eines i cita les sessions. Quan parla d'una aula, la mostra al plànol."),
+    (None, '4 · Assistent', 'Preguntes en directe',
+     "La bombolla de baix a la dreta, a totes les pàgines. Respon només amb dades de les eines i cita les "
+     "sessions; quan parla d'una aula, la mostra al plànol."),
 ]
 cols = st.columns(4)
 for col, (pag, titol, sub, text) in zip(cols, TARGETES):
     with col:
         st.markdown(f'<div class="targeta"><div class="etiqueta">{sub}</div><div class="gran">{titol}</div>'
                     f'<div class="peu">{text}</div></div>', unsafe_allow_html=True)
-        st.page_link(pag, label='Obre', icon=':material/arrow_forward:')
+        if pag:
+            st.page_link(pag, label='Obre', icon=':material/arrow_forward:')
+        else:
+            st.caption('Obriu-la amb el botó 💬 de baix a la dreta ↘')
 
 st.caption("Equip sudo bros · UAB The Hack 2026 · Dades pseudonimitzades del pla docent 2026-27, només en aquest "
            "ordinador.")
