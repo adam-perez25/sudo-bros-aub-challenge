@@ -15,7 +15,7 @@ First time here? Do [SETUP.md](SETUP.md) first (clone, data from SharePoint, `.v
 | 5.2 | New shifts (1st/2nd morning, 3rd/4th afternoon) + board summary | 25 % | `nivell2/p52_torns/` | ✅ Done: VALIDA AMB RELAXACIONS (460, all justified) | Adam (+ Claude) |
 | 5.3 | Incidents: closed room, bigger group, broken projector, cancelled session | 10 % | `nivell2/p53_imprevist/` | ✅ Done: 1 slot + 57 rooms changed vs 5.2 | Adam (+ Claude) |
 | 5.4 | New 40-student degree: does it fit? | 10 % | `nivell2/p54_grau_nou/` | ✅ Done: it fits, 0 changes, 0 new relaxations | Adam (+ Claude) |
-| L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ⬜ To do | _?_ |
+| L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ✅ Done: 8 tools, 19/19 checks, runs on the event LLM | Adam + team (+ Claude) |
 | — | Weekly grid per room (one, from the most advanced proposal) | in 5.x | `lliuraments/` | ✅ Done (from 5.2) | Adam (+ Claude) |
 | — | Presentation / demo | — | — | ⬜ To do | _?_ |
 
@@ -38,9 +38,11 @@ Status: ⬜ to do · 🟡 in progress · ✅ done. Level 2 is always **semester 
 - **5.4**: `proposta-grau-nou.csv` on top of our 5.2, checked with `--escenari paquet/escenaris/grau-nou-40`. If it
   doesn't fit: which rule, where, and the smallest change that would fix it. Any "it doesn't fit" must be
   **proven** (a counting argument or a solver INFEASIBLE that relaxes nothing silently).
-- **L3**: a demo (short video or live) of an assistant that answers questions about the timetable **only from
-  tools** (SQL over the CSVs + the verifier) and cites the `id_sessio` behind each answer. **Only the event's LLM**,
-  never an external API with this data. The jury asks 3 live questions and checks the answers against the CSVs.
+- **L3** (done): `python nivell3/main.py`, an assistant that answers **only from tools** (DuckDB SQL over the CSVs,
+  free-room finder, the verifier, "what if", the 5.3 incident engine, notice drafts) and cites the `id_sessio` behind
+  each answer. **Only the event's LLM** (credentials in a local file next to `nivell3/main.py`, never in git; see
+  `nivell3/README.md`). Tool checks: `python nivell3/proves/prova_eines.py` (19/19). Still to do for the jury: the
+  demo itself (see section 2).
 
 Every level 2 delivery includes the verifier output. Run it from inside `repte-horaris-escola/`:
 
@@ -48,25 +50,26 @@ Every level 2 delivery includes the verifier output. Run it from inside `repte-h
 python -m horaris check ../lliuraments/<proposta>.csv --semestre 2 --json ../lliuraments/informe.json --violacions ../lliuraments/violacions.csv
 ```
 
-## 2. Who can start now (dependencies)
+## 2. Where we are and what's left
 
-```
-L1 ✅
-5.1 ──► 5.2 ──► 5.3
-           └──► 5.4
-L3 (independent: needs only the data and the verifier)
-```
+Every deliverable is on `main` and in `lliuraments/`, each checked with the jury's command:
 
-The tasks are independent enough for **3-4 people in parallel**:
+| | Verdict |
+|---|---|
+| 5.1 `proposta-aules.csv` | VALIDA (`--nomes-aules`) |
+| 5.2 `proposta-torns.csv` + `relaxacions.csv` | VALIDA AMB RELAXACIONS DECLARADES (460, all rule 1, justified; 2 proven impossible) |
+| 5.3 `proposta-imprevist.csv` | VALIDA AMB RELAXACIONS DECLARADES (+10, forced by the closed rooms) |
+| 5.4 `proposta-grau-nou.csv` | VALIDA AMB RELAXACIONS DECLARADES (none new: the degree fits) |
 
-| Person | Starts with | Then | Needs from others |
-|---|---|---|---|
-| **A · Solver** | 5.1 (room assignment engine) | 5.2 times + rooms | nothing |
-| **B · Scenarios** | 5.4 counting proof (does the new degree fit at all? peak slots vs rooms) and 5.3 repair script, both prototyped on `proposta_partida.csv` | rerun both on A's 5.2 | A's `proposta-torns.csv` at the end |
-| **C · AI** | L3 assistant: SQL tool + verifier tool + citations | 5.3 "incident agent" demo | nothing (later, A's proposals to talk about) |
-| **D · Board & demo** | Board summary template for 5.2, weekly room grid generator, slides | fill them with A's results | A's proposals |
+**Left before handing in (in this order):**
 
-With 3 people, B and D merge into one role.
+1. **Presentation** (one person): problem → L1 findings (`nivell1/TROBALLES.md`) → 5.2 and the board summary
+   (`nivell2/p52_torns/RESUM-JUNTA.md`) → 5.3 / 5.4 results (each `INFORME.md`) → L3 live demo.
+2. **L3 demo rehearsal**: run questions 1, 2, 6, 7 and 8 of `nivell3/proves/README.md` on the real LLM twice in a row;
+   keep a short screen recording as a backup in case the network fails during the live demo.
+3. **Xaman**: upload the 5.1-5.4 CSVs and confirm the same verdicts as our local checks.
+4. **Final check on `main`**: rerun the jury commands in `lliuraments/README.md` and `nivell3/proves/prova_eines.py`.
+5. **Revoke the old LLM key** if not done yet (it was committed once and is still reachable on GitHub by commit ID).
 
 ## 3. How we work in git without breaking each other's work
 
@@ -133,9 +136,18 @@ Add people.
 - **Data rules:** pseudonymised data, hackathon only. Don't publish it, don't upload it to external services or
   AIs; for L3 use the event's LLM.
 
-## 5. Ideas for later (only if there is time)
+## 5. Improvements we can still implement (by value for the score)
 
-- 2D map of the 21 classrooms (4 spines × 2 floors, from the table on page 5 of the statement) coloured by
-  occupancy or group: useful for the board summary and the L3 demo. A 3D model from `planols/` is not worth it.
-- Section 6 of L1 as soon as the organisers share the GERES file.
-- Translate `SETUP.md` / this plan to Catalan if the team prefers.
+| # | Idea | Part it helps | Effort | Why |
+|---|---|---|---|---|
+| 1 | **Web chat for the L3 demo** (Streamlit or Gradio): answer + a "Fonts" box with the rows behind each `id_sessio` | L3 (25 %) | ~1-2 h | The jury watches a demo; visible sources sell "every answer is checkable" |
+| 2 | **L3: more tools for likely jury questions**: a teacher's week, how full a room is, which cohorts are still in the wrong shift | L3 | ~1 h each | Fewer free-SQL answers = fewer LLM mistakes in the 3 live questions |
+| 3 | **Better room quality in 5.2** with a CP-SAT room assignment per day (OR-Tools is installed), times fixed | 5.2 (25 %) | ~2-3 h | Objectives are compared between teams; room changes between consecutive classes (2,977) and TE↔PAUL outside the corridor (1,397) are our weakest numbers |
+| 4 | **Fewer idle gaps in 5.2**: after everything is placed, re-run the slot choice of moved blocks to close gaps | 5.2 | ~1-2 h | Idle gaps are another compared objective (62,640 min, already −14 %) |
+| 5 | **2D map of the 21 classrooms** (4 spines × 2 floors, page 5 of the statement) coloured by occupancy | board summary, presentation | ~1 h | Easy to read for the Junta; a 3D model from `planols/` is not worth it |
+| 6 | **5.1 quality** with the same CP-SAT idea as #3 | 5.1 (5 %) | small once #3 exists | Reuses #3 |
+| 7 | **L1 section 6** (plan vs reality) when the organisers share the GERES file | L1 | 15 min | Already coded; just run the notebook |
+| 8 | Translate `SETUP.md` / this plan to Catalan if the team prefers | team | 30 min | — |
+
+After any change to 5.2, rebuild 5.3, 5.4 and the grid on top of it (commands in each `nivell2/p5x_*/README.md`)
+and rerun all the checks.
