@@ -8,6 +8,11 @@ planols/
 # Exported reports embed tables from the data: generate locally, don't commit
 *.html
 
+# Secrets (LLM key for level 3): each person keeps their own local copy, never commit it.
+# The template with empty values (nivell3/.env.example) IS committed.
+.env
+!.env.example
+
 # Virtual environment (each person creates their own, never commit it)
 .venv/
 venv/
