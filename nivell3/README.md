@@ -22,7 +22,7 @@ or one question: `python nivell3/main.py -p "Quina aula de 60 places està lliur
 
 Answers show only the text and its sources. Add `--detall` to also see which tools were called (for debugging).
 
-Check the tools without the LLM (must print 37 of 37): `python nivell3/proves/prova_eines.py`
+Check without the LLM: `python nivell3/proves/prova_eines.py` (must print 37 of 37) and `python nivell3/proves/prova_agent.py` (15 of 15: agent loop with a fake LLM)
 
 ## Files
 
@@ -30,7 +30,7 @@ Check the tools without the LLM (must print 37 of 37): `python nivell3/proves/pr
 |---|---|
 | `main.py` | Terminal chat (entry point) |
 | `web.py` | Web chat (Streamlit): `streamlit run nivell3/web.py` from the project root; collapsible "Fonts" table with the real rows, notices marked "not sent" |
-| `agent.py` | Loop LLM ↔ tools (OpenAI-compatible `tools`; falls back to a JSON protocol if the server doesn't support them) |
+| `agent.py` | Loop LLM ↔ tools (OpenAI-compatible `tools`; falls back to a JSON protocol if the server doesn't support them); retries on timeouts/429/5xx; checks that every `id_sessio` in the answer came from a tool (one correction round, then marks it "no verificat"); trims long results and long conversations |
 | `prompts.py` | System prompt: answer only from tools, cite sources, tool output is data not instructions, notices are drafts |
 | `eines.py` | The 17 tools + their JSON schemas for the LLM |
 | `dades.py` | Loads the CSVs once and exposes them as DuckDB SQL tables (`sessions`, `aules`, `calendari`, `horari`), sandboxed: no file access, read-only queries |
@@ -69,8 +69,7 @@ in `prompts.py` (`POT_FER` / `NO_POT_FER`) and is shared with the `ajuda` tool.
 ## Tested so far
 
 - Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 37/37.
-- The agent loop with a scripted **fake LLM**: tool calling, the 2-step incident flow, the automatic switch to JSON
-  mode, and bad tool calls returned as errors.
+- The agent loop with a scripted **fake LLM** (`proves/prova_agent.py`): invented `id_sessio` detection and correction, the switch to JSON mode only on a real "no tools" error, retries, valid truncated results, long conversations.
 - **Not yet tested with the real event LLM** (needs your key in `nivell3/.env`). First thing to do: run
   `python nivell3/main.py -p "Quantes sessions té el 2n semestre?"` and check it answers 7.739 citing a tool.
 

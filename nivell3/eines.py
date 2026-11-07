@@ -27,7 +27,7 @@ from dades import (DIES, LLIURAMENTS, PAQUET, PROPOSTA_PARTIDA, PROPOSTA_PER_DEF
 sys.path.insert(0, str(ROOT / 'repte-horaris-escola'))
 sys.path.insert(0, str(ROOT / 'nivell2' / 'p53_imprevist'))
 
-from horaris.check import FRANGES, avalua  # noqa: E402
+from horaris.check import DESCRIPCIO, FRANGES, avalua  # noqa: E402
 from horaris.model import Tancament, carrega_base, llegeix_proposta, llegeix_relaxacions  # noqa: E402
 
 import avisos  # noqa: E402
@@ -52,10 +52,34 @@ d = carrega()
 
 
 # ---------------------------------------------------------------------------------------------- utilitats
+MESOS = {'gener': 1, 'febrer': 2, 'marc': 3, 'març': 3, 'abril': 4, 'maig': 5, 'juny': 6, 'juliol': 7, 'agost': 8,
+         'setembre': 9, 'octubre': 10, 'novembre': 11, 'desembre': 12}
+
+
 def _data(x) -> dt.date | None:
+    """Accepta AAAA-MM-DD, DD/MM/AAAA, «10 de març (de 2027)» ... Sense any, el del 2n semestre (2027)."""
     if x in (None, ''):
         return None
-    return x if isinstance(x, dt.date) else dt.date.fromisoformat(str(x))
+    if isinstance(x, dt.date):
+        return x
+    t = str(x).strip().lower()
+    try:
+        return dt.date.fromisoformat(t)
+    except ValueError:
+        pass
+    m = re.fullmatch(r'(\d{1,2})[/.-](\d{1,2})(?:[/.-](\d{2,4}))?', t)
+    if m:
+        dia, mes, any_ = int(m[1]), int(m[2]), m[3]
+    else:
+        m = re.fullmatch(r"(\d{1,2})\s*(?:de |d')?\s*([a-zç]+)(?:\s*(?:de |del |d')?\s*(\d{4}))?", t)
+        if not m or m[2] not in MESOS:
+            raise ValueError(f"Data no vàlida: «{x}». Feu servir AAAA-MM-DD (per exemple 2027-03-10).")
+        dia, mes, any_ = int(m[1]), MESOS[m[2]], m[3]
+    any_ = int(any_) + (2000 if any_ and len(any_) == 2 else 0) if any_ else 2027
+    try:
+        return dt.date(any_, mes, dia)
+    except ValueError:
+        raise ValueError(f"Data no vàlida: «{x}».") from None
 
 
 def _dia(x) -> str | None:
@@ -274,7 +298,8 @@ def _files(base, fitxer):
 
 
 def _violacio(v) -> dict:
-    return {'regla': v.regla, 'sessions': list(v.sessions)[:6], 'detall': v.detall}
+    return {'regla': v.regla, 'explicacio': DESCRIPCIO.get(v.regla, ''), 'sessions': list(v.sessions)[:6],
+            'detall': v.detall}
 
 
 def verifica(proposta: str = 'torns') -> dict:
@@ -431,8 +456,14 @@ def esborrany_avis(canvis: list, motiu: str) -> dict:
 
 
 # ------------------------------------------------------------------------------------ eines d'ús quotidià
+def _codi_docent(docent: str) -> str:
+    """«d 380», «d-380», «380» -> D380."""
+    t = re.sub(r'[\s\-_.]+', '', str(docent).strip().upper())
+    return 'D' + t if t.isdigit() else t
+
+
 def _regex_docent(docent: str) -> str:
-    return rf'(?:^|\|){re.escape(docent.strip().upper())}(?:\||$)'
+    return rf'(?:^|\|){re.escape(_codi_docent(docent))}(?:\||$)'
 
 
 def _fora_semestre(data: dt.date | None) -> str:
@@ -493,7 +524,7 @@ def horari_docent(docent: str, data: str = '', dia: str = '', setmana: str = '',
         existeix = d.horari['docents'].str.contains(_regex_docent(docent), regex=True, na=False).any()
         return {'trobat': False, 'fonts': [], 'avis': ('Aquest docent no té classe amb aquests filtres.' if existeix
                 else f"No hi ha cap docent «{docent}» a les dades (els codis són com D380).")}
-    res = {'trobat': True, 'docent': docent.strip().upper(), 'sessions': len(h),
+    res = {'trobat': True, 'docent': _codi_docent(docent), 'sessions': len(h),
            'fonts': h['id_sessio'].head(MAX_LLISTA).tolist()}
     if data or setmana:
         res['classes'] = [_ses(f) for _, f in h.sort_values(['data_nova', 'ini_min']).head(MAX_LLISTA).iterrows()]
