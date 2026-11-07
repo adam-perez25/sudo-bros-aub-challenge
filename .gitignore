@@ -29,3 +29,6 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Saved chats of the level 3 web (may contain schedule/incident data): local only
+nivell3/xats/
