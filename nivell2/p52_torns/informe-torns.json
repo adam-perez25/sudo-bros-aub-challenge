@@ -6,12 +6,12 @@
   },
   "objectius": {
     "hores_mortes_min": 56790,
-    "desplacaments_aula": 2110,
+    "desplacaments_aula": 1504,
     "desplacaments_edifici": 17,
     "canvis_franja": 2006,
-    "canvis_aula": 291,
-    "r6_aules_te_extra_per_grup": 77,
-    "r6_canvis_te_paul_fora_passadis": 512,
+    "canvis_aula": 222,
+    "r6_aules_te_extra_per_grup": 47,
+    "r6_canvis_te_paul_fora_passadis": 339,
     "sessions_avaluades": 7739
   },
   "blocs": 152,
@@ -179,6 +179,8 @@
     "Re-col·locació de blocs (hores mortes): 16 blocs moguts en 4 passades",
     "Millora d'aules: 142 activitats canviades a l'aula dels seus veïns",
     "Optimització d'aules (per activitat): 73 canvis d'activitat en 4 passades",
-    "Optimització d'aules (per sessió): 116 canvis d'activitat en 3 passades"
+    "Optimització d'aules (per sessió): 116 canvis d'activitat en 3 passades",
+    "CP-SAT d'aules, ronda 1: 2522 unitats canvien d'aula",
+    "CP-SAT d'aules, ronda 2: 1434 unitats canvien d'aula"
   ]
 }

@@ -15,7 +15,7 @@ First time here? Do [SETUP.md](SETUP.md) first (clone, data from SharePoint, `.v
 | 5.2 | New shifts (1st/2nd morning, 3rd/4th afternoon) + board summary | 25 % | `nivell2/p52_torns/` | ✅ Done: VALIDA AMB RELAXACIONS (460, all justified) | Adam (+ Claude) |
 | 5.3 | Incidents: closed room, bigger group, broken projector, cancelled session | 10 % | `nivell2/p53_imprevist/` | ✅ Done: 1 slot + 57 rooms changed vs 5.2 | Adam (+ Claude) |
 | 5.4 | New 40-student degree: does it fit? | 10 % | `nivell2/p54_grau_nou/` | ✅ Done: it fits, 0 changes, 0 new relaxations | Adam (+ Claude) |
-| L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ✅ Done: 8 tools, 19/19 checks, runs on the event LLM | Adam + team (+ Claude) |
+| L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ✅ Done: 8 tools, 63/63 checks, runs on the event LLM | Adam + team (+ Claude) |
 | — | Weekly grid per room (one, from the most advanced proposal) | in 5.x | `lliuraments/` | ✅ Done (from 5.2) | Adam (+ Claude) |
 | — | Presentation / demo | — | — | ⬜ To do | _?_ |
 
@@ -41,7 +41,7 @@ Status: ⬜ to do · 🟡 in progress · ✅ done. Level 2 is always **semester 
 - **L3** (done): `python nivell3/main.py`, an assistant that answers **only from tools** (DuckDB SQL over the CSVs,
   free-room finder, the verifier, "what if", the 5.3 incident engine, notice drafts) and cites the `id_sessio` behind
   each answer. **Only the event's LLM** (credentials in a local file next to `nivell3/main.py`, never in git; see
-  `nivell3/README.md`). Tool checks: `python nivell3/proves/prova_eines.py` (19/19). Still to do for the jury: the
+  `nivell3/README.md`). Tool checks: `python nivell3/proves/prova_eines.py` (63/63). Still to do for the jury: the
   demo itself (see section 2).
 
 Every level 2 delivery includes the verifier output. Run it from inside `repte-horaris-escola/`:
@@ -142,10 +142,10 @@ Add people.
 |---|---|---|---|---|
 | 1 | **Web chat for the L3 demo** (Streamlit or Gradio): answer + a "Fonts" box with the rows behind each `id_sessio` | L3 (25 %) | ~1-2 h | The jury watches a demo; visible sources sell "every answer is checkable" |
 | 2 | **L3: more tools for likely jury questions**: a teacher's week, how full a room is, which cohorts are still in the wrong shift | L3 | ~1 h each | Fewer free-SQL answers = fewer LLM mistakes in the 3 live questions |
-| 3 | **Better room quality in 5.2** with a CP-SAT room assignment per day (OR-Tools is installed), times fixed | 5.2 (25 %) | ~2-3 h | Objectives are compared between teams; room changes between consecutive classes (2,977) and TE↔PAUL outside the corridor (1,397) are our weakest numbers |
-| 4 | **Fewer idle gaps in 5.2**: after everything is placed, re-run the slot choice of moved blocks to close gaps | 5.2 | ~1-2 h | Idle gaps are another compared objective (62,640 min, already −14 %) |
+| 3 | ✅ Done: **Better room quality in 5.2** with a CP-SAT room assignment per day (OR-Tools is installed), times fixed | 5.2 (25 %) | ~2-3 h | Objectives are compared between teams; room changes between consecutive classes (2,977) and TE↔PAUL outside the corridor (1,397) are our weakest numbers |
+| 4 | ❌ Tried, only −0.5 % (annealing, see `nivell2/p52_torns/README.md`): **Fewer idle gaps in 5.2**: after everything is placed, re-run the slot choice of moved blocks to close gaps | 5.2 | ~1-2 h | Idle gaps are another compared objective (62,640 min, already −14 %) |
 | 5 | **2D map of the 21 classrooms** (4 spines × 2 floors, page 5 of the statement) coloured by occupancy | board summary, presentation | ~1 h | Easy to read for the Junta; a 3D model from `planols/` is not worth it |
-| 6 | **5.1 quality** with the same CP-SAT idea as #3 | 5.1 (5 %) | small once #3 exists | Reuses #3 |
+| 6 | ✅ Done: **5.1 quality** with the same CP-SAT idea as #3 | 5.1 (5 %) | small once #3 exists | Reuses #3 |
 | 7 | **L1 section 6** (plan vs reality) with the GERES file | L1 | 15 min | Done: notebook re-run with the file |
 | 8 | Translate `SETUP.md` / this plan to Catalan if the team prefers | team | 30 min | — |
 

@@ -1,13 +1,13 @@
 # Resum per a la Junta Permanent · Torns nous al 2n semestre
 
-**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.006 de les 7.739 sessions canvien de franja i 291 d'aula; les hores mortes baixen de 72.930 a 56.790 minuts (−22 %).
+**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.006 de les 7.739 sessions canvien de franja i 222 d'aula; les hores mortes baixen de 72.930 a 56.790 minuts (−22 %).
 
 ## 1. Pic de sessions simultànies davant de les aules ordinàries disponibles
 
 | Torn | Classes alhora que necessiten aula (pic) | Aules ordinàries ocupades (pic) | Disponibles (21 − 2 de reserva) | Marge |
 |---|---|---|---|---|
-| Matí | 16 (12/02 08:30); avui 22 | 14 (01/02 10:30) | 19 | 5 aules |
-| Tarda | 30 (03/02 16:30); avui 25 | 14 (19/04 16:30) | 19 | 5 aules |
+| Matí | 16 (12/02 08:30); avui 22 | 16 (02/02 10:30) | 19 | 3 aules |
+| Tarda | 30 (03/02 16:30); avui 25 | 16 (21/04 16:30) | 19 | 3 aules |
 
 Les classes que no van a una aula ordinària van a seminaris, laboratoris integrats i aules d'informàtica.
 
@@ -16,14 +16,14 @@ Les classes que no van a una aula ordinària van a seminaris, laboratoris integr
 | Places | Aules ordinàries | Màx. ocupades alhora (matí / tarda) | Lliures al pitjor moment (matí / tarda) |
 |---|---|---|---|
 | fins a 30 | 1 | 0 / 1 | 1 / 0 |
-| 48-50 | 4 | 4 / 4 | 0 / 0 |
+| 48-50 | 4 | 3 / 4 | 1 / 0 |
 | 63 | 2 | 2 / 2 | 0 / 0 |
 | 88-90 | 7 | 7 / 7 | 0 / 0 |
-| 100 | 2 | 2 / 1 | 0 / 1 |
-| 117 | 2 | 2 / 1 | 0 / 1 |
-| 130-160 | 3 | 2 / 1 | 1 / 2 |
+| 100 | 2 | 2 / 2 | 0 / 0 |
+| 117 | 2 | 2 / 2 | 0 / 0 |
+| 130-160 | 3 | 3 / 3 | 0 / 0 |
 
-**No falta cap aula:** totes les classes tenen aula del tipus i la mida que toca i la reserva de 2 aules es compleix a totes les franges (R8 sense cap incompliment). Mides **justes** (en algun moment s'omplen totes, serien les primeres a faltar si creix la demanda): al matí 48-50, 63, 88-90, 100, 117 places; a la tarda fins a 30, 48-50, 63, 88-90. Mides que **sobren** fins i tot al pitjor moment: al matí fins a 30 (1), 130-160 (1); a la tarda 100 (1), 117 (1), 130-160 (2).
+**No falta cap aula:** totes les classes tenen aula del tipus i la mida que toca i la reserva de 2 aules es compleix a totes les franges (R8 sense cap incompliment). Mides **justes** (en algun moment s'omplen totes, serien les primeres a faltar si creix la demanda): al matí 63, 88-90, 100, 117, 130-160 places; a la tarda fins a 30, 48-50, 63, 88-90, 100, 117, 130-160. Mides que **sobren** fins i tot al pitjor moment: al matí fins a 30 (1), 48-50 (1); a la tarda cap.
 
 ## 3. Sessions mogudes per titulació i curs
 

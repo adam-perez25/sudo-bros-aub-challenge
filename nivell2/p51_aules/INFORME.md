@@ -29,9 +29,9 @@ petita lliure), també vàlid:
 
 | | Mètode senzill | **La nostra proposta** |
 |---|---|---|
-| Aules de teoria de més per grup (aula base, R6) | 130 | **55** (−58 %) |
-| Canvis TE↔PAUL fora del passadís (R6) | 1.675 | **457** (−73 %) |
-| Canvis d'aula entre classes seguides | 3.636 | **2.377** (−35 %) |
+| Aules de teoria de més per grup (aula base, R6) | 130 | **48** (−63 %) |
+| Canvis TE↔PAUL fora del passadís (R6) | 1.675 | **343** (−80 %) |
+| Canvis d'aula entre classes seguides | 3.636 | **1.612** (−56 %) |
 | Canvis d'aula respecte d'avui | 132 | **97** |
 
 Els 97 canvis respecte d'avui són les sessions que tenien una aula no vàlida (PAUL en laboratoris de Q6, grups que no

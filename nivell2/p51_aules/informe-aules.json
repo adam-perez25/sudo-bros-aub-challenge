@@ -3,12 +3,12 @@
   "compten": {},
   "objectius": {
     "hores_mortes_min": 72930,
-    "desplacaments_aula": 2377,
+    "desplacaments_aula": 1612,
     "desplacaments_edifici": 17,
     "canvis_franja": 0,
     "canvis_aula": 97,
-    "r6_aules_te_extra_per_grup": 55,
-    "r6_canvis_te_paul_fora_passadis": 457,
+    "r6_aules_te_extra_per_grup": 48,
+    "r6_canvis_te_paul_fora_passadis": 343,
     "sessions_avaluades": 7739
   },
   "sessions_reassignades": 4652,
@@ -16,6 +16,8 @@
   "accions": [
     "Millora d'aules: 31 activitats canviades a l'aula dels seus veïns",
     "Optimització d'aules (per activitat): 28 canvis d'activitat en 4 passades",
-    "Optimització d'aules (per sessió): 82 canvis d'activitat en 4 passades"
+    "Optimització d'aules (per sessió): 82 canvis d'activitat en 4 passades",
+    "CP-SAT d'aules, ronda 1: 2157 unitats canvien d'aula",
+    "CP-SAT d'aules, ronda 2: 888 unitats canvien d'aula"
   ]
 }

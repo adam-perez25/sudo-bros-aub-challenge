@@ -49,6 +49,6 @@ A més:
 >
 > **Eina:** `resol_imprevist(tipus='aula_tancada', aula='Q1/1003', data_ini='2027-03-10')`
 >
-> **Resposta:** 5 classes canvien només d'aula, al mateix dia i hora: S02580 i S02845 a Q1/1007; S03071, S06630 i
-> S06644 a Q1/1011. Verificat: cap aula tancada ni cap incompliment nou. S06630 i S06644 són de grups fixats i cal
+> **Resposta:** 7 classes canvien només d'aula, al mateix dia i hora: S02580, S02845, S05520, S06630 i S15034 a
+> Q1/1007; S03071 i S06644 a Q1/1011. Verificat: cap aula tancada ni cap incompliment nou. S06630 i S06644 són de grups fixats i cal
 > declarar-ho com a relaxació (R1-FIXADA).

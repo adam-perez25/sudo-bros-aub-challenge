@@ -27,13 +27,18 @@ Times are frozen; only the `aula` column changes. It reuses the 5.2 engine (`niv
 3. Room-quality pass: each activity with a new room tries the room of its group's neighbouring classes, then a local search
    (`optimitza_aules` from 5.2) scores every candidate room with the same logic as the verifier's two room indicators and
    keeps only strict improvements (first per activity, then per practical session).
-4. Official verifier in `--nomes-aules` mode. Deterministic (same output on every run).
+4. **CP-SAT pass** (`nivell2/p52_torns/aules_cpsat.py`, shared with 5.2): for each date, rooms of the units we are allowed to
+   change are re-chosen at once to minimise the verifier's room indicators (consecutive-class room changes, TE↔PAUL
+   outside the corridor, classes leaving today's room), with type, capacity, closures, overlaps and the 2-free-rooms
+   reserve as hard constraints and theory restricted to rooms its group already uses (extra-room indicator can't grow).
+5. Official verifier in `--nomes-aules` mode. The CP-SAT step is multithreaded: indicators can vary by a few units between
+   runs (the committed CSV is the reference).
 
 ## Results vs the simple greedy the statement suggests
 
 | Objective (lower is better) | Simple greedy | 5.1 |
 |---|---|---|
-| Extra theory rooms per group (R6) | 130 | **55** |
-| TE↔PAUL changes outside the corridor (R6) | 1,675 | **457** |
-| Room changes between consecutive classes | 3,636 | **2,377** |
+| Extra theory rooms per group (R6) | 130 | **48** |
+| TE↔PAUL changes outside the corridor (R6) | 1,675 | **343** |
+| Room changes between consecutive classes | 3,636 | **1,612** |
 | Room changes vs today | 132 | **97** |
