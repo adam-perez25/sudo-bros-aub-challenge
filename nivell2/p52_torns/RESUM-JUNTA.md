@@ -1,6 +1,6 @@
 # Resum per a la Junta Permanent · Torns nous al 2n semestre
 
-**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.006 de les 7.739 sessions canvien de franja i 259 d'aula; les hores mortes baixen de 72.930 a 56.790 minuts (−22 %).
+**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.006 de les 7.739 sessions canvien de franja i 290 d'aula; les hores mortes baixen de 72.930 a 56.790 minuts (−22 %).
 
 ## 1. Pic de sessions simultànies davant de les aules ordinàries disponibles
 

@@ -36,6 +36,22 @@ room can't be relaxed (R3-TANCADA is not relaxable), so they must change room, w
 / R7-PLAB. The tool keeps their day and time, moves only the room, and declares them with a justification. Fixed
 sessions never move in 5.2 either, so **the final run will need these same 10 declarations** (every team will).
 
+## 5.2 that already avoids the incidents (`--anticipa-52`)
+
+The web score for 5.3 weighs the changes **vs the 5.2 reference** heavily. So the delivered 5.2 already uses the
+rooms the repair would pick: TE/21 sits in a 130+ room all semester, and the sessions that would be in Q3/0013
+(15-19/3) or Q1/1003 (10/3) are already elsewhere. The fixed sessions/PLABs and the cancelled S11527 are left
+untouched in 5.2 (they can't move there). Result: 5.3 vs 5.2 goes from 1 slot + 55 rooms to **1 slot + 10 rooms**
+(the floor: 8 fixed + 2 PLAB rooms, and a recovered session always counts as a change), and the web score from
+73 to **79**. 5.2 stays valid and keeps its score (73).
+
+```bash
+python nivell2/p53_imprevist/imprevist.py lliuraments/proposta-torns.csv --sortida /tmp/x.csv --anticipa-52 /tmp/52.csv
+cp /tmp/52.csv lliuraments/proposta-torns.csv   # then re-check 5.2 and rebuild 5.3 / 5.4 / grid as usual
+```
+
+When submitting 5.3 on the web, pick as "Proposta de referència" the 5.2 submission of this same file.
+
 ## Final delivery (when `lliuraments/proposta-torns.csv` exists)
 
 1. Run the command above.

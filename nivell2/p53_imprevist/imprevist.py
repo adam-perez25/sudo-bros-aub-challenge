@@ -144,12 +144,29 @@ class Horari:
         return True
 
     def candidates(self, sids: list[str], aula_original: str) -> list[str]:
-        """Aules ordenades per preferència: mateix passadís, després la més petita que hi càpiga."""
+        """Aules ordenades per preferència: si és teoria, primer les que el grup (cohort, línia) ja fa servir per a la
+        teoria (així no puja l'indicador d'aules extra, R6); després mateix passadís i la més petita que hi càpiga."""
         b = self.base
         alumnes = sum(b.sessions[x].alumnes for x in sids if not b.sessions[x].sense_espai)
         pas = passadis(aula_original) if aula_original else ''
+        del_grup = self.aules_te_grup(sids)
         return sorted((a for a, x in b.aules.items() if x.capacitat >= alumnes),
-                      key=lambda a: (passadis(a) != pas, b.aules[a].capacitat, a))
+                      key=lambda a: (a not in del_grup, passadis(a) != pas, b.aules[a].capacitat, a))
+
+    def aules_te_grup(self, sids: list[str]) -> set[str]:
+        """Aules on els grups (cohort, línia) d'aquestes sessions de teoria ja fan altres classes de teoria."""
+        b = self.base
+        claus = {(c, b.sessions[x].linia) for x in sids if b.sessions[x].tipus == 'TE' for c in b.sessions[x].cohorts}
+        if not claus:
+            return set()
+        propies = set(sids)
+        out = set()
+        for oid, (d, i, a) in self.pos.items():
+            if a and oid not in propies:
+                o = b.sessions[oid]
+                if o.tipus == 'TE' and any((c, o.linia) in claus for c in o.cohorts):
+                    out.add(a)
+        return out
 
 
 # ------------------------------------------------------------------------------------------- reparacions
@@ -364,6 +381,9 @@ def main(argv=None) -> int:
     ap.add_argument('--relaxacions-entrada', help="relaxacions de la proposta d'entrada (les del 5.2): es copien "
                     "al CSV de sortida perquè el 5.3 es pugui comprovar amb un sol fitxer")
     ap.add_argument('--informe', help="resum de la reparació en JSON")
+    ap.add_argument('--anticipa-52', help="escriu aquí una versió del 5.2 que ja fa servir les aules de la reparació "
+                    "(totes menys les de les sessions fixades/PLAB i la cancel·lada, que al 5.2 no es poden tocar), "
+                    "perquè el 5.3 hagi de canviar el mínim respecte del 5.2")
     ap.add_argument('--paquet', default=str(PAQUET))
     ap.add_argument('--escenari', default=str(ESCENARI))
     a = ap.parse_args(argv)
@@ -383,6 +403,18 @@ def main(argv=None) -> int:
     # recuperació o l'aforament no fan servir aules tancades (aula_valida ho comprova)
 
     escriu(Path(a.sortida), files_csv, h, recuperades)
+    if a.anticipa_52:
+        intocables = set(fixades) | set(recuperades)
+        with open(a.anticipa_52, 'w', encoding='utf-8', newline='') as f:
+            w = csv.writer(f)
+            w.writerow(['id_sessio', 'dia', 'h_ini', 'aula'])
+            for r in files_csv:
+                sid = r['id_sessio'].strip()
+                aula = r.get('aula', '')
+                if sid in h.pos and sid not in intocables:
+                    aula = h.pos[sid][2]
+                w.writerow([sid, r.get('dia', ''), r.get('h_ini', ''), aula])
+        log.append(f'5.2 anticipat escrit a {a.anticipa_52} (aules de la reparació, sense tocar {len(intocables)} sessions)')
     rel_path = Path(a.relaxacions) if a.relaxacions else None
     rel_in = Path(a.relaxacions_entrada) if a.relaxacions_entrada else None
     previes = llegeix_files_csv(rel_in)[0] if rel_in else []

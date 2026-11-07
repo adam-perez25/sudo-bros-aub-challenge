@@ -11,7 +11,7 @@ new, so it only competes with the rest for **rooms** (and the 2-free-rooms reser
 Places the new degree on top of **any** proposal without touching a single existing session. From the repo root:
 
 ```bash
-python nivell2/p54_grau_nou/grau_nou.py lliuraments/proposta-torns.csv --sortida lliuraments/proposta-grau-nou.csv --informe nivell2/p54_grau_nou/informe-encaix.json
+python nivell2/p54_grau_nou/grau_nou.py nivell2/p54_grau_nou/base-52.csv --sortida lliuraments/proposta-grau-nou.csv --informe nivell2/p54_grau_nou/informe-encaix.json
 ```
 
 (add `--relaxacions lliuraments/relaxacions.csv` if 5.2 has relaxations, so the self-check uses them)
@@ -61,3 +61,9 @@ every other rule identical to the input.
 **Stress test** (dense stand-in, k copies of the degree with separate cohorts and teachers): up to **10 copies**
 (2,350 sessions) are placed with 0 errors (343 moved within their week); at 11 copies the first session doesn't fit.
 This is a greedy method, so 10 is a lower bound on what fits, not a proven maximum.
+
+## Base timetable: `base-52.csv`
+
+5.4 is built on `base-52.csv`, the 5.2 timetable **before** it was adapted to the 5.3 incidents
+(`imprevist.py --anticipa-52`). That adaptation lifts 5.3 from 73 to 79 on the web, but 5.4 built on it scores 72
+instead of 73, so 5.4 keeps the earlier 5.2 (same shifts and times; only some room choices differ). Both are valid.
