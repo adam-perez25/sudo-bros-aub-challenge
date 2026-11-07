@@ -15,6 +15,7 @@ import streamlit as st  # noqa: E402
 
 import config  # noqa: E402
 import dades  # noqa: E402
+import historial  # noqa: E402
 from agent import Agent  # noqa: E402
 
 MAX_FONTS = 200
@@ -23,7 +24,7 @@ MAX_FONTS = 200
 # el menú i el peu, i dona un aspecte més net al xat.
 CSS = """
 <style>
-[data-testid="stStatusWidget"], #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
+[data-testid="stStatusWidget"], [data-testid="stAppDeployButton"], #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
 .block-container { max-width: 980px; padding-top: 2rem; }
 h1 { font-size: 1.7rem !important; font-weight: 700; letter-spacing: -0.01em; }
 .subtitol { color: #5b6675; margin: -0.6rem 0 1.2rem 0; font-size: 0.98rem; }
@@ -97,6 +98,41 @@ def mostra_resposta(r: dict, detall: bool) -> None:
 def nova_conversa() -> None:
     st.session_state.agent = AgentWeb()
     st.session_state.historial = []
+    st.session_state.xat_id = None   # no es desa fins a la primera pregunta
+
+
+def obre_conversa(id_: str) -> None:
+    d = historial.carrega(id_)
+    if d is None:
+        st.session_state.avis_xat = "No s'ha pogut obrir aquesta conversa (fitxer trencat o esborrat)."
+        return
+    a = AgentWeb()
+    est = d.get('agent', {})
+    a.mode_json = bool(est.get('mode_json'))
+    a.missatges = est.get('missatges') or a.missatges
+    a.missatges[0] = {'role': 'system', 'content': a._sistema()}   # el prompt de sistema sempre és l'actual
+    a.ultim_imprevist = est.get('ultim_imprevist')
+    a.ids_vistos = set(est.get('ids_vistos', []))
+    st.session_state.agent = a
+    st.session_state.historial = d.get('historial', [])
+    st.session_state.xat_id = id_
+
+
+def esborra_conversa(id_: str) -> None:
+    historial.esborra(id_)
+    if st.session_state.get('xat_id') == id_:
+        nova_conversa()
+
+
+def desa_conversa(primera_pregunta: str) -> None:
+    if st.session_state.xat_id is None:
+        st.session_state.xat_id = historial.nou_id()
+        st.session_state.xat_titol = historial.titol_de(primera_pregunta)
+    titol = st.session_state.get('xat_titol') or historial.titol_de(primera_pregunta)
+    try:
+        historial.desa(st.session_state.xat_id, titol, st.session_state.historial, st.session_state.agent)
+    except OSError as e:
+        st.session_state.avis_xat = f"No s'ha pogut desar la conversa: {e}"
 
 
 def main() -> None:
@@ -109,18 +145,29 @@ def main() -> None:
         nova_conversa()
 
     with st.sidebar:
-        st.header('Preguntes d\'exemple')
-        exemple = None
-        for etiqueta, pregunta in EXEMPLES:
-            if st.button(etiqueta, use_container_width=True, key=f'sb_{etiqueta}'):
-                exemple = pregunta
+        st.button('➕ Nova conversa', use_container_width=True, type='primary', on_click=nova_conversa)
+        st.subheader('Converses anteriors')
+        desades = historial.llista()
+        if not desades:
+            st.caption("Encara no n'hi ha cap: es desen soles a mesura que preguntes.")
+        for c in desades[:30]:
+            actual = c['id'] == st.session_state.xat_id
+            col1, col2 = st.columns([6, 1])
+            col1.button(c['titol'], key=f"obre_{c['id']}", use_container_width=True, help=c['data'].replace('T', ' '),
+                        type='primary' if actual else 'secondary',
+                        on_click=obre_conversa, args=(c['id'],))
+            col2.button('', icon=':material/delete:', key=f"del_{c['id']}", help='Esborra aquesta conversa',
+                        on_click=esborra_conversa, args=(c['id'],))
+        if len(desades) > 30:
+            st.caption(f'Es mostren les 30 més recents de {len(desades)}.')
         st.divider()
         detall = st.toggle('Mostra les eines utilitzades', value=False)
-        if st.button('Nova conversa', use_container_width=True):
-            nova_conversa()
-            st.rerun()
-        st.divider()
+        st.caption("Les converses es desen només en aquest ordinador (nivell3/xats/).")
         st.caption("Horari consultat: la nostra proposta del 5.2 (2n semestre) i l'horari d'avui sense canvis (1r semestre).")
+
+    exemple = None
+    if 'avis_xat' in st.session_state:
+        st.warning(st.session_state.pop('avis_xat'))
 
     falten = config.comprova()
     if falten:
@@ -155,6 +202,7 @@ def main() -> None:
                 r['avis'] = agent.ultim_avis
             mostra_resposta(r, detall)
         st.session_state.historial.append({'rol': 'assistant', 'r': r})
+        desa_conversa(pregunta)
 
 
 main()
