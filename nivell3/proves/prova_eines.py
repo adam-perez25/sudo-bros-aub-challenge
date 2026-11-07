@@ -25,7 +25,7 @@ comprova('1. inclou 104346 TE/81 a Q4/1013 a les 8.30',
 
 r = E.aules_lliures(hora_inici='10:00', durada_min=60, dia='J', places_min=60, semestre=2)
 comprova('2. aules lliures dijous 10.00 (60+)', [a['aula'] for a in r['aules_lliures']] ==
-         ['Q4/0003', 'Q3/1011'], [a['aula'] for a in r['aules_lliures']])
+         ['Q4/0003'], [a['aula'] for a in r['aules_lliures']])
 comprova('2. 17 dijous comprovats', r['dates_comprovades'] == 17, r['dates_comprovades'])
 
 r = E.consulta_sql('SELECT count(*) AS n FROM sessions WHERE semestre = 2')

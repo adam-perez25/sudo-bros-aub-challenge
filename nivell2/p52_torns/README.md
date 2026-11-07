@@ -12,6 +12,9 @@ python nivell2/p52_torns/resum_junta.py
 python nivell2/p52_torns/graella.py
 ```
 
+Then apply the 5.3 incident rooms to it with `imprevist.py --anticipa-52` (see `nivell2/p53_imprevist/README.md`):
+this is what the delivered `proposta-torns.csv` is.
+
 The scheduler is deterministic and takes a couple of seconds. Then 5.3 and 5.4 are rebuilt on top of it (commands in
 their READMEs), and the jury check is:
 
