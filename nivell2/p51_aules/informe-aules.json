@@ -3,12 +3,12 @@
   "compten": {},
   "objectius": {
     "hores_mortes_min": 72930,
-    "desplacaments_aula": 1612,
-    "desplacaments_edifici": 17,
+    "desplacaments_aula": 1609,
+    "desplacaments_edifici": 0,
     "canvis_franja": 0,
-    "canvis_aula": 97,
+    "canvis_aula": 132,
     "r6_aules_te_extra_per_grup": 48,
-    "r6_canvis_te_paul_fora_passadis": 343,
+    "r6_canvis_te_paul_fora_passadis": 337,
     "sessions_avaluades": 7739
   },
   "sessions_reassignades": 4652,
@@ -17,7 +17,8 @@
     "Millora d'aules: 31 activitats canviades a l'aula dels seus veïns",
     "Optimització d'aules (per activitat): 28 canvis d'activitat en 4 passades",
     "Optimització d'aules (per sessió): 82 canvis d'activitat en 4 passades",
-    "CP-SAT d'aules, ronda 1: 2157 unitats canvien d'aula",
-    "CP-SAT d'aules, ronda 2: 888 unitats canvien d'aula"
+    "CP-SAT d'aules, ronda 1: 2162 unitats canvien d'aula",
+    "CP-SAT d'aules, ronda 2: 984 unitats canvien d'aula",
+    "Edifici: B3/0021 GED:4t -> Q3/0011 (35 sessions; canvis d'edifici 21 -> 0)"
   ]
 }
