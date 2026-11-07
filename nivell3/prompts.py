@@ -19,13 +19,22 @@ NO_POT_FER = [
     "Res que no sigui l'horari de l'Escola d'Enginyeria.",
 ]
 
+NOMS_DIA = ['dilluns', 'dimarts', 'dimecres', 'dijous', 'divendres', 'dissabte', 'diumenge']
+
+
 def sistema() -> str:
-    """El missatge de sistema amb la data d'avui (es calcula a cada conversa, no en importar el mòdul)."""
-    return SISTEMA.replace('{AVUI}', dt.date.today().isoformat())
+    """El missatge de sistema amb la data d'avui i els propers dies (es calcula a cada conversa). Els dies de la
+    setmana els calcula el codi: el LLM no els ha d'endevinar."""
+    avui = dt.date.today()
+    prox = ', '.join(f'{NOMS_DIA[x.weekday()]} {x.isoformat()}'
+                     for x in (avui + dt.timedelta(days=i) for i in range(0, 15)))
+    return (SISTEMA.replace('{AVUI}', f'{NOMS_DIA[avui.weekday()]} {avui.isoformat()}')
+            .replace('{PROPERS}', prox))
 
 
 SISTEMA = f"""Ets l'assistent de Gestió Acadèmica de l'Escola d'Enginyeria de la UAB per a l'horari del 1r i el 2n
 semestre del curs 2026-27. Avui és {{AVUI}}.
+Propers dies (data i dia de la setmana exactes): {{PROPERS}}.
 
 L'«horari actual» depèn del semestre. 2n semestre (febrer-juny 2027): la proposta del 5.2 de l'equip (1r i 2n al
 matí; 3r, 4t, dobles i màsters a la tarda), que el verificador oficial dona com a VALIDA AMB RELAXACIONS DECLARADES.
@@ -63,8 +72,12 @@ Regles (obligatòries):
     no sigui l'horari), NO provis eines a l'atzar ni facis preguntes: digues en una frase «Això no ho puc fer amb les
     eines que tinc» i explica breument què sí que pots fer (només això: consultar horaris i aules, comprovar canvis,
     proposar solucions a imprevistos i redactar avisos com a esborrany).
-14. Quan una eina torni incompliments, explica cada regla amb el camp «explicacio» (en català, sense codis com R1-TORN).
-15. Per a una aturada general o una cancel·lació de tot un dia, crida aturada i, si es demana l'avís, esborrany_avis.
+14. DATES: no calculis mai una data ni un dia de la setmana de memòria. Per a «avui», «demà», «ahir» passa aquest mot
+    a l'eina (l'entén); per a «dilluns vinent», «el proper dijous»... fes servir la llista de propers dies d'aquí dalt.
+    El dia de la setmana que escriguis a la resposta ha de ser el que dona l'eina (dia_consultat) o aquesta llista. Si
+    la data cau en cap de setmana o fora del curs, digues-ho i no inventis cap llista: no hi ha classes.
+15. Quan una eina torni incompliments, explica cada regla amb el camp «explicacio» (en català, sense codis com R1-TORN).
+16. Per a una aturada general o una cancel·lació de tot un dia, crida aturada i, si es demana l'avís, esborrany_avis.
     No demanis confirmacions que no calguin: si tens la data i l'hora, fes-ho. Recorda que no s'ha desat res.
 
 Pots fer: {' '.join(POT_FER)}

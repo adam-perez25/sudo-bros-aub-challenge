@@ -163,6 +163,22 @@ comprova("S1-12. cerca d'assignatura: diu els semestres", all('semestres' in a f
          any(a['semestres'] == [1] for a in r['assignatures']))
 comprova('S1-13. data en català: 13 d octubre de 2026', str(E._data("13 d'octubre de 2026")) == '2026-10-13')
 
+# ---- dates: el codi calcula els dies de la setmana, i un cap de setmana no té classes
+import datetime as _dt  # noqa: E402
+demà = _dt.date.today() + _dt.timedelta(days=1)
+comprova('dates relatives: «demà» i «avui»', E._data('demà') == demà and E._data('avui') == _dt.date.today())
+r = E.aules_lliures(hora_inici='11:00', data='2026-11-08')
+comprova('diumenge: no es dona cap llista d\'aules lliures i diu «diumenge»',
+         r['trobat'] is False and 'diumenge' in r['avis'] and 'aules_lliures' not in r, r)
+r = E.aules_lliures(hora_inici='11:00', data='2026-11-09')
+comprova('dilluns 9/11: surt el dia de la setmana calculat pel codi', r['dia_consultat'] == 'dilluns 2026-11-09', r.get('dia_consultat'))
+comprova('ocupació en cap de setmana: avís', 'cap de setmana' in E.ocupacio('11:00', data='2026-11-07')['avis'])
+comprova('horari d\'un grup en cap de setmana: avís', 'cap de setmana' in E.horari_grup(grup='81', data='2026-11-08')['avis'])
+p = A.prompts.sistema()
+comprova('el prompt porta avui amb el dia de la setmana i els propers 15 dies',
+         f'{A.prompts.NOMS_DIA[_dt.date.today().weekday()]} {_dt.date.today().isoformat()}' in p
+         and f'{A.prompts.NOMS_DIA[demà.weekday()]} {demà.isoformat()}' in p and '{PROPERS}' not in p)
+
 comprova('SQL: no deixa modificar dades', 'error' in E.consulta_sql('DELETE FROM aules'))
 comprova('SQL: no deixa llegir fitxers', 'error' in E.consulta_sql("SELECT * FROM read_csv('requirements.txt')"))
 

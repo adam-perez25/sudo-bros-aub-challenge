@@ -63,6 +63,11 @@ def _data(x) -> dt.date | None:
     if isinstance(x, dt.date):
         return x
     t = str(x).strip().lower()
+    avui = dt.date.today()
+    relatives = {'avui': 0, 'demà': 1, 'dema': 1, 'ahir': -1, 'demà passat': 2, 'dema passat': 2,
+                 'passat demà': 2, "abans-d'ahir": -2}
+    if t in relatives:
+        return avui + dt.timedelta(days=relatives[t])
     try:
         return dt.date.fromisoformat(t)
     except ValueError:
@@ -92,6 +97,20 @@ def _dia(x) -> str | None:
     if x not in noms:
         raise ValueError(f"Dia desconegut: «{x}». Feu servir L, M, X, J o V (o el nom del dia).")
     return noms[x]
+
+
+NOMS_DIA = ['dilluns', 'dimarts', 'dimecres', 'dijous', 'divendres', 'dissabte', 'diumenge']
+
+
+def etiqueta_data(x: dt.date) -> str:
+    """«dijous 2026-11-12»: la data amb el dia de la setmana calculat pel codi (el LLM no l'ha de calcular)."""
+    return f'{NOMS_DIA[x.weekday()]} {x.isoformat()}'
+
+
+def _sense_classes(x: dt.date) -> str:
+    """Avís si la data és cap de setmana o fora del curs (cadena buida si pot haver-hi classes)."""
+    m = _fora_semestre(x)
+    return m if ('fora del període lectiu' in m or 'cap de setmana' in m) else ''
 
 
 def _hora(x) -> int:
@@ -164,6 +183,9 @@ def horari_grup(grup: str = '', codi: str = '', assignatura: str = '', cohort: s
     """On i quan té classe un grup. `grup` pot ser exacte (TE/81, PAUL/811) o un número de línia (81 = TE/81 i els
     seus subgrups 811, 812...)."""
     h = _filtra(semestre, data, dia, setmana)
+    avis_dia = _sense_classes(_data(data)) if data else ''
+    if avis_dia and h.empty:
+        return {'trobat': False, 'dia_consultat': etiqueta_data(_data(data)), 'avis': avis_dia, 'fonts': []}
     if grup:
         g = grup.strip().upper()
         h = h[h['grup'] == g] if '/' in g else h[h['grup'].str.match(rf'^[A-Z]+/{g}\d*$')]
@@ -239,6 +261,10 @@ def aules_lliures(hora_inici: str = '', durada_min: int = 60, data: str = '', di
                 'fonts': sorted({f for p in parts.values() for f in p.get('fonts', [])})[:MAX_LLISTA]}
     if data:
         dates = [_data(data)]
+        sense_classes = _sense_classes(dates[0])
+        if sense_classes:
+            return {'trobat': False, 'dia_consultat': etiqueta_data(dates[0]), 'avis': sense_classes +
+                    " (No s'ha fet cap llista d'aules lliures: no té sentit en un dia sense classes.)", 'fonts': []}
     elif dia:
         k = _dia(dia)
         dates = sorted({x for x in d.horari.loc[d.horari['semestre'] == int(semestre), 'data_nova']
@@ -280,6 +306,7 @@ def aules_lliures(hora_inici: str = '', durada_min: int = 60, data: str = '', di
     lliures = [f for f in files if f['lliure_totes_les_dates'] and not f['trencaria_reserva_regla8']]
     avisos_cal = {str(x): _calendari(x, ini, fi) for x in dates if _calendari(x, ini, fi)}
     return {'franja': f'{hhmm(ini)}-{hhmm(fi)}', 'dates_comprovades': len(dates),
+            'dia_consultat': etiqueta_data(dates[0]) if len(dates) == 1 else None,
             'primera_data': str(dates[0]) if dates else None, 'darrera_data': str(dates[-1]) if dates else None,
             'aules_lliures': lliures[:MAX_LLISTA], 'n_lliures': len(lliures),
             'altres_aules': [f for f in files if f not in lliures][:15],
@@ -512,8 +539,11 @@ def _fora_semestre(data: dt.date | None) -> str:
     tot = d.horari['data_nova']
     ini, fi = tot.min(), tot.max()
     if data < ini or data > fi:
-        return (f"El {data} és fora del període lectiu (de {ini} a {fi}): no hi ha classes a l'horari. "
+        return (f"El {etiqueta_data(data)} és fora del període lectiu (de {ini} a {fi}): no hi ha classes a l'horari. "
                 f"Digueu una data d'aquest període.")
+    if data.weekday() >= 5:
+        return (f"El {etiqueta_data(data)} és cap de setmana: no hi ha classes a l'horari. Digueu un dia entre "
+                f"dilluns i divendres.")
     c = _calendari(data, 0, 24 * 60)
     if c:
         return f'El {data} no és un dia lectiu normal ({c}).'
