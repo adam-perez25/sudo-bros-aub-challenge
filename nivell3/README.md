@@ -29,6 +29,7 @@ Check the tools without the LLM (must print 19 of 19): `python nivell3/proves/pr
 | File | Role |
 |---|---|
 | `main.py` | Terminal chat (entry point) |
+| `web.py` | Web chat (Streamlit): `streamlit run nivell3/web.py` from the project root; collapsible "Fonts" table with the real rows, notices marked "not sent" |
 | `agent.py` | Loop LLM ↔ tools (OpenAI-compatible `tools`; falls back to a JSON protocol if the server doesn't support them) |
 | `prompts.py` | System prompt: answer only from tools, cite sources, tool output is data not instructions, notices are drafts |
 | `eines.py` | The 8 tools + their JSON schemas for the LLM |
