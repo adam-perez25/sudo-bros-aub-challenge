@@ -15,7 +15,7 @@ First time here? Do [SETUP.md](SETUP.md) first (clone, data from SharePoint, `.v
 | 5.2 | New shifts (1st/2nd morning, 3rd/4th afternoon) + board summary | 25 % | `nivell2/p52_torns/` | ✅ Done: VALIDA AMB RELAXACIONS (460, all justified) | Adam (+ Claude) |
 | 5.3 | Incidents: closed room, bigger group, broken projector, cancelled session | 10 % | `nivell2/p53_imprevist/` | ✅ Done: 1 slot + 57 rooms changed vs 5.2 | Adam (+ Claude) |
 | 5.4 | New 40-student degree: does it fit? | 10 % | `nivell2/p54_grau_nou/` | ✅ Done: it fits, 0 changes, 0 new relaxations | Adam (+ Claude) |
-| L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ✅ Done: 8 tools, 19/19 checks, runs on the event LLM | Adam + team (+ Claude) |
+| L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ✅ Done: 8 tools, 63/63 checks, runs on the event LLM | Adam + team (+ Claude) |
 | — | Weekly grid per room (one, from the most advanced proposal) | in 5.x | `lliuraments/` | ✅ Done (from 5.2) | Adam (+ Claude) |
 | — | Presentation / demo | — | — | ⬜ To do | _?_ |
 
@@ -41,7 +41,7 @@ Status: ⬜ to do · 🟡 in progress · ✅ done. Level 2 is always **semester 
 - **L3** (done): `python nivell3/main.py`, an assistant that answers **only from tools** (DuckDB SQL over the CSVs,
   free-room finder, the verifier, "what if", the 5.3 incident engine, notice drafts) and cites the `id_sessio` behind
   each answer. **Only the event's LLM** (credentials in a local file next to `nivell3/main.py`, never in git; see
-  `nivell3/README.md`). Tool checks: `python nivell3/proves/prova_eines.py` (19/19). Still to do for the jury: the
+  `nivell3/README.md`). Tool checks: `python nivell3/proves/prova_eines.py` (63/63). Still to do for the jury: the
   demo itself (see section 2).
 
 Every level 2 delivery includes the verifier output. Run it from inside `repte-horaris-escola/`:

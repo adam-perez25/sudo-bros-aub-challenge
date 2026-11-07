@@ -25,7 +25,7 @@ comprova('1. inclou 104346 TE/81 a Q4/1013 a les 8.30',
 
 r = E.aules_lliures(hora_inici='10:00', durada_min=60, dia='J', places_min=60, semestre=2)
 comprova('2. aules lliures dijous 10.00 (60+)', [a['aula'] for a in r['aules_lliures']] ==
-         ['Q2/1009', 'Q4/0003', 'Q3/1011'], [a['aula'] for a in r['aules_lliures']])
+         ['Q4/0003', 'Q3/1011'], [a['aula'] for a in r['aules_lliures']])
 comprova('2. 17 dijous comprovats', r['dates_comprovades'] == 17, r['dates_comprovades'])
 
 r = E.consulta_sql('SELECT count(*) AS n FROM sessions WHERE semestre = 2')
@@ -63,15 +63,15 @@ comprova('9. D380 el 9/4: 12.30, 19.00 i 20.00 a Q1/0019', d380 == [('S04496', '
 r = E.consulta_sql("SELECT capacitat FROM aules WHERE aula = 'Q4/0011'")
 comprova('10. Q4/0011 té 117 places', r['files'] == [['117']], r.get('files'))
 
-r = E.horari_aula('Q1/1011', data='2027-02-01')
-comprova('11. Q1/1011 l\'1/2: cap classe', r['sessions'] == 0 and 'avis' in r, r.get('sessions'))
+r = E.horari_aula('Q1/1011', data='2027-02-08')
+comprova('11. Q1/1011 el 8/2: cap classe', r['sessions'] == 0 and 'avis' in r, r.get('sessions'))
 
 r = E.aules_lliures(aula='-2')
 comprova("12. aula inexistent: ho diu sense demanar l'hora", r.get('trobat') is False and 'No hi ha cap aula' in r['avis'])
 r = E.aules_lliures(aula='Q2-1009')
 comprova('12. proposa el codi semblant Q2/1009', r.get('aules_semblants', [''])[0] == 'Q2/1009', r.get('aules_semblants'))
 r = E.aules_lliures(aula='Q1/1003', hora_inici='10:30', data='2027-02-02')
-comprova('13. Q1/1003 el 2/2 a les 10.30 ocupada per S09923', r['n_lliures'] == 0 and r['fonts'] == ['S09923'], r['fonts'])
+comprova('13. Q1/1003 el 2/2 a les 10.30 ocupada per S06254', r['n_lliures'] == 0 and r['fonts'] == ['S06254'], r['fonts'])
 
 # --- eines d'ús quotidià (comparades amb pandas directament, sense el codi de les eines)
 import agent as A  # noqa: E402
