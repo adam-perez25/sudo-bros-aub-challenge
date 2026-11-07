@@ -717,6 +717,147 @@ def optimitza_aules(h: HorariT, lliures: set[str], log: list, passades: int = 30
     return canvis
 
 
+# ----------------------------------------------------------------- fase 3c: tornar a col·locar els blocs moguts
+def mortes_clau(h: HorariT, coh, linia, d) -> int:
+    """Minuts morts d'un (cohort, línia, dia) tal com els compta l'indicador del verificador: per a cada subgrup,
+    la teoria més les seves pràctiques, parelles consecutives dins el mateix torn."""
+    b = h.base
+    agenda = collections.defaultdict(list)
+    for sid in h.per_coh.get((d, coh), ()):
+        s = b.sessions[sid]
+        if s.linia == linia and sid in h.pos:
+            agenda[s.num_grup if s.tipus != 'TE' else '*'].append(sid)
+    teoria = agenda.get('*', [])
+    reals = [g for g in agenda if g != '*'] or ['*']
+    total = 0
+    for g in reals:
+        ids = set(teoria) | (set(agenda.get(g, ())) if g != '*' else set())
+        cs = sorted(((h.pos[x][1], h.pos[x][1] + b.sessions[x].durada) for x in ids))
+        for (i0, f0), (i1, f1) in zip(cs, cs[1:]):
+            gap = i1 - f0
+            if gap > 0 and (f0 <= MATI[1]) == (i1 < MATI[1]):
+                total += gap
+    return total
+
+
+def claus_bloc(h: HorariT, bloc: list[str]) -> set:
+    b = h.base
+    return {(c, b.sessions[x].linia, h.pos[x][0]) for x in bloc if x in h.pos for c in b.sessions[x].cohorts}
+
+
+def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6) -> int:
+    """Quan tot és col·locat, cada bloc mogut es treu i es torna a triar la franja amb la imatge completa:
+    mateix criteri que l'indicador de hores mortes (contribució marginal del bloc), només canvis estrictament
+    millors i amb aula vàlida. Si no es pot col·locar, el bloc torna on era."""
+    b = h.base
+    total = 0
+    for passada in range(passades):
+        millores = 0
+        for bloc in (bls if passada % 2 == 0 else bls[::-1]):
+            bloc = [x for x in bloc if x in h.pos]
+            if not bloc or any(b.sessions[x].sense_espai for x in bloc):
+                continue
+            guard = {x: list(h.pos[x]) for x in bloc}
+            s0 = min((b.sessions[x] for x in bloc), key=lambda s: s.data)
+            torns = {b.sessions[x].torn for x in bloc}
+            torn = s0.torn if len(torns) == 1 else None
+            finestres = [MATI] if torn == 'mati' else [TARDA] if torn == 'tarda' else [MATI, TARDA]
+            hores = [t for a, z in finestres for t in range(a, z - s0.durada + 1, PAS_MIN)]
+            unitats = collections.defaultdict(list)
+            for x in bloc:
+                unitats[b.sessions[x].unitat].append(x)
+            unitats = sorted(unitats.values(), key=lambda u: b.sessions[u[0]].data)
+            claus_vell = claus_bloc(h, bloc)
+            actual_aules = collections.Counter(h.pos[x][2] for x in bloc if h.pos[x][2])
+            orig = actual_aules.most_common(1)[0][0] if actual_aules else ''
+            for x in bloc:
+                h.treu(x)
+            sense = {}
+
+            def sense_bloc(k):
+                if k not in sense:
+                    sense[k] = mortes_clau(h, *k)
+                return sense[k]
+
+            def marginal(pla):
+                claus = {(c, b.sessions[x].linia, d) for u, d, _t in pla for x in u for c in b.sessions[x].cohorts}
+                base0 = {k: sense_bloc(k) for k in claus}   # abans de col·locar: amb el bloc fora
+                for u, d, t in pla:
+                    for x in u:
+                        h.mou(x, data=d, ini=t, aula='')
+                val = sum(mortes_clau(h, *k) - base0[k] for k in claus)
+                for x in bloc:
+                    h.treu(x)
+                return val
+            # marginal de la posició actual
+            pla0 = [(u, guard[u[0]][0], guard[u[0]][1]) for u in unitats]
+            for u in unitats:
+                for x in u:
+                    if guard[x][1] != guard[u[0]][1] or guard[x][0] != guard[u[0]][0]:
+                        pla0 = None
+            if pla0 is None:   # unitats amb hores diferents dins la unitat: no es toca
+                for x in bloc:
+                    h.mou(x, data=guard[x][0], ini=guard[x][1], aula=guard[x][2])
+                continue
+            vell = marginal(pla0)
+            cands = []
+            for k in range(5):
+                for t in hores:
+                    pla = []
+                    ok = True
+                    for u in unitats:
+                        s = b.sessions[u[0]]
+                        d = data_objectiu(s, k)
+                        fi = t + s.durada
+                        if dia_bloquejat(b, s, d, t, fi):
+                            d = s.data
+                            if dia_bloquejat(b, s, d, t, fi):
+                                ok = False
+                                break
+                        if not all(h.persones_lliures(x, d, t, fi) for x in u):
+                            ok = False
+                            break
+                        pla.append((u, d, t))
+                    if not ok or [(d, t) for _, d, t in pla] == [(guard[u[0]][0], guard[u[0]][1]) for u in unitats]:
+                        continue
+                    cands.append((marginal(pla), k, t, pla))
+            cands.sort(key=lambda c: (c[0], c[1], c[2]))
+            posat = False
+            for m, k, t, pla in cands:
+                if m >= vell:
+                    break
+                posades = []
+                ok = True
+                for u, d, tt in pla:
+                    fi = tt + b.sessions[u[0]].durada
+                    if not all(h.persones_lliures(x, d, tt, fi) for x in u):
+                        ok = False
+                        break
+                    a = next((a for a in ([orig] if orig else []) + h.candidates(u, orig)
+                              if h.aula_valida(u, a, d, tt, fi)), None)
+                    if a is None:
+                        ok = False
+                        break
+                    for x in u:
+                        h.mou(x, data=d, ini=tt, aula=a)
+                    posades.append(u)
+                if ok:
+                    posat = True
+                    millores += 1
+                    break
+                for u in posades:
+                    for x in u:
+                        h.treu(x)
+            if not posat:
+                for x in bloc:
+                    h.mou(x, data=guard[x][0], ini=guard[x][1], aula=guard[x][2])
+        total += millores
+        if not millores:
+            break
+    log.append(f'Re-col·locació de blocs (hores mortes): {total} blocs moguts en {passada + 1} passades')
+    return total
+
+
 def h_aula_doble(b, sid) -> str:
     """Les dobles titulacions no necessiten aula: es deixa la que portaven (el verificador no la mira)."""
     return b.sessions[sid].aula or ''
@@ -788,6 +929,7 @@ def main(argv=None) -> int:
         fets.add(b.sessions[x].unitat)
         if not repara_residu(h, x, log):
             log.append(f'NO REPARAT: {x} ({b.sessions[x].codi} {b.sessions[x].grup}) {h.pos[x][0]}')
+    replaca_blocs(h, [bl for bl in bls if bl not in no_mouen], log)
     # fase 4: qualitat de les aules (només les que hem triat nosaltres: les aules d'avui no es toquen)
     lliures = {x for x in h.pos if not b.sessions[x].sense_espai and b.sessions[x].tipus != 'PLAB'
                and not (b.sessions[x].aula and h.pos[x][2] == b.sessions[x].aula)
