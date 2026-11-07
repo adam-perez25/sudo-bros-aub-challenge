@@ -1,5 +1,7 @@
 # Vistes del xat web: tot el que es dibuixa (capçalera, barra lateral, pantalla inicial, respostes). Sense lògica
 # de l'assistent ni de l'estat: això és a agent.py i xat/estat.py.
+import re
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -14,6 +16,18 @@ MAX_FONTS = 200
 MAX_CONVERSES = 30
 AVATAR = {'user': '🧑‍🎓', 'assistant': '🗓️'}
 ESTILS = Path(__file__).resolve().parent / 'estils.css'
+CODI_AULA = re.compile(r'(?<![A-Za-z0-9])(Q[1-6C]/\d{4}(?:\.\d)?)(?![0-9])')
+MAX_AULES_FONTS = 6      # si la resposta no anomena cap aula, es mostren les de les fonts només si n'hi ha poques
+
+
+def _planol():
+    """El mòdul de plànols del tauler (dashboard/planol.py), o None si no hi és o falten els PDF."""
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'dashboard'))
+        import planol
+        return planol if planol.disponible() else None
+    except Exception:   # sense plànols, el xat funciona igual
+        return None
 
 
 def carrega_estils() -> None:
@@ -90,6 +104,7 @@ def mostra_resposta(r: dict, detall: bool) -> None:
             st.dataframe(taula_fonts(ids[:MAX_FONTS]), hide_index=True, use_container_width=True)
             if len(ids) > MAX_FONTS:
                 st.caption(f'Es mostren les primeres {MAX_FONTS} de {len(ids)}.')
+    mostra_planol(r)
     av = r.get('avis')
     if av:
         with st.expander("Esborranys d'avís (esborrany, no enviat)", expanded=True):
@@ -101,6 +116,34 @@ def mostra_resposta(r: dict, detall: bool) -> None:
             st.dataframe(pd.DataFrame(av['registre']), hide_index=True, use_container_width=True)
     if detall and r.get('eines'):
         st.caption('Eines: ' + '; '.join(f"{e['eina']}({e['arguments']})" for e in r['eines']))
+
+
+def aules_de(r: dict) -> list[str]:
+    """Aules de què parla la resposta: les que anomena el text o, si no n'anomena cap, les de les fonts (poques)."""
+    al_text = list(dict.fromkeys(CODI_AULA.findall(r.get('resposta', ''))))
+    if al_text:
+        return al_text
+    if r.get('fonts'):
+        h = dades.carrega().horari
+        aules = [a for a in dict.fromkeys(h[h.id_sessio.isin(r['fonts'])].aula_nova) if a]
+        return aules if len(aules) <= MAX_AULES_FONTS else []
+    return []
+
+
+def mostra_planol(r: dict) -> None:
+    aules = aules_de(r)
+    pl = _planol() if aules else None
+    if pl is None:
+        return
+    plans = pl.destaca(aules)
+    if not plans:
+        return
+    with st.expander('Al plànol (' + ', '.join(a for a in aules if pl.planta_de(a)) + ')'):
+        for _, grafic in plans:
+            pl.mostra(grafic)
+        fora = [a for a in aules if not pl.planta_de(a)]
+        if fora:
+            st.caption('No surten en aquests plànols: ' + ', '.join(fora))
 
 
 def missatge_assistent(r: dict, detall: bool) -> None:

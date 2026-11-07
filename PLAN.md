@@ -17,7 +17,8 @@ First time here? Do [SETUP.md](SETUP.md) first (clone, data from SharePoint, `.v
 | 5.4 | New 40-student degree: does it fit? | 10 % | `nivell2/p54_grau_nou/` | ✅ Done: it fits, 0 changes, 0 new relaxations | Adam (+ Claude) |
 | L3 | AI assistant whose answers can be checked | 25 % | `nivell3/` | ✅ Done: 8 tools, 63/63 checks, runs on the event LLM | Adam + team (+ Claude) |
 | — | Weekly grid per room (one, from the most advanced proposal) | in 5.x | `lliuraments/` | ✅ Done (from 5.2) | Adam (+ Claude) |
-| — | Presentation / demo | — | — | ⬜ To do | _?_ |
+| — | Presentation dashboard (L1, 5.1-5.4, floor plans, chat): `streamlit run dashboard/app.py` | — | `dashboard/` | ✅ Done | Adam (+ Claude) |
+| — | Presentation / demo | — | — | 🟡 Dashboard ready, talk to prepare | _?_ |
 
 Status: ⬜ to do · 🟡 in progress · ✅ done. Level 2 is always **semester 2** only.
 
@@ -144,7 +145,7 @@ Add people.
 | 2 | **L3: more tools for likely jury questions**: a teacher's week, how full a room is, which cohorts are still in the wrong shift | L3 | ~1 h each | Fewer free-SQL answers = fewer LLM mistakes in the 3 live questions |
 | 3 | ✅ Done: **Better room quality in 5.2** with a CP-SAT room assignment per day (OR-Tools is installed), times fixed | 5.2 (25 %) | ~2-3 h | Objectives are compared between teams; room changes between consecutive classes (2,977) and TE↔PAUL outside the corridor (1,397) are our weakest numbers |
 | 4 | ❌ Tried, only −0.5 % (annealing, see `nivell2/p52_torns/README.md`): **Fewer idle gaps in 5.2**: after everything is placed, re-run the slot choice of moved blocks to close gaps | 5.2 | ~1-2 h | Idle gaps are another compared objective (62,640 min, already −14 %) |
-| 5 | **2D map of the 21 classrooms** (4 spines × 2 floors, page 5 of the statement) coloured by occupancy | board summary, presentation | ~1 h | Easy to read for the Junta; a 3D model from `planols/` is not worth it |
+| 5 | ✅ Done: **map of the 21 classrooms on the real floor plans** (`dashboard/`, page «L'edifici Q»), coloured by occupancy, 5.3 incidents and chat answers | board summary, presentation | — | Easy to read for the Junta |
 | 6 | ✅ Done: **5.1 quality** with the same CP-SAT idea as #3 | 5.1 (5 %) | small once #3 exists | Reuses #3 |
 | 7 | **L1 section 6** (plan vs reality) with the GERES file | L1 | 15 min | Done: notebook re-run with the file |
 | 8 | Translate `SETUP.md` / this plan to Catalan if the team prefers | team | 30 min | — |
