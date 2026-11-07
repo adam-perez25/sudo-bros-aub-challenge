@@ -8,3 +8,10 @@ gatherUsageStats = false
 [server]
 # Only reachable from this computer (not from other devices on the network).
 address = "localhost"
+
+[theme]
+primaryColor = "#1f6feb"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f3f6fb"
+textColor = "#1b2430"
+font = "sans serif"

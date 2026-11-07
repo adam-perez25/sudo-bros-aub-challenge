@@ -18,6 +18,26 @@ import dades  # noqa: E402
 from agent import Agent  # noqa: E402
 
 MAX_FONTS = 200
+
+# Estil: amaga l'animació esportiva de Streamlit (el ninot que corre/pedala/neda mentre l'script s'executa),
+# el menú i el peu, i dona un aspecte més net al xat.
+CSS = """
+<style>
+[data-testid="stStatusWidget"], #MainMenu, footer, [data-testid="stDecoration"] { display: none !important; }
+.block-container { max-width: 980px; padding-top: 2rem; }
+h1 { font-size: 1.7rem !important; font-weight: 700; letter-spacing: -0.01em; }
+.subtitol { color: #5b6675; margin: -0.6rem 0 1.2rem 0; font-size: 0.98rem; }
+[data-testid="stChatMessage"] { border-radius: 14px; padding: 0.9rem 1.1rem; margin-bottom: 0.6rem;
+    border: 1px solid #e3e9f2; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { background: #eef4ff; border-color: #d4e3ff; }
+[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) { background: #ffffff; }
+[data-testid="stSidebar"] .stButton > button { text-align: left; justify-content: flex-start; border-radius: 10px; }
+.stButton > button { border-radius: 10px; }
+[data-testid="stChatInput"] { border-radius: 14px; }
+.targeta-buida { text-align: center; padding: 1.5rem 0 0.5rem 0; color: #5b6675; }
+.targeta-buida .gran { font-size: 2.4rem; }
+</style>
+"""
 EXEMPLES = [
     ('On té classe el grup 81 dimarts?', 'On té classe el grup 81 dimarts?'),
     ('Aula de 60+ lliure dijous a les 10', 'Quina aula de 60 places o més està lliure dijous a les 10?'),
@@ -80,8 +100,11 @@ def nova_conversa() -> None:
 
 
 def main() -> None:
-    st.set_page_config(page_title="Assistent d'horaris", page_icon='🗓️', layout='wide')
-    st.title("Assistent d'horaris · Escola d'Enginyeria")
+    st.set_page_config(page_title="Assistent d'horaris", page_icon='🗓️', layout='centered')
+    st.markdown(CSS, unsafe_allow_html=True)
+    st.title("🗓️ Assistent d'horaris · Escola d'Enginyeria")
+    st.markdown('<div class="subtitol">Pregunteu per aules, grups, franges lliures o imprevistos. '
+                'Només redacta esborranys: no envia res a ningú.</div>', unsafe_allow_html=True)
     if 'agent' not in st.session_state:
         nova_conversa()
 
@@ -89,7 +112,7 @@ def main() -> None:
         st.header('Preguntes d\'exemple')
         exemple = None
         for etiqueta, pregunta in EXEMPLES:
-            if st.button(etiqueta, use_container_width=True):
+            if st.button(etiqueta, use_container_width=True, key=f'sb_{etiqueta}'):
                 exemple = pregunta
         st.divider()
         detall = st.toggle('Mostra les eines utilitzades', value=False)
@@ -103,8 +126,17 @@ def main() -> None:
     if falten:
         st.error(f"Falta configurar {', '.join(falten)}: copieu nivell3/.env.example com a nivell3/.env i ompliu-lo.")
 
+    if not st.session_state.historial:
+        st.markdown('<div class="targeta-buida"><div class="gran">💬</div>'
+                    '<b>Com us puc ajudar?</b><br>Escriviu una pregunta o proveu un exemple.</div>',
+                    unsafe_allow_html=True)
+        cols = st.columns(2)
+        for i, (etiqueta, pregunta) in enumerate(EXEMPLES[:6]):
+            if cols[i % 2].button(etiqueta, use_container_width=True, key=f'main_{etiqueta}'):
+                exemple = pregunta
+
     for m in st.session_state.historial:
-        with st.chat_message(m['rol']):
+        with st.chat_message(m['rol'], avatar='🧑‍🎓' if m['rol'] == 'user' else '🗓️'):
             if m['rol'] == 'user':
                 st.markdown(m['text'])
             else:
@@ -112,11 +144,11 @@ def main() -> None:
 
     pregunta = st.chat_input('Escriviu una pregunta sobre l\'horari…') or exemple
     if pregunta:
-        with st.chat_message('user'):
+        with st.chat_message('user', avatar='🧑‍🎓'):
             st.markdown(pregunta)
         st.session_state.historial.append({'rol': 'user', 'text': pregunta})
         agent = st.session_state.agent
-        with st.chat_message('assistant'):
+        with st.chat_message('assistant', avatar='🗓️'):
             with st.spinner('Consultant l\'horari…'):
                 agent.ultim_avis = None
                 r = agent.respon(pregunta)
