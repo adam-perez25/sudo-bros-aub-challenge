@@ -222,6 +222,79 @@ def mida_mati(s: pd.DataFrame, a: pd.DataFrame, smt: int, setmana: str) -> pd.Da
     return pd.DataFrame(files)
 
 
+# ----------------------------------------------------------------------------- 6. pla contra realitat (GERES)
+VALIDACIO = ROOT / 'repte-horaris-escola' / 'validacio' / 'geres-ocupacio-setmana-2026-10-05.csv'
+SETMANA_VALIDACIO = ('2026-10-05', '2026-10-09')
+
+
+def carrega_validacio(path: Path = VALIDACIO) -> pd.DataFrame | None:
+    """Ocupació real del GERES del 05 al 09/10/2026 (validacio/LLEGIU-ME.md), o None si el fitxer no hi és.
+
+    Camps: espai, data, dia, h_ini, h_fi, durada_min, tipus_reserva (docent | no_docent), codi, grup_num,
+    assignatura, estudis, alumnes_matriculats, docents, id_sessio_paquet."""
+    if not Path(path).exists():
+        return None
+    v = pd.read_csv(path, dtype=str, keep_default_na=False)
+    v['durada_min'] = pd.to_numeric(v['durada_min'], errors='coerce').fillna(0).astype(int)
+    v['ini'] = v['h_ini'].map(hm)
+    v['fi'] = v['ini'] + v['durada_min']
+    return v
+
+
+def sessions_setmana_validacio(s: pd.DataFrame) -> pd.DataFrame:
+    """Les sessions del paquet de la setmana del GERES (una per sessió, com les compta el LLEGIU-ME)."""
+    ini, fi = SETMANA_VALIDACIO
+    return s[(s['data'] >= ini) & (s['data'] <= fi)]
+
+
+def contrast_validacio(s: pd.DataFrame, v: pd.DataFrame) -> dict:
+    """Pla (paquet) contra realitat (GERES) per a la setmana del 05/10/2026.
+
+    Retorna recomptes i taules:
+    - cobertura: sessions del paquet d'aquella setmana que surten al GERES (via id_sessio_paquet);
+    - mateixa_aula: de les enllaçades amb aula al paquet, quantes es fan a l'aula prevista;
+    - aula_real_de_les_sense_aula: on es fan de veritat les sessions que al paquet no tenen aula;
+    - no_docents: hores d'espai ocupades per reserves que no són docència (no surten al paquet);
+    - ocupacio: per espai, hores ocupades segons el pla i segons la realitat."""
+    ps = sessions_setmana_validacio(s)
+    doc = v[v['tipus_reserva'] == 'docent']
+    enll = doc[doc['id_sessio_paquet'] != '']
+    ids_geres = set(enll['id_sessio_paquet'])
+    r: dict = {}
+    r['sessions_paquet'] = len(ps)
+    r['sessions_paquet_al_geres'] = int(ps['id_sessio'].isin(ids_geres).sum())
+    r['reserves'] = len(v)
+    r['reserves_docents'] = len(doc)
+    r['reserves_no_docents'] = int((v['tipus_reserva'] == 'no_docent').sum())
+    r['reserves_docents_sense_sessio'] = int((doc['id_sessio_paquet'] == '').sum())
+    # mateixa aula: reserves enllaçades amb una sessió que al paquet té aula
+    m = enll.merge(s[['id_sessio', 'aula_partida', 'tipus', 'smt']], left_on='id_sessio_paquet',
+                   right_on='id_sessio', how='left')
+    amb = m[m['aula_partida'] != '']
+    r['enllacades_amb_aula_al_paquet'] = len(amb)
+    r['mateixa_aula'] = int((amb['espai'] == amb['aula_partida']).sum())
+    r['aula_diferent'] = amb.loc[amb['espai'] != amb['aula_partida'],
+                                 ['id_sessio_paquet', 'aula_partida', 'espai', 'data', 'h_ini']]
+    # sessions sense aula al paquet: a quin espai es fan de veritat
+    sense = m[m['aula_partida'] == '']
+    r['enllacades_sense_aula_al_paquet'] = len(sense)
+    r['aula_real_de_les_sense_aula'] = sense.groupby(['tipus', 'espai']).size().rename('sessions') \
+        .reset_index().sort_values('sessions', ascending=False)
+    # reserves no docents: hores d'espai que el pla no veu
+    nd = v[v['tipus_reserva'] == 'no_docent'].drop_duplicates(['espai', 'data', 'h_ini'])
+    r['no_docents'] = (nd.groupby('espai')['durada_min'].sum() / 60).rename('hores').sort_values(ascending=False)
+    # ocupació per espai: hores segons el pla (sessions amb aula, un cop per classe física) i segons el GERES
+    pla = ps[ps['aula_partida'] != ''].drop_duplicates(['aula_partida', 'data', 'h_ini'])
+    h_pla = pla.groupby('aula_partida')['durada_min'].sum() / 60
+    real = v.drop_duplicates(['espai', 'data', 'h_ini'])
+    h_real = real.groupby('espai')['durada_min'].sum() / 60
+    h_real_doc = real[real['tipus_reserva'] == 'docent'].groupby('espai')['durada_min'].sum() / 60
+    oc = pd.DataFrame({'hores_pla': h_pla, 'hores_reals_docents': h_real_doc, 'hores_reals_total': h_real}).fillna(0)
+    oc['diferencia'] = oc['hores_reals_total'] - oc['hores_pla']
+    r['ocupacio'] = oc.sort_values('diferencia', ascending=False)
+    return r
+
+
 # --------------------------------------------------------------------------------------- 5. sobre aforament
 def sobre_aforament(s: pd.DataFrame, a: pd.DataFrame, smt: int) -> pd.DataFrame:
     """Grups amb més alumnes que places a l'aula on són avui (classe física: alumnes sumats)."""

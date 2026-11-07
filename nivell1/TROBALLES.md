@@ -85,5 +85,8 @@ lectius i cap esdeveniment a `calendari.csv` (11 de les 20 setmanes).
 
 ---
 
-**No fet:** la comparació «pla contra realitat» amb `validacio/`: el CSV d'ocupació real no és al paquet que hem
-rebut (només n'hi ha el LLEGIU-ME).
+**Pla contra realitat (apartat 6 del quadern):** la comparació amb l'ocupació real del GERES (setmana del 5 al
+9/10/2026) està implementada (`contrast_validacio()`): cobertura del paquet, sessions que es fan a l'aula prevista,
+on es fan les que no tenen aula i hores de reserves no docents. **Encara no té resultats**: el fitxer
+`validacio/geres-ocupacio-setmana-2026-10-05.csv` no era al zip que vam baixar. Quan hi sigui, n'hi ha prou de
+tornar a executar el quadern; les xifres d'aquest apartat s'afegiran aquí.
