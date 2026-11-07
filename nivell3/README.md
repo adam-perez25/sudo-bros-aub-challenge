@@ -22,7 +22,7 @@ or one question: `python nivell3/main.py -p "Quina aula de 60 places està lliur
 
 Answers show only the text and its sources. Add `--detall` to also see which tools were called (for debugging).
 
-Check without the LLM: `python nivell3/proves/prova_eines.py` (must print 37 of 37) and `python nivell3/proves/prova_agent.py` (15 of 15: agent loop with a fake LLM)
+Check without the LLM: `python nivell3/proves/prova_eines.py` (must print 56 of 56) and `python nivell3/proves/prova_agent.py` (15 of 15: agent loop with a fake LLM)
 
 ## Files
 
@@ -64,11 +64,11 @@ Check without the LLM: `python nivell3/proves/prova_eines.py` (must print 37 of 
 assistant say so in one sentence and list what it can do, instead of trying tools at random. The capabilities text is
 in `prompts.py` (`POT_FER` / `NO_POT_FER`) and is shared with the `ajuda` tool.
 
-"Current timetable" = our 5.2 proposal (`lliuraments/proposta-torns.csv`), semester 2 by default.
+"Current timetable" = `lliuraments/proposta-torns.csv`: our 5.2 proposal for **semester 2**, and today's timetable unchanged for **semester 1** (5.2 does not touch it, so the verifier rates it NO VALIDA, and the assistant says so). Both semesters are answered: a date fixes the semester; without a date or semester, answers that differ are given for each, labelled. Incident, "what if" and stop tools pick the semester from the date or session.
 
 ## Tested so far
 
-- Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 37/37.
+- Every tool against answers computed independently (verifier + pandas): `proves/prova_eines.py`, 56/56 (13 of them for semester 1).
 - The agent loop with a scripted **fake LLM** (`proves/prova_agent.py`): invented `id_sessio` detection and correction, the switch to JSON mode only on a real "no tools" error, retries, valid truncated results, long conversations.
 - **Not yet tested with the real event LLM** (needs your key in `nivell3/.env`). First thing to do: run
   `python nivell3/main.py -p "Quantes sessions té el 2n semestre?"` and check it answers 7.739 citing a tool.

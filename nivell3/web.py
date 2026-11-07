@@ -97,7 +97,7 @@ def main() -> None:
             nova_conversa()
             st.rerun()
         st.divider()
-        st.caption("L'horari que consulta l'assistent és la nostra proposta del 5.2 (2n semestre).")
+        st.caption("Horari consultat: la nostra proposta del 5.2 (2n semestre) i l'horari d'avui sense canvis (1r semestre).")
 
     falten = config.comprova()
     if falten:

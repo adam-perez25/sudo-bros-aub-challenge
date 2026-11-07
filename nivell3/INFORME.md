@@ -2,7 +2,7 @@
 
 ## Què fa
 
-Un assistent conversacional per fer i mantenir l'horari del 2n semestre. Respon preguntes com:
+Un assistent conversacional per fer i mantenir l'horari del curs 2026-27 (1r i 2n semestre). Respon preguntes com:
 
 - «On té classe el grup 81 dimarts?»
 - «Quina aula de 60 places està lliure dijous a les 10?»
@@ -38,7 +38,7 @@ A més:
 ## Com l'hem provat
 
 - **Eines:** 13 preguntes com les del jurat, amb la resposta calculada a part (verificador oficial + pandas, sense el
-  codi de l'assistent): totes les eines hi coincideixen (`proves/prova_eines.py`, 37 de 37 comprovacions). Les
+  codi de l'assistent): totes les eines hi coincideixen (`proves/prova_eines.py`, 56 de 56 comprovacions). Les
   preguntes i les respostes són a `proves/README.md`.
 - **Agent:** (`proves/prova_agent.py`, 15 comprovacions) el bucle amb un LLM simulat, que a més comprova que cap `id_sessio` de la resposta s'hagi inventat (si el LLM en cita un que cap eina no ha tornat, se li demana que es corregeixi, i si persisteix es marca «no verificat»); crides a eines, l'imprevist en dos passos (solució i avís), el mode de
   reserva quan el servidor no accepta eines, i errors d'arguments retornats al LLM perquè es corregeixi.

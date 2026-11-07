@@ -36,7 +36,7 @@ def main() -> None:
     if a.pregunta:
         mostra(agent.respon(a.pregunta), a.detall)
         return
-    print("Assistent d'horaris de l'Escola d'Enginyeria (2n semestre). Escriviu «sortir» per acabar.")
+    print("Assistent d'horaris de l'Escola d'Enginyeria (1r i 2n semestre). Escriviu «sortir» per acabar.")
     while True:
         try:
             q = input('\n> ').strip()
