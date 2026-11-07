@@ -1,0 +1,7 @@
+# Project dependencies. Install inside the virtual environment (see SETUP.md):
+#   python -m pip install -r requirements.txt
+# The verifier (repte-horaris-escola/horaris) needs none of these; they are for our own code.
+pandas==3.1.1        # read and analyse the CSVs
+ortools==9.15.6755   # CP-SAT constraint solver for the timetables (5.1-5.4)
+matplotlib==3.11.2   # charts and heatmaps (level 1)
+jupyter==1.1.1       # notebooks for exploring the data

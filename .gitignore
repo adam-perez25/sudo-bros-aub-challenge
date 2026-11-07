@@ -1,0 +1,16 @@
+# Virtual environment (each person creates their own, never commit it)
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
