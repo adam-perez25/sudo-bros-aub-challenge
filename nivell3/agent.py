@@ -86,8 +86,10 @@ class Agent:
             return {'error': f'Arguments no vàlids per a {nom}: {e}', 'fonts': []}
         except Exception as e:
             return {'error': f'{type(e).__name__}: {e}', 'fonts': []}
-        if nom == 'resol_imprevist' and 'canvis' in r:
+        if nom in ('resol_imprevist', 'aturada') and 'canvis' in r:
             self.ultim_imprevist = r
+            if nom == 'aturada':   # la llista completa es queda a l'agent; al LLM només el resum (no cal reenviar-la)
+                return {k: v for k, v in r.items() if k != 'canvis'}
         return r
 
     def respon(self, pregunta: str) -> dict:

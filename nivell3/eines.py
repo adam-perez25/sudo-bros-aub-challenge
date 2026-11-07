@@ -17,6 +17,7 @@ from __future__ import annotations
 import collections
 import datetime as dt
 import difflib
+import re
 import sys
 from pathlib import Path
 
@@ -30,6 +31,7 @@ from horaris.check import FRANGES, avalua  # noqa: E402
 from horaris.model import Tancament, carrega_base, llegeix_proposta, llegeix_relaxacions  # noqa: E402
 
 import avisos  # noqa: E402
+import prompts  # noqa: E402
 
 MAX_LLISTA = 40
 TIPUS = {'aula': 'Aules docents', 'seminari': 'Seminaris', 'laboratori': 'Laboratoris docents',
@@ -428,9 +430,221 @@ def esborrany_avis(canvis: list, motiu: str) -> dict:
     return r
 
 
+# ------------------------------------------------------------------------------------ eines d'ús quotidià
+def _regex_docent(docent: str) -> str:
+    return rf'(?:^|\|){re.escape(docent.strip().upper())}(?:\||$)'
+
+
+def _fora_semestre(data: dt.date | None) -> str:
+    """Avís si la data no cau dins del 2n semestre (o no és lectiva); cadena buida si és un dia normal."""
+    if not data:
+        return ''
+    h2 = d.horari[d.horari['semestre'] == 2]['data_nova']
+    ini, fi = h2.min(), h2.max()
+    if data < ini or data > fi:
+        return (f"El {data} és fora del 2n semestre (de {ini} a {fi}): no hi ha classes a l'horari. "
+                f"Digueu una data d'aquest període.")
+    c = _calendari(data, 0, 24 * 60)
+    if c:
+        return f'El {data} no és un dia lectiu normal ({c}).'
+    return ''
+
+
+def ocupacio(hora_inici: str, data: str = '', dia: str = '', durada_min: int = 60, tipus_sessio: str = '',
+             cohort: str = '', semestre: int = 2) -> dict:
+    """Quines classes hi ha a una hora (qui té classe, a quines aules). Amb `data`: aquell dia concret; amb `dia`
+    (L..V): el patró setmanal d'aquell dia de la setmana. Filtres opcionals: tipus (TE, PAUL, PLAB, SEM) i cohort."""
+    if not (data or dia):
+        return {'error': 'Cal una data (AAAA-MM-DD) o un dia de la setmana.', 'fonts': []}
+    ini = _hora(hora_inici)
+    fi = ini + int(durada_min)
+    avis = _fora_semestre(_data(data)) if data else ''
+    if 'fora del 2n semestre' in avis:
+        return {'trobat': False, 'avis': avis, 'fonts': []}
+    h = _filtra(semestre, data, dia)
+    h = h[(h['ini_min'] < fi) & (h['fi_min'] > ini) & (h['sense_espai'] != '1')]
+    if tipus_sessio:
+        h = h[h['tipus'] == tipus_sessio.strip().upper()]
+    if cohort:
+        h = h[h['titulacions_curs'].str.contains(cohort, case=False, regex=False)]
+    if h.empty:
+        return {'trobat': False, 'franja': f'{hhmm(ini)}-{hhmm(fi)}', 'avis': avis or 'Cap classe en aquesta franja.',
+                'fonts': []}
+    res = {'trobat': True, 'franja': f'{hhmm(ini)}-{hhmm(fi)}', 'sessions': len(h),
+           'per_tipus': h['tipus'].value_counts().to_dict(), 'aules_ocupades': int(h['aula_nova'].nunique()),
+           'fonts': h['id_sessio'].head(MAX_LLISTA).tolist()}
+    if avis:
+        res['avis'] = avis
+    if data:
+        res['classes'] = [_ses(f) for _, f in h.sort_values(['ini_min', 'aula_nova']).head(MAX_LLISTA).iterrows()]
+    else:
+        res['setmanal'] = _patro(h)
+        res['nota'] = "Patró setmanal: cada fila és una classe que es repeteix el mateix dia i hora tot el semestre."
+    if len(h) > MAX_LLISTA:
+        res['nota_llista'] = f'Es mostren {MAX_LLISTA} de {len(h)}; afegiu un filtre (tipus_sessio, cohort) per acotar.'
+    return res
+
+
+def horari_docent(docent: str, data: str = '', dia: str = '', setmana: str = '', semestre: int = 2) -> dict:
+    """Les classes d'un docent (codi tipus D380): per a una data, un dia, una setmana ISO o el patró setmanal."""
+    h = _filtra(semestre, data, dia, setmana)
+    h = h[h['docents'].str.contains(_regex_docent(docent), regex=True, na=False)]
+    if h.empty:
+        existeix = d.horari['docents'].str.contains(_regex_docent(docent), regex=True, na=False).any()
+        return {'trobat': False, 'fonts': [], 'avis': ('Aquest docent no té classe amb aquests filtres.' if existeix
+                else f"No hi ha cap docent «{docent}» a les dades (els codis són com D380).")}
+    res = {'trobat': True, 'docent': docent.strip().upper(), 'sessions': len(h),
+           'fonts': h['id_sessio'].head(MAX_LLISTA).tolist()}
+    if data or setmana:
+        res['classes'] = [_ses(f) for _, f in h.sort_values(['data_nova', 'ini_min']).head(MAX_LLISTA).iterrows()]
+    else:
+        res['setmanal'] = _patro(h)
+    return res
+
+
+def cerca_assignatura(text: str) -> dict:
+    """Troba assignatures pel nom o pel codi i en dona els grups, cohorts, docents i sessions del 2n semestre."""
+    h = d.horari[d.horari['semestre'] == 2]
+    t = text.strip()
+    m = h[h['assignatura'].str.contains(t, case=False, regex=False) | (h['codi'] == t)]
+    if m.empty:
+        noms = sorted(set(h['assignatura']))
+        return {'trobat': False, 'avis': f'Cap assignatura coincideix amb «{text}».',
+                'semblants': difflib.get_close_matches(t, noms, n=5, cutoff=0.4), 'fonts': []}
+    out = []
+    for (codi, nom), x in m.groupby(['codi', 'assignatura']):
+        out.append({'codi': codi, 'assignatura': nom, 'sessions': len(x), 'grups': sorted(set(x['grup'])),
+                    'cohorts': sorted({c for v in x['titulacions_curs'] for c in v.split('|') if c}),
+                    'docents': sorted({c for v in x['docents'] for c in v.split('|') if c}),
+                    'exemples_id_sessio': x['id_sessio'].head(2).tolist()})
+    return {'trobat': True, 'assignatures': out[:15], 'n_assignatures': len(out),
+            'fonts': [e for o in out[:15] for e in o['exemples_id_sessio']][:MAX_LLISTA]}
+
+
+def info_aules(places_min: int = 0, tipus: str = '', edifici: str = '') -> dict:
+    """Llista de les aules (capacitat, tipus, si és ordinària), filtrable per capacitat mínima, tipus o edifici."""
+    a = d.aules
+    if tipus:
+        a = a[a['tipus'] == TIPUS.get(tipus.lower(), tipus)]
+    if edifici:
+        a = a[a['edifici'].str.upper() == edifici.strip().upper()]
+    a = a[a['capacitat'] >= int(places_min)].sort_values(['capacitat', 'aula'])
+    if a.empty:
+        return {'trobat': False, 'avis': 'Cap aula amb aquests filtres.', 'fonts': []}
+    return {'trobat': True, 'n_aules': len(a), 'n_ordinaries': int(a['ordinaria'].sum()), 'aules': [
+        {'aula': r['aula'], 'tipus': r['tipus'], 'capacitat': int(r['capacitat']), 'ordinaria': bool(r['ordinaria'])}
+        for _, r in a.head(60).iterrows()], 'fonts': a['aula'].head(MAX_LLISTA).tolist()}
+
+
+def reserva_aules(data: str = '', dia: str = '') -> dict:
+    """Comprova la regla de les 2 aules ordinàries lliures: per a una data, un dia de la setmana o tot el semestre,
+    la franja amb menys aules ordinàries lliures."""
+    ordinaries = set(d.aules.loc[d.aules['ordinaria'] == 1, 'aula'])
+    h2 = d.horari[d.horari['semestre'] == 2]
+    if data:
+        dates = [_data(data)]
+    elif dia:
+        k = _dia(dia)
+        dates = sorted({x for x in h2['data_nova'] if 'LMXJV'[x.weekday()] == k})
+    else:
+        dates = sorted(set(h2['data_nova']))
+    h = h2[h2['aula_nova'].isin(ordinaries) & (h2['sense_espai'] != '1') & h2['data_nova'].isin(dates)]
+    pitjor, sota = None, []
+    for data_ in dates:
+        x = h[h['data_nova'] == data_]
+        for f0 in FRANGES:
+            lliures = len(ordinaries) - x[(x['ini_min'] < f0 + 60) & (x['fi_min'] > f0)]['aula_nova'].nunique()
+            if pitjor is None or lliures < pitjor[0]:
+                pitjor = (lliures, str(data_), hhmm(f0))
+            if lliures < 2:
+                sota.append({'data': str(data_), 'franja': hhmm(f0), 'lliures': lliures})
+    return {'aules_ordinaries': len(ordinaries), 'dates_comprovades': len(dates),
+            'minim_lliures': pitjor[0] if pitjor else None,
+            'on_es_minim': {'data': pitjor[1], 'franja': pitjor[2]} if pitjor else None,
+            'franges_sota_2': sota[:20], 'n_franges_sota_2': len(sota), 'compleix_regla_8': not sota, 'fonts': []}
+
+
+def sessions_canviades(codi: str = '', grup: str = '', cohort: str = '', assignatura: str = '') -> dict:
+    """Quines sessions han canviat de dia o d'hora respecte de l'horari d'avui (partida) a causa del 5.2."""
+    h = d.horari[d.horari['semestre'] == 2]
+    if codi:
+        h = h[h['codi'] == str(codi).strip()]
+    if grup:
+        g = grup.strip().upper()
+        h = h[h['grup'] == g] if '/' in g else h[h['grup'].str.match(rf'^[A-Z]+/{g}\d*$')]
+    if cohort:
+        h = h[h['titulacions_curs'].str.contains(cohort, case=False, regex=False)]
+    if assignatura:
+        h = h[h['assignatura'].str.contains(assignatura, case=False, regex=False)]
+    if h.empty:
+        return {'trobat': False, 'avis': 'Cap sessió amb aquests filtres.', 'fonts': []}
+    c = h[(h['dia'] != h['dia_nou']) | (h['h_ini'] != h['h_ini_nou'])]
+    res = {'trobat': True, 'sessions': len(h), 'canviades': len(c), 'sense_canvi': len(h) - len(c),
+           'fonts': c['id_sessio'].head(MAX_LLISTA).tolist()}
+    g = c.groupby(['codi', 'assignatura', 'grup', 'dia', 'h_ini', 'dia_nou', 'h_ini_nou']).size().reset_index(name='n')
+    res['canvis'] = [{'codi': r.codi, 'assignatura': r.assignatura, 'grup': r.grup,
+                      'abans': f'{r.dia} {r.h_ini}', 'ara': f'{r.dia_nou} {r.h_ini_nou}', 'sessions': int(r.n)}
+                     for r in g.head(MAX_LLISTA).itertuples()]
+    return res
+
+
+def calendari_info(data: str = '') -> dict:
+    """El període del 2n semestre i els dies no lectius (festius, aturades, avaluació); amb `data`, diu si és lectiu."""
+    h2 = d.horari[d.horari['semestre'] == 2]
+    cal = d.calendari[(d.calendari['data'] >= h2['data_nova'].min()) & (d.calendari['data'] <= h2['data_nova'].max())]
+    res = {'semestre_2': {'primer_dia': str(h2['data_nova'].min()), 'darrer_dia': str(h2['data_nova'].max())},
+           'dies_no_lectius': [{'data': str(r['data']), 'tipus': r['tipus'], 'motiu': r['motiu']}
+                               for _, r in cal.iterrows()][:40], 'fonts': []}
+    if data:
+        x = _data(data)
+        n = int((h2['data_nova'] == x).sum())
+        res['consulta'] = {'data': str(x), 'sessions_aquell_dia': n,
+                           'avis': _fora_semestre(x) or ('Dia lectiu normal.' if n else 'Cap sessió aquest dia.')}
+    return res
+
+
+def aturada(data: str, h_ini: str = '00:00', h_fi: str = '', motiu: str = "una aturada de l'activitat acadèmica") -> dict:
+    """Aturada general: totes les classes d'una data a partir d'una hora (o dins d'una franja) queden cancel·lades.
+    Afecta les classes que COMENCEN dins la franja (les ja començades es compten a part). Torna les sessions,
+    docents i cohorts afectats perquè es pugui redactar l'avís. No desa res."""
+    x = _data(data)
+    avis = _fora_semestre(x)
+    if 'fora del 2n semestre' in avis:
+        return {'error': avis, 'fonts': []}
+    ini = _hora(h_ini)
+    fi = _hora(h_fi) if h_fi else 24 * 60
+    h = d.horari[(d.horari['semestre'] == 2) & (d.horari['data_nova'] == x) & (d.horari['sense_espai'] != '1')]
+    en_curs = int(((h['ini_min'] < ini) & (h['fi_min'] > ini)).sum())   # ja començades: no s'inclouen
+    h = h[(h['ini_min'] >= ini) & (h['ini_min'] < fi)]
+    if h.empty:
+        return {'trobat': False, 'avis': avis or 'Cap classe afectada en aquesta franja.', 'fonts': []}
+    canvis = []
+    for _, f in h.sort_values(['ini_min', 'aula_nova']).iterrows():
+        canvis.append({'id_sessio': f['id_sessio'], 'codi': f['codi'], 'assignatura': f['assignatura'],
+                       'grup': f['grup'], 'docents': [c for c in f['docents'].split('|') if c],
+                       'cohorts': [c for c in f['titulacions_curs'].split('|') if c],
+                       'abans': {'data': str(x), 'h_ini': f['h_ini_nou'], 'h_fi': f['h_fi_nou'], 'aula': f['aula_nova']},
+                       'despres': {'data': str(x), 'h_ini': f['h_ini_nou'], 'h_fi': f['h_fi_nou'], 'aula': '',
+                                   'cancellada': True}})
+    return {'data': str(x), 'franja_afectada': f"{hhmm(ini)}-{hhmm(fi) if h_fi else 'final del dia'}", 'motiu': motiu,
+            'sessions_afectades': len(canvis), 'ja_en_curs_a_l_hora_d_inici': en_curs,
+            'docents_afectats': len({c for v in canvis for c in v['docents']}),
+            'cohorts_afectades': sorted({c for v in canvis for c in v['cohorts']}),
+            'per_tipus': h['tipus'].value_counts().to_dict(), 'canvis': canvis,
+            'nota': "No s'ha desat ni cancel·lat res a l'horari: és només la llista de sessions afectades. Les classes "
+                    "s'hauran de recuperar més endavant (això no ho decideix l'assistent).",
+            'fonts': [c['id_sessio'] for c in canvis][:MAX_LLISTA]}
+
+
+def ajuda() -> dict:
+    """Què sap fer l'assistent i què no."""
+    return {'pot_fer': prompts.POT_FER, 'no_pot_fer': prompts.NO_POT_FER, 'fonts': []}
+
+
 # ------------------------------------------------------------------------- catàleg d'eines per al LLM (JSON schema)
 EINES = {f.__name__: f for f in (consulta_sql, horari_grup, horari_aula, aules_lliures, verifica, que_passa_si,
-                                 resol_imprevist, esborrany_avis)}
+                                 resol_imprevist, esborrany_avis, ocupacio, horari_docent, cerca_assignatura,
+                                 info_aules, reserva_aules, sessions_canviades, calendari_info, aturada, ajuda)}
 
 _S, _I = {'type': 'string'}, {'type': 'integer'}
 ESQUEMES = [
@@ -482,4 +696,31 @@ ESQUEMES = [
         "passa 'canvis', es fan servir els de l'últim resol_imprevist d'aquesta conversa."),
      'parameters': {'type': 'object', 'properties': {'canvis': {'type': 'array', 'items': {'type': 'object'}},
                                                      'motiu': _S}, 'required': ['motiu']}},
+    {'name': 'ocupacio', 'description': (
+        "QUINES CLASSES HI HA a una hora (qui té classe i a quines aules): amb data (AAAA-MM-DD) aquell dia; amb dia "
+        "(L M X J V; dimecres = X) el patró setmanal. Filtres opcionals tipus_sessio (TE, PAUL, PLAB, SEM) i cohort. "
+        "Fes-la servir per a «què hi ha dimarts a les 11?» abans que consulta_sql."),
+     'parameters': {'type': 'object', 'properties': {'hora_inici': _S, 'data': _S, 'dia': _S, 'durada_min': _I,
+                                                     'tipus_sessio': _S, 'cohort': _S}, 'required': ['hora_inici']}},
+    {'name': 'horari_docent', 'description': "Classes d'un docent (codi com D380) per a una data, un dia, una setmana ISO o el patró setmanal.",
+     'parameters': {'type': 'object', 'properties': {'docent': _S, 'data': _S, 'dia': _S, 'setmana': _S},
+                    'required': ['docent']}},
+    {'name': 'cerca_assignatura', 'description': "Troba una assignatura pel nom (o part) o pel codi: grups, cohorts, docents i sessions.",
+     'parameters': {'type': 'object', 'properties': {'text': _S}, 'required': ['text']}},
+    {'name': 'info_aules', 'description': "Llista d'aules amb capacitat i tipus, filtrable per places_min, tipus o edifici (Q, B...). No mira l'ocupació (per això, aules_lliures).",
+     'parameters': {'type': 'object', 'properties': {'places_min': _I, 'tipus': _S, 'edifici': _S}}},
+    {'name': 'reserva_aules', 'description': "Comprova la regla de les 2 aules ordinàries sempre lliures: la franja amb menys aules lliures, per a una data, un dia de la setmana o tot el semestre.",
+     'parameters': {'type': 'object', 'properties': {'data': _S, 'dia': _S}}},
+    {'name': 'sessions_canviades', 'description': "Quines sessions han canviat de dia o hora respecte de l'horari d'avui a causa del 5.2, per grup, codi, cohort o assignatura.",
+     'parameters': {'type': 'object', 'properties': {'codi': _S, 'grup': _S, 'cohort': _S, 'assignatura': _S}}},
+    {'name': 'calendari_info', 'description': "Primer i darrer dia del 2n semestre, festius i setmanes no lectives; amb data, diu si és un dia lectiu.",
+     'parameters': {'type': 'object', 'properties': {'data': _S}}},
+    {'name': 'aturada', 'description': (
+        "ATURADA GENERAL o cancel·lació de totes les classes d'una data a partir d'una hora (h_ini) o dins d'una "
+        "franja (h_fi opcional): torna les sessions, docents i cohorts afectats. No desa res. Després, si es demana "
+        "l'avís, crida esborrany_avis (fa servir aquestes sessions)."),
+     'parameters': {'type': 'object', 'properties': {'data': _S, 'h_ini': _S, 'h_fi': _S, 'motiu': _S},
+                    'required': ['data']}},
+    {'name': 'ajuda', 'description': "Què sap fer l'assistent i què no. Crida-la si et pregunten què pots fer.",
+     'parameters': {'type': 'object', 'properties': {}}},
 ]
