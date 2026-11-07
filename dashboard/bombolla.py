@@ -10,11 +10,13 @@ NIVELL3 = Path(__file__).resolve().parents[1] / 'nivell3'
 sys.path.insert(0, str(NIVELL3))
 
 import config  # noqa: E402  (nivell3/config.py)
+import historial  # noqa: E402  (nivell3/historial.py: les converses desades)
 from xat import estat, vistes  # noqa: E402
 from xat.exemples import EXEMPLES  # noqa: E402
 
 AMPLADA_PLANOL = 395        # el plànol dins la bombolla (el quadre d'un missatge fa uns 420 px)
 ALCADA_XAT = 440            # alçada de la zona de missatges (amb desplaçament)
+MAX_CONVERSES = 40          # converses anteriors que es mostren (les més recents)
 
 
 def _pregunta(text: str) -> None:
@@ -42,15 +44,60 @@ def _respon(pregunta: str) -> None:
     estat.desa_conversa(pregunta)
 
 
+def _vista(v: str) -> None:
+    st.session_state.bombolla_vista = v
+
+
+def _nova() -> None:
+    estat.nova_conversa()
+    _vista('xat')
+
+
+def _obre(id_: str) -> None:
+    estat.obre_conversa(id_)
+    _vista('xat')
+
+
+def _converses() -> None:
+    """Llista de converses anteriors: obrir-ne una (torna al xat) o esborrar-la."""
+    desades = historial.llista()
+    with st.container(height=ALCADA_XAT + 62, border=False):
+        if not desades:
+            st.caption("Encara no n'hi ha cap: es desen soles a mesura que preguntes.")
+        for c in desades[:MAX_CONVERSES]:
+            actual = c['id'] == st.session_state.get('xat_id')
+            titol, data, esborra = st.columns([6, 2.4, 1], vertical_alignment='center')
+            titol.button(c['titol'], key=f"bombolla_obre_{c['id']}", use_container_width=True,
+                         type='primary' if actual else 'secondary', on_click=_obre, args=(c['id'],),
+                         help='Obre aquesta conversa')
+            d = c['data']
+            data.caption(f'{d[8:10]}/{d[5:7]} {d[11:16]}' if len(d) >= 16 else '')
+            esborra.button('', icon=':material/delete:', key=f"bombolla_del_{c['id']}", help='Esborra aquesta conversa',
+                           on_click=estat.esborra_conversa, args=(c['id'],))
+        if len(desades) > MAX_CONVERSES:
+            st.caption(f'Es mostren les {MAX_CONVERSES} més recents de {len(desades)}.')
+
+
 def _contingut() -> None:
-    cap, nova = st.columns([4, 1.4], vertical_alignment='center')
-    cap.markdown("**🗓️ Assistent d'horaris**")
-    nova.button('Nova', icon=':material/add:', on_click=estat.nova_conversa, use_container_width=True,
+    en_converses = st.session_state.get('bombolla_vista') == 'converses'
+    cap, hist, nova = st.columns([2.6, 2.1, 1.5], vertical_alignment='center')
+    cap.markdown("**🗓️ Assistent**")
+    if en_converses:
+        hist.button('Al xat', icon=':material/chat:', on_click=_vista, args=('xat',), use_container_width=True,
+                    help='Torna a la conversa actual')
+    else:
+        hist.button('Converses', icon=':material/history:', on_click=_vista, args=('converses',),
+                    use_container_width=True, help='Converses anteriors')
+    nova.button('Nova', icon=':material/add:', on_click=_nova, use_container_width=True,
                 help='Comença una conversa nova')
     vistes.avis_pendent()
     falten = config.comprova()
     if falten:
         st.error(f"Falta configurar {', '.join(falten)} (vegeu nivell3/README.md).")
+
+    if en_converses:
+        _converses()
+        return
 
     pendent = st.session_state.pop('bombolla_pendent', None)
     with st.container(height=ALCADA_XAT, border=False):
