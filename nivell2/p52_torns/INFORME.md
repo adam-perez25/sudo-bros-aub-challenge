@@ -32,12 +32,13 @@ Partim de l'horari d'avui i **canviem el mínim**:
 |---|---|---|
 | Incompliments que compten | R1-TORN 2.008, R2-FINESTRA 13, R3 97, R5-SENSE-AULA 4.541 | **0** |
 | Hores mortes (minuts) | 72.930 | **62.640** (−14 %) |
-| Sessions que canvien de franja / d'aula | — | 2.006 / 291 |
+| Sessions que canvien de franja / d'aula | — | 2.006 / 289 |
 | Solapaments de docent heretats (no compten) | 752 | 418 |
 
-Els desplaçaments entre aules (2.977) i els canvis TE↔PAUL fora del passadís (1.397) no són comparables amb avui:
-avui el 74 % de les sessions del 2n semestre no tenen aula i no hi compten. La millora d'aules els va reduir de 4.373
-i 1.825 respectivament.
+Els desplaçaments entre aules (2.209) i els canvis TE↔PAUL fora del passadís (560) no són comparables amb avui:
+avui el 74 % de les sessions del 2n semestre no tenen aula i no hi compten. La millora d'aules (veïns + cerca local
+sobre l'indicador real, `optimitza_aules`) els va reduir de 4.373 a 2.209 i de 1.825 a 560; les aules de teoria
+extra per grup baixen de 79 a 76.
 
 ## Excepcions declarades (i per què)
 

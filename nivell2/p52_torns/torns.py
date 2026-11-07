@@ -609,6 +609,114 @@ def millora_aules(h: HorariT, lliures: set[str], log: list, passades: int = 8) -
     return canvis
 
 
+def veins_ordenats(h: HorariT, sid: str) -> list[str]:
+    """Classes que el mateix alumnat té just abans i just després (les parelles que compten a l'indicador de
+    desplaçaments), sense límit de forat: l'indicador mira parelles consecutives de l'agenda del grup."""
+    b = h.base
+    s = b.sessions[sid]
+    d, i, _ = h.pos[sid]
+    fi = i + s.durada
+    abans, despres = [], []
+    for c in s.cohorts:
+        for oid in h.per_coh.get((d, c), ()):
+            o = b.sessions[oid]
+            if o.unitat == s.unitat or not _alumnat_comparteix(s, o) or oid not in h.pos:
+                continue
+            oi = h.pos[oid][1]
+            if oi + o.durada <= i:
+                abans.append((oi + o.durada, oid))
+            elif oi >= fi:
+                despres.append((oi, oid))
+    out = []
+    if abans:
+        m = max(x for x, _ in abans)
+        out += [o for x, o in abans if x == m]
+    if despres:
+        m = min(x for x, _ in despres)
+        out += [o for x, o in despres if x == m]
+    return out
+
+
+def cost_parella(b, s, o, aula_s: str, aula_o: str) -> int:
+    """1 per canvi d'aula entre dues classes consecutives + 1 si és TE<->PAUL i canvia de passadís."""
+    if not aula_s or not aula_o or aula_s == aula_o:
+        return 0
+    c = 1
+    if {s.tipus, o.tipus} == {'TE', 'PAUL'} and passadis(aula_s) != passadis(aula_o):
+        c += 1
+    return c
+
+
+def optimitza_aules(h: HorariT, lliures: set[str], log: list, passades: int = 30, per_unitat: bool = False) -> int:
+    """Fase 4b: cerca local sobre l'indicador real (desplaçaments d'aula + canvis TE<->PAUL fora del passadís).
+    Cada activitat amb aula triada per nosaltres prova, per a totes les seves sessions alhora, les aules de les
+    classes veïnes i les del seu passadís, i es queda la d'opció de menys cost que sigui vàlida. Només millores
+    estrictes: acaba sempre i mai no empitjora l'indicador."""
+    b = h.base
+    per_act = collections.defaultdict(list)
+    for sid in sorted(lliures):
+        if sid in h.pos and h.pos[sid][2] and not (per_unitat and b.sessions[sid].tipus == 'TE'):
+            per_act[b.sessions[sid].unitat if per_unitat else (b.sessions[sid].activitat or sid)].append(sid)
+    acts = list(per_act.items())
+    canvis = 0
+    for passada in range(passades):
+        millores = 0
+        for act, sids in (acts if passada % 2 == 0 else acts[::-1]):
+            sids = [x for x in sids if x in h.pos]
+            unitats = {}
+            for x in sids:
+                unitats.setdefault(b.sessions[x].unitat, [y for y in h.unitats[b.sessions[x].unitat] if y in h.pos])
+            unitats = list(unitats.values())
+            propis = {y for u in unitats for y in u}
+            veins = {x: [o for o in veins_ordenats(h, x) if o not in propis] for u in unitats for x in u}
+
+            def cost(a):
+                return sum(cost_parella(b, b.sessions[x], b.sessions[o], a, h.pos[o][2])
+                           for u in unitats for x in u for o in veins[x])
+            actual = h.pos[unitats[0][0]][2]
+            if any(h.pos[u[0]][2] != actual for u in unitats):
+                actual = None   # unitats en aules diferents: es mira si n'hi ha una de millor per a totes
+            c_act = sum(cost_parella(b, b.sessions[x], b.sessions[o], h.pos[x][2], h.pos[o][2])
+                        for u in unitats for x in u for o in veins[x])
+            cands = set()
+            for x, vs in veins.items():
+                for o in vs:
+                    a = h.pos[o][2]
+                    if a in b.aules:
+                        cands.add(a)
+                        cands.update(z for z in b.aules if passadis(z) == passadis(a))
+            if actual:
+                cands.discard(actual)
+            puntuats = sorted(((cost(a), b.aules[a].capacitat, a) for a in cands))
+            if not puntuats or puntuats[0][0] >= c_act:
+                continue
+            guard = {y: list(h.pos[y]) for u in unitats for y in u}
+            for u in unitats:
+                for y in u:
+                    h.mou(y, aula='')
+            triada = None
+            for c, _cap, a in puntuats:
+                if c >= c_act:
+                    break
+                if all(h.aula_valida(u, a, h.pos[u[0]][0], h.pos[u[0]][1], h.pos[u[0]][1] + b.sessions[u[0]].durada)
+                       for u in unitats):
+                    triada = a
+                    break
+            if triada:
+                for u in unitats:
+                    for y in u:
+                        h.mou(y, aula=triada)
+                millores += 1
+            else:
+                for y, p in guard.items():
+                    h.mou(y, aula=p[2])
+        canvis += millores
+        if not millores:
+            break
+    log.append(f"Optimització d'aules ({'per sessió' if per_unitat else 'per activitat'}): {canvis} canvis d'activitat en {passada + 1} passades")
+    return canvis
+
+
 def h_aula_doble(b, sid) -> str:
     """Les dobles titulacions no necessiten aula: es deixa la que portaven (el verificador no la mira)."""
     return b.sessions[sid].aula or ''
@@ -685,6 +793,8 @@ def main(argv=None) -> int:
                and not (b.sessions[x].aula and h.pos[x][2] == b.sessions[x].aula)
                and not (b.sessions[x].fixada and b.sessions[x].aula)}
     millora_aules(h, lliures, log)
+    optimitza_aules(h, lliures, log)
+    optimitza_aules(h, lliures, log, per_unitat=True)
 
     # sortida
     with open(a.sortida, 'w', encoding='utf-8', newline='') as f:

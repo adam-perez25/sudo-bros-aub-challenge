@@ -12,7 +12,7 @@ changing **as little as possible** vs our 5.2 proposal.
 It repairs **any** proposal, so it was built and tested before 5.2 existed. From the repo root, with `.venv` active:
 
 ```bash
-python nivell2/p53_imprevist/imprevist.py lliuraments/proposta-torns.csv --sortida lliuraments/proposta-imprevist.csv --relaxacions lliuraments/relaxacions-imprevist.csv --informe nivell2/p53_imprevist/informe-reparacio.json
+python nivell2/p53_imprevist/imprevist.py lliuraments/proposta-torns.csv --sortida lliuraments/proposta-imprevist.csv --relaxacions lliuraments/relaxacions-imprevist.csv --relaxacions-entrada lliuraments/relaxacions.csv --informe nivell2/p53_imprevist/informe-reparacio.json
 ```
 
 What it does, in this order:
