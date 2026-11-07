@@ -39,18 +39,32 @@ It reuses the timetable engine of 5.3 (`nivell2/p53_imprevist/imprevist.py`) wit
 |---|---|---|
 | Counted violations | R1-TORN 2,008 · R2 13 · R3 97 · R5 4,541 | **0** |
 | Idle gap minutes | 72,930 | **56,790** (−22 %) |
-| Sessions moved (slot / room) | — | 2,006 / 291 |
-| Room changes between consecutive classes | 2,977 before the local search | **2,110** |
-| TE↔PAUL changes outside the corridor | 1,397 before the local search | **512** |
+| Sessions moved (slot / room) | — | 2,006 / 222 |
+| Room changes between consecutive classes | 2,977 before the local search | **1,504** |
+| TE↔PAUL changes outside the corridor | 1,397 before the local search | **339** |
+| Extra theory rooms per group (R6) | 79 | **47** |
 
 Declared (460, all R1-TORN): 458 fixed GEI 1st/2nd-year sessions that are in the afternoon today (unavoidable: they
 can't move, and giving them the room they lack makes the verifier stop calling them inherited), plus **2 sessions
 proven impossible** by counting (31/5 and 9/4, weeks with a single possible day). Details in `INFORME.md` and in the
 justification column of `lliuraments/relaxacions.csv`.
 
-## Ideas to improve further (if there is time)
+## Room quality: the CP-SAT pass
 
-- Fewer room changes between consecutive classes (2,110) and TE↔PAUL changes outside the corridor (512): already cut by the
-  local search `optimitza_aules` (phase 4b); a smarter
-  room assignment (e.g. CP-SAT per day) instead of the greedy + neighbour pass.
-- Fewer idle gaps: done once (phase 3c, `replaca_blocs`: 62,640 → 56,790). Next: swap two blocks' slots when single moves stall.
+After the greedy + local search, `aules_cpsat.py` (`reassigna_aules`) re-chooses, **date by date**, the room of every unit
+we are allowed to change (today's valid rooms and fixed sessions with a room are never touched), with all times frozen.
+Objective: the verifier's own indicators (room changes between consecutive classes of a group, +1 if TE↔PAUL changes
+corridor, classes leaving today's room, a small penalty for theory outside the group's base room). Hard constraints:
+type, capacity, closures, no overlap, reserve of 2 free ordinary rooms per slot, and theory may only use rooms its
+(cohort, line) already uses, so the extra-room indicator cannot grow. The current room is the starting hint, so it never
+makes a date worse. 2 rounds, ~1 minute in total; `--sense-cpsat` skips it. It is multithreaded, so indicators can vary
+by a few units between runs (the committed CSV is the reference). 5.1 reuses it.
+
+Effect: room changes 2,110 → 1,504, TE↔PAUL outside corridor 512 → 339, changes vs today 291 → 222, extra theory rooms
+77 → 47.
+
+## Tried and not kept
+
+- Simulated annealing over the block re-placement (`replaca_blocs` accepting small worsenings, up to 300 iterations,
+  T0 up to 600): idle minutes only 56,790 → 56,490 (−0.5 %), for +1 min runtime. Idle gaps are bounded by the sessions that
+  can't move, so it was dropped.

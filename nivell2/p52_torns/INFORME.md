@@ -32,13 +32,15 @@ Partim de l'horari d'avui i **canviem el mínim**:
 |---|---|---|
 | Incompliments que compten | R1-TORN 2.008, R2-FINESTRA 13, R3 97, R5-SENSE-AULA 4.541 | **0** |
 | Hores mortes (minuts) | 72.930 | **56.790** (−22 %) |
-| Sessions que canvien de franja / d'aula | — | 2.006 / 291 |
+| Sessions que canvien de franja / d'aula | — | 2.006 / 222 |
 | Solapaments de docent heretats (no compten) | 752 | 418 |
 
-Els desplaçaments entre aules (2.110) i els canvis TE↔PAUL fora del passadís (512) no són comparables amb avui:
+Els desplaçaments entre aules (1.504) i els canvis TE↔PAUL fora del passadís (339) no són comparables amb avui:
 avui el 74 % de les sessions del 2n semestre no tenen aula i no hi compten. La millora d'aules (veïns + cerca local
-sobre l'indicador real, `optimitza_aules`) els va reduir de 4.373 a 2.110 i de 1.825 a 512; les aules de teoria
-extra per grup baixen de 79 a 77. Les hores mortes baixen encara més amb una segona passada que torna a triar la franja
+sobre l'indicador real, `optimitza_aules`) els va reduir de 4.373 a 2.110 i de 1.825 a 512; una última passada amb CP-SAT
+(`aules_cpsat.py`: cada dia es trien alhora les aules de totes les classes que podem canviar, amb tipus, aforament, tancaments,
+solapaments i reserva de 2 aules com a restriccions dures) els deixa a 1.504 i 339 i les classes que deixen l'aula d'avui
+a 222; les aules de teoria extra per grup baixen de 79 a 47. Les hores mortes baixen encara més amb una segona passada que torna a triar la franja
 de cada bloc mogut quan tot és col·locat (`replaca_blocs`, mateixa mètrica que el verificador, només millores estrictes).
 
 ## Excepcions declarades (i per què)

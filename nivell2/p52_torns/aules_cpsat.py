@@ -234,7 +234,7 @@ def _resol_dia(h, data, unitats: list[str], unitat_lliure, ordinaries, base_te, 
             m.AddHint(x[u, a], 1 if a == actual else 0)
 
     sol = cp_model.CpSolver()
-    sol.parameters.max_time_in_seconds = temps
+    sol.parameters.max_time_in_seconds = temps   # cerca en paral·lel: el resultat varia unes unitats entre execucions
     sol.parameters.num_workers = workers
     sol.parameters.random_seed = 1
     st = sol.Solve(m)
