@@ -27,6 +27,7 @@ import collections
 import csv
 import datetime as dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -34,10 +35,12 @@ AQUI = Path(__file__).resolve().parent
 ROOT = AQUI.parents[1]
 sys.path.insert(0, str(ROOT / 'repte-horaris-escola'))
 sys.path.insert(0, str(ROOT / 'nivell2' / 'p53_imprevist'))
+sys.path.insert(0, str(ROOT / 'nivell2' / 'p52_torns'))
 
 from horaris.check import FRANGES, RESERVA_MIN, _dins_finestra, _torn_ok, avalua, passadis  # noqa: E402
 from horaris.model import DIES, MATI, TARDA, carrega_base, fmt  # noqa: E402
 from imprevist import Horari, a_fila, clau, llegeix_files_csv  # noqa: E402  (motor compartit amb el 5.3)
+from aules_cpsat import reassigna_aules  # noqa: E402  (CP-SAT d'aules del 5.2, aquí només per al grau nou)
 
 PAQUET = ROOT / 'repte-horaris-escola' / 'paquet'
 ESCENARI = PAQUET / 'escenaris' / 'grau-nou-40'
@@ -191,6 +194,11 @@ def main(argv=None) -> int:
         s = base.sessions[x]
         log.append(f'NO HI CAP: {x} ({s.codi} {s.grup}) {s.data} {fmt(s.ini)}: cap franja de matí d\'aquella '
                    f'setmana amb alumnat, docent i aula lliures')
+
+    # qualitat d'aules del grau nou: CP-SAT dia a dia només sobre les seves sessions (la resta no es toca), amb els
+    # indicadors del verificador (canvis d'aula i de passadís entre classes seguides, aules de teoria del grup)
+    if os.environ.get('GRAU_NOU_CPSAT', '1') == '1':
+        reassigna_aules(h, {x for x in noves if x in h.pos}, log)
 
     # sortida: la proposta d'entrada tal com era + les sessions noves col·locades
     with open(a.sortida, 'w', encoding='utf-8', newline='') as f:

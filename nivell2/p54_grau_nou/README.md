@@ -21,7 +21,11 @@ python nivell2/p54_grau_nou/grau_nou.py nivell2/p54_grau_nou/base-52.csv --sorti
 2. If there is no free room at its hour, the session moves to another **morning** slot of the same ISO week with
    students, teacher and a room free (calendar and reserve respected).
 3. If even that fails it says so (`NO HI CAP`: which session, which date and hour).
-4. **Self-check with the official verifier:** errors of the new sessions, and any new error in the rest of the
+4. **Room quality (CP-SAT, from 5.2):** only the new degree's sessions get their rooms re-chosen date by date with the
+   verifier's indicators (room and corridor changes between consecutive classes, theory rooms per group). Room moves
+   added by the degree drop from 85 to 9 and corridor changes from 13 to 0 (`GRAU_NOU_CPSAT=0` skips it). The web
+   score stays at 73, like 5.2: room quality barely moves it.
+5. **Self-check with the official verifier:** errors of the new sessions, and any new error in the rest of the
    proposal. It also reports the **margin**: free ordinary rooms in the tightest morning slot after placing the
    degree. Exit code 0 only if everything fits and nothing broke.
 
