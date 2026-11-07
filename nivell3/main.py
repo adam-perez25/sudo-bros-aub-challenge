@@ -1,8 +1,49 @@
-from repte-horaris-escola/horaris/check.py import avalua
+# Punt d'entrada de l'assistent de nivell 3: un xat al terminal.
+#
+#   python nivell3/main.py                      xat interactiu (escriviu «sortir» per acabar)
+#   python nivell3/main.py -p "pregunta"        una sola pregunta
+#
+# Cal haver creat nivell3/.env a partir de nivell3/.env.example (adreça, model i clau del LLM de l'event).
+import argparse
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import config  # noqa: E402
+from agent import Agent  # noqa: E402
 
 
-def consulta(sql):
-    return False
+def mostra(r: dict) -> None:
+    print('\n' + r['resposta'])
+    if r['fonts']:
+        print(f"\nFonts ({len(r['fonts'])}): {', '.join(r['fonts'][:25])}" + (' …' if len(r['fonts']) > 25 else ''))
+    if r['eines']:
+        print('Eines: ' + '; '.join(f"{e['eina']}({e['arguments']})" for e in r['eines']))
 
 
-def aules_lliures(dia, hora):
+def main() -> None:
+    ap = argparse.ArgumentParser(description="Assistent d'horaris (nivell 3)")
+    ap.add_argument('-p', '--pregunta', help='fes una sola pregunta i surt')
+    a = ap.parse_args()
+    falten = config.comprova()
+    if falten:
+        sys.exit(f"Falta configurar {', '.join(falten)}: copieu nivell3/.env.example com a nivell3/.env i ompliu-lo.")
+    agent = Agent()
+    if a.pregunta:
+        mostra(agent.respon(a.pregunta))
+        return
+    print("Assistent d'horaris de l'Escola d'Enginyeria (2n semestre). Escriviu «sortir» per acabar.")
+    while True:
+        try:
+            q = input('\n> ').strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if q.lower() in ('sortir', 'exit', 'quit'):
+            break
+        if q:
+            mostra(agent.respon(q))
+
+
+if __name__ == '__main__':
+    main()
