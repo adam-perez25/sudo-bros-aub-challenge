@@ -5,6 +5,8 @@ repte-horaris-escola/validacio/*.csv
 planols/
 *.pdf
 *.zip
+# Exported reports embed tables from the data: generate locally, don't commit
+*.html
 
 # Virtual environment (each person creates their own, never commit it)
 .venv/

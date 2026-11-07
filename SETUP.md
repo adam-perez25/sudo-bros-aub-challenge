@@ -20,6 +20,8 @@ anywhere (GitHub included), so it is in `.gitignore` and you have to add it your
 2. Unzip it and copy the **`paquet`** folder into `repte-horaris-escola/`, so you end up with
    `repte-horaris-escola/paquet/sessions.csv`, `aules.csv`, …
 3. Optional: put `planols/` and the PDFs in the project root (they are ignored by git too).
+4. Optional (level 1, section 6): if you have the real-occupancy file `geres-ocupacio-setmana-2026-10-05.csv`, put it
+   in `repte-horaris-escola/validacio/`. Without it, that section of the notebook just says the file is missing.
 
 Never `git add -f` these files, and never paste the data into external AI tools: for level 3 use the event's LLM.
 
