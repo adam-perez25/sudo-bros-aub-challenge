@@ -10,6 +10,19 @@ git clone https://github.com/adam-perez25/sudo-bros-aub-challenge.git
 cd sudo-bros-aub-challenge
 ```
 
+## 1b. Get the data (NOT in GitHub)
+
+The challenge data is pseudonymised and only for the hackathon: it must **not** be published or uploaded
+anywhere (GitHub included), so it is in `.gitignore` and you have to add it yourself:
+
+1. Download the material from the organisers' SharePoint folder (link in the event message): the data zip, the
+   floor plans (`planols`) and the PDFs.
+2. Unzip it and copy the **`paquet`** folder into `repte-horaris-escola/`, so you end up with
+   `repte-horaris-escola/paquet/sessions.csv`, `aules.csv`, …
+3. Optional: put `planols/` and the PDFs in the project root (they are ignored by git too).
+
+Never `git add -f` these files, and never paste the data into external AI tools: for level 3 use the event's LLM.
+
 ## 2. Create the virtual environment (only the first time)
 
 A virtual environment is a private folder (`.venv`) with the libraries for this project, so they don't mix

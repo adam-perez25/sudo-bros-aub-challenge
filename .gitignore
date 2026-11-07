@@ -1,3 +1,11 @@
+# Challenge data and material: pseudonymised, hackathon-only, must NOT be published or uploaded.
+# Everyone downloads the zip from the organisers' SharePoint folder (see SETUP.md).
+repte-horaris-escola/paquet/
+repte-horaris-escola/validacio/*.csv
+planols/
+*.pdf
+*.zip
+
 # Virtual environment (each person creates their own, never commit it)
 .venv/
 venv/
