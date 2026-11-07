@@ -1,0 +1,10 @@
+# Streamlit settings for the level 3 web chat. Run from the project root:  streamlit run nivell3/web.py
+# Data rules: nothing may leave this computer except the calls to the event LLM.
+
+[browser]
+# Streamlit sends anonymous usage statistics by default: turned off.
+gatherUsageStats = false
+
+[server]
+# Only reachable from this computer (not from other devices on the network).
+address = "localhost"
