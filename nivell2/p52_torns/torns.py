@@ -565,6 +565,76 @@ def veins_consecutius(h: HorariT, sid: str) -> list[str]:
     return out
 
 
+def _edifici(b, aula: str) -> str:
+    """Mateixa definició que el verificador (`desplacaments_edifici`): l'edifici de l'aulari o el prefix del codi."""
+    x = b.aules.get(aula)
+    return x.edifici if x else aula.split('/')[0]
+
+
+def _veins_edifici(h: HorariT, sid: str) -> list[str]:
+    """Edificis de les classes immediatament anterior i posterior de cada grup de la sessió aquell dia."""
+    b = h.base
+    s = b.sessions[sid]
+    data = h.pos[sid][0]
+    out = []
+    for coh in s.cohorts:
+        cs = [x for x in h.per_data.get(data, ()) if x in h.pos and h.pos[x][2]
+              and coh in b.sessions[x].cohorts and b.sessions[x].linia == s.linia]
+        cs.sort(key=lambda x: h.pos[x][1])
+        if sid not in cs:
+            continue
+        i = cs.index(sid)
+        for j in (i - 1, i + 1):
+            if 0 <= j < len(cs) and b.sessions[cs[j]].unitat != s.unitat:
+                out.append(_edifici(b, h.pos[cs[j]][2]))
+    return out
+
+
+def acosta_edifici(h: HorariT, log: list) -> int:
+    """Fase 5: un grup amb classes en una aula d'avui fora de l'aulari (p. ex. B3/0021) i classes consecutives a
+    l'aulari (Q) ha de canviar d'edifici (`desplacaments_edifici`, que la puntuació web pesa molt: 17 -> 0 va fer
+    passar el 5.2 de 70 a 73). Es mouen juntes totes les sessions no fixades del grup en aquella aula (si en mogués
+    només una part, els canvis d'edifici passarien a ser entre les seves classes) a una aula ordinària de l'edifici
+    dels veïns, la mateixa per a totes les dates, si n'hi ha una de vàlida a totes (tipus, aforament, lliure,
+    reserva de 2 aules).
+    Només si redueix els canvis d'edifici."""
+    b = h.base
+    per_act: dict[str, list[str]] = collections.defaultdict(list)
+    for sid, (d, i, a) in h.pos.items():
+        s = b.sessions[sid]
+        if a and a not in b.aules and not s.fixada and s.tipus != 'PLAB':
+            per_act[f"{a} {'+'.join(s.cohorts)}"].append(sid)   # tota la teoria del grup en aquella aula, junta
+    moguts = 0
+    for act, sids in sorted(per_act.items()):
+        actual = h.pos[sids[0]][2]
+        if any(h.pos[x][2] != actual for x in sids):
+            continue
+        ed = _edifici(b, actual)
+        veins = collections.Counter(e for x in sids for e in _veins_edifici(h, x))
+        abans = sum(n for e, n in veins.items() if e != ed)
+        if not abans:
+            continue
+        desti = max((e for e in veins if e != ed), key=lambda e: veins[e])
+        unitats = sorted({b.sessions[x].unitat for x in sids})
+        for aula in sorted(a for a in h.ordinaries if b.aules[a].edifici == desti):
+            grups = [[x for x in h.unitats[u] if x in h.pos] for u in unitats]
+            if all(h.aula_valida(g, aula, h.pos[g[0]][0], h.pos[g[0]][1],
+                                 h.pos[g[0]][1] + max(b.sessions[x].durada for x in g)) for g in grups):
+                for g in grups:
+                    for x in g:
+                        h.mou(x, aula=aula)
+                despres = sum(1 for x in sids for e in _veins_edifici(h, x) if e != desti)
+                if despres < abans:
+                    log.append(f'Edifici: {act} -> {aula} ({len(sids)} sessions; canvis d\'edifici {abans} -> {despres})')
+                    moguts += len(sids)
+                else:
+                    for g in grups:
+                        for x in g:
+                            h.mou(x, aula=actual)
+                break
+    return moguts
+
+
 def millora_aules(h: HorariT, lliures: set[str], log: list, passades: int = 8) -> int:
     """Fase 4: cada activitat amb aula triada per nosaltres (no la d'avui) prova l'aula de les classes veïnes del
     seu grup (menys desplaçaments, mateix passadís TE<->PAUL), si és vàlida a totes les seves setmanes."""
@@ -942,6 +1012,7 @@ def main(argv=None) -> int:
     optimitza_aules(h, lliures, log, per_unitat=True)
     if not a.sense_cpsat:
         reassigna_aules(h, lliures, log)
+    acosta_edifici(h, log)
 
     # sortida
     with open(a.sortida, 'w', encoding='utf-8', newline='') as f:

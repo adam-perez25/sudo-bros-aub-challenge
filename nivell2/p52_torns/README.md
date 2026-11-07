@@ -29,7 +29,10 @@ python -m horaris check ../lliuraments/proposta-torns.csv --semestre 2 --relaxac
    the weekday.
 4. Local repair for leftovers (free a slot or a room by moving non-fixed classes; undo if anything fails).
 5. Room-quality pass: activities whose room we chose try the room of their group's neighbouring classes.
-6. Official verifier + relaxations file with the justification of each exception.
+6. Building pass (`acosta_edifici`): a group whose classes sit in a room outside the aulari (GED 4t in B3/0021)
+   next to its labs in Q has all those sessions moved to one free ordinary room in Q (Q3/0011), so building moves
+   go 17 -> 0. The web score weighs this heavily (70 -> 73); room and idle-gap tuning moved it by only 1-2 points.
+7. Official verifier + relaxations file with the justification of each exception.
 
 It reuses the timetable engine of 5.3 (`nivell2/p53_imprevist/imprevist.py`) with extra per-person indexes.
 
