@@ -1,6 +1,8 @@
 # Presentation dashboard
 
-One Streamlit app for the jury presentation, in the order of the talk (menu at the top):
+One Streamlit app for the jury presentation, in the order of the talk (menu at the top). The level 3 assistant is a
+floating bubble at the bottom right of every page, so it can be opened at any point of the talk and the conversation
+stays when you change page:
 
 | Page | What it shows | Data |
 |---|---|---|
@@ -8,7 +10,7 @@ One Streamlit app for the jury presentation, in the order of the talk (menu at t
 | 1 · Les dades d'avui | Level 1 findings as charts: sessions without a room, out-of-shift sessions per cohort, room-hours per week, the peak heatmap, and today's morning occupancy on the floor plan | `nivell1/analisi.py` over the package |
 | 2 · Els horaris nous | 5.1-5.4: verifier verdicts, key numbers, 5.2 room peak heatmap and moved sessions per cohort, 5.3 incidents, 5.4 new degree, and a comparison table of the verifier objectives | `lliuraments/` (proposals and `informe-*.json`) |
 | 3 · L'edifici Q | The floor plans with the timetable on top: who is in each room at a given day and hour, or average occupancy of a slot over the semester, for today and every proposal. Can compare two timetables side by side. Ready-made moments for the talk (Tuesday 10:30 today vs 5.2, the closed room and the broken projector of 5.3, the new degree of 5.4) | package + `lliuraments/` + `planols/` |
-| 4 · Assistent | The level 3 chat (`nivell3/web.py`, unchanged). When an answer names rooms, an «Al plànol» panel highlights them on the plan | event LLM |
+| 💬 Assistent (bubble) | The level 3 chat (same agent, tools and views as `nivell3/web.py`, which still runs on its own), in a pop-up on the right of every page. When an answer names rooms, an «Al plànol» panel highlights them on the plan. The conversation is kept when changing page; «Nova» starts a new one | event LLM |
 
 ## Run
 
