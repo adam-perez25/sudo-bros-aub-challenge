@@ -2,13 +2,13 @@
 
 Preguntes com les del jurat, cada una amb la resposta correcta **calculada a part** (amb el verificador oficial i
 pandas, sense el codi de l'assistent) i els id_sessio que la demostren. Serveixen per comparar el que diu
-l'assistent. Horari: la proposta del 5.2 (`lliuraments/proposta-torns.csv`), 2n semestre.
+l'assistent. Horari: `lliuraments/proposta-torns.csv` (la proposta del 5.2 al 2n semestre; l'horari d'avui, sense canvis, al 1r).
 
-Comprovació automàtica de les eines (sense LLM): `python nivell3/proves/prova_eines.py` (ha de sortir tot «OK»; 37 comprovacions) i del bucle de l'agent amb un LLM simulat: `python nivell3/proves/prova_agent.py` (15).
+Comprovació automàtica de les eines (sense LLM): `python nivell3/proves/prova_eines.py` (ha de sortir tot «OK»; 50 comprovacions, 13 del 1r semestre) i del bucle de l'agent amb un LLM simulat: `python nivell3/proves/prova_agent.py` (15).
 
 | # | Pregunta | Resposta esperada | Fonts / com es comprova |
 |---|---|---|---|
-| 1 | On té classe el grup 81 dimarts? | 115 sessions de la línia 81 (diverses assignatures i titulacions). Entre altres: 104346 TE/81 8.30-10.30 a Q4/1013; 104349 TE/81 10.30-12.30 a Q1/1003; 104353 TE/81 12.30-14.30 a Q4/0007; 104356 TE/81 10.30-12.30 a Q4/1013; 104357 TE/81 17.00-19.00 a Q2/1003; PAUL/81 de 104365 i 104368 a les 15.00 (QC/0036.B, QC/3115.1); Teoria de Jocs (104375) a B3/0021 a la tarda. L'assistent ha d'avisar que «81» és una línia amb diversos grups | S09767, S09923, S10138, S10250, S10263, S10527, S10635, S10785 |
+| 1 | On té classe el grup 81 dimarts? | Sense dir semestre, els dos: 123 sessions al 1r i 115 al 2n (línia 81, diverses assignatures i titulacions). Al 2n: 115 sessions. Entre altres: 104346 TE/81 8.30-10.30 a Q4/1013; 104349 TE/81 10.30-12.30 a Q1/1003; 104353 TE/81 12.30-14.30 a Q4/0007; 104356 TE/81 10.30-12.30 a Q4/1013; 104357 TE/81 17.00-19.00 a Q2/1003; PAUL/81 de 104365 i 104368 a les 15.00 (QC/0036.B, QC/3115.1); Teoria de Jocs (104375) a B3/0021 a la tarda. L'assistent ha d'avisar que «81» és una línia amb diversos grups | S09767, S09923, S10138, S10250, S10263, S10527, S10635, S10785 |
 | 2 | Quina aula de 60 places o més està lliure dijous a les 10? | Comprovats els 17 dijous del semestre, de 10.00 a 11.00: **Q2/1009 (90), Q4/0003 (90), Q3/1011 (130)** (Q1/1011 ja no hi és: el 5.2 actual hi té classe algun dijous a les 10) | Cap sessió de l'horari en aquestes aules a aquesta hora cap dijous; la reserva de 2 aules es manté |
 | 3 | Quantes sessions té el 2n semestre? | 7.739 | `SELECT count(*) FROM sessions WHERE semestre = 2` |
 | 4 | Quantes sessions del 2n semestre no tenen aula a l'horari d'avui? | 4.541 (sense comptar PLAB ni dobles titulacions) | verifica('partida'): R5-SENSE-AULA 4.541 |
@@ -21,3 +21,6 @@ Comprovació automàtica de les eines (sense LLM): `python nivell3/proves/prova_
 | 11 | Quines classes hi ha a Q1/1011 el dilluns 1 de febrer? | Cap. L'assistent ha de dir que no n'hi ha, no inventar-ne | horari_aula('Q1/1011', data='2027-02-01') |
 | 12 | La classe -2 està lliure? | «No hi ha cap aula -2 a l'aulari.» Directe, sense mostrar consultes ni demanar l'hora | aules_lliures(aula='-2') |
 | 13 | L'aula Q1/1003 està lliure el 2 de febrer a les 10.30? | No: hi ha 104349 TE/81 (Grafs, Topologia i Geometria Discreta) de 10.30 a 12.30 | S09923 |
+| 14 | Quines classes hi ha dimarts 13 d'octubre del 2026 a les 11? | 30 sessions (1r semestre) | ocupacio('11:00', data='2026-10-13'), comprovat amb pandas |
+| 15 | El 8 de desembre hi ha classe? | No: és festiu (La Immaculada) | calendari_info('2026-12-08'); el 1r semestre va del 7/9/2026 al 29/1/2027 |
+| 16 | L'horari del 1r semestre és vàlid? | No: NO VALIDA (és l'horari d'avui, que el 5.2 no toca): R1-TORN 2.069, R3-AULA 217... | verifica('torns', semestre=1) |

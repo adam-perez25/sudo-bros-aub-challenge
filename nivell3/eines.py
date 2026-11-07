@@ -11,7 +11,7 @@
 # - esborrany_avis: redacta (mai no envia) l'avís i l'entrada del registre de canvis
 #
 # Totes treballen sobre l'«horari actual» (per defecte el nostre 5.2, lliuraments/proposta-torns.csv) i, si no es diu
-# el contrari, sobre el 2n semestre. Totes tornen un diccionari que es pot passar a JSON, amb una clau 'fonts'.
+# el contrari, sobre tot el curs (1r i 2n semestre; amb una data, el semestre queda implícit). Totes tornen un diccionari que es pot passar a JSON, amb una clau 'fonts'.
 from __future__ import annotations
 
 import collections
@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 
 from dades import (DIES, LLIURAMENTS, PAQUET, PROPOSTA_PARTIDA, PROPOSTA_PER_DEFECTE, ROOT, ConsultaNoPermesa,
-                   carrega, hhmm, minuts)
+                   carrega, hhmm, minuts, semestre_de)
 
 sys.path.insert(0, str(ROOT / 'repte-horaris-escola'))
 sys.path.insert(0, str(ROOT / 'nivell2' / 'p53_imprevist'))
@@ -57,7 +57,7 @@ MESOS = {'gener': 1, 'febrer': 2, 'marc': 3, 'març': 3, 'abril': 4, 'maig': 5, 
 
 
 def _data(x) -> dt.date | None:
-    """Accepta AAAA-MM-DD, DD/MM/AAAA, «10 de març (de 2027)» ... Sense any, el del 2n semestre (2027)."""
+    """Accepta AAAA-MM-DD, DD/MM/AAAA, «10 de març (de 2027)» ... Sense any, el 2027 (el 2n semestre)."""
     if x in (None, ''):
         return None
     if isinstance(x, dt.date):
@@ -114,19 +114,20 @@ def _patro(df) -> list[dict]:
     """Agrupa sessions que es repeteixen (mateix grup, dia, hora i aula) en una fila «setmanal»."""
     if df.empty:
         return []
-    g = df.groupby(['codi', 'assignatura', 'grup', 'tipus', 'dia_nou', 'h_ini_nou', 'h_fi_nou', 'aula_nova'],
-                   dropna=False)
+    g = df.groupby(['semestre', 'codi', 'assignatura', 'grup', 'tipus', 'dia_nou', 'h_ini_nou', 'h_fi_nou',
+                    'aula_nova'], dropna=False)
     out = []
-    for (codi, assig, grup, tipus, dia, hi, hf, aula), x in g:
+    for (sem, codi, assig, grup, tipus, dia, hi, hf, aula), x in g:
         x = x.sort_values('data_nova')
-        out.append({'codi': codi, 'assignatura': assig, 'grup': grup, 'tipus': tipus, 'dia': dia, 'h_ini': hi,
+        out.append({'semestre': int(sem), 'codi': codi, 'assignatura': assig, 'grup': grup, 'tipus': tipus, 'dia': dia, 'h_ini': hi,
                     'h_fi': hf, 'aula': aula or '(sense aula)', 'sessions': len(x),
                     'primera': str(x['data_nova'].iloc[0]), 'darrera': str(x['data_nova'].iloc[-1]),
                     'exemples_id_sessio': x['id_sessio'].head(3).tolist()})
-    return sorted(out, key=lambda r: ('LMXJV'.find(r['dia']), r['h_ini'], r['codi']))[:MAX_LLISTA]
+    out.sort(key=lambda r: (r['semestre'], 'LMXJV'.find(r['dia']), r['h_ini'], r['codi']))
+    return [r for n in (1, 2) for r in [x for x in out if x['semestre'] == n][:MAX_LLISTA]]   # el límit és per semestre
 
 
-def _filtra(semestre=2, data=None, dia=None, setmana=None):
+def _filtra(semestre=0, data=None, dia=None, setmana=None):
     h = d.horari
     if semestre:
         h = h[h['semestre'] == int(semestre)]
@@ -159,7 +160,7 @@ def consulta_sql(sql: str) -> dict:
 
 
 def horari_grup(grup: str = '', codi: str = '', assignatura: str = '', cohort: str = '', dia: str = '',
-                data: str = '', setmana: str = '', semestre: int = 2) -> dict:
+                data: str = '', setmana: str = '', semestre: int = 0) -> dict:
     """On i quan té classe un grup. `grup` pot ser exacte (TE/81, PAUL/811) o un número de línia (81 = TE/81 i els
     seus subgrups 811, 812...)."""
     h = _filtra(semestre, data, dia, setmana)
@@ -180,7 +181,7 @@ def horari_grup(grup: str = '', codi: str = '', assignatura: str = '', cohort: s
     return res
 
 
-def horari_aula(aula: str, data: str = '', dia: str = '', setmana: str = '', semestre: int = 2) -> dict:
+def horari_aula(aula: str, data: str = '', dia: str = '', setmana: str = '', semestre: int = 0) -> dict:
     """Què passa en una aula: les seves classes (per a una data concreta, o el patró setmanal)."""
     aula = aula.strip().upper()
     if aula not in set(d.aules['aula']):
@@ -218,7 +219,7 @@ def _aula_inexistent(text: str) -> dict:
 
 
 def aules_lliures(hora_inici: str = '', durada_min: int = 60, data: str = '', dia: str = '', places_min: int = 0,
-                  tipus: str = '', aula: str = '', semestre: int = 2) -> dict:
+                  tipus: str = '', aula: str = '', semestre: int = 0) -> dict:
     """Aules de l'aulari lliures a una hora: en una data concreta, o tots els dies d'aquell dia de la setmana del
     semestre. Comprova capacitat, solapaments i la reserva de 2 aules ordinàries lliures (regla 8).
     Amb `aula`, comprova només aquella aula (i, si no existeix, ho diu i en proposa de semblants)."""
@@ -230,6 +231,12 @@ def aules_lliures(hora_inici: str = '', durada_min: int = 60, data: str = '', di
         return {'error': "Cal l'hora d'inici (HH:MM) per saber si una aula és lliure.", 'fonts': []}
     ini = _hora(hora_inici)
     fi = ini + int(durada_min)
+    if dia and not data and not int(semestre or 0):   # un dia de la setmana sense semestre: es comprova cada semestre
+        parts = {f'semestre_{n}': aules_lliures(hora_inici, durada_min, '', dia, places_min, tipus, aula, n)
+                 for n in (1, 2)}
+        return {'per_semestre': parts, 'nota': 'Resultat per separat per a cada semestre (cada un amb tots els dies '
+                'd\'aquell dia de la setmana).',
+                'fonts': sorted({f for p in parts.values() for f in p.get('fonts', [])})[:MAX_LLISTA]}
     if data:
         dates = [_data(data)]
     elif dia:
@@ -286,11 +293,16 @@ def aules_lliures(hora_inici: str = '', durada_min: int = 60, data: str = '', di
 _BASES: dict = {}
 
 
-def _base(escenari=None):
-    clau = str(escenari)
+def _base(escenari=None, semestre=2):
+    clau = f'{escenari}|{semestre}'
     if clau not in _BASES:
-        _BASES[clau] = carrega_base(PAQUET, semestre=2, escenari=escenari)
+        _BASES[clau] = carrega_base(PAQUET, semestre=semestre, escenari=escenari)
     return _BASES[clau]
+
+
+def _relax(semestre: int) -> list:
+    """Les relaxacions declarades del 5.2 només afecten el 2n semestre (el 1r no s'ha tocat)."""
+    return llegeix_relaxacions(PROPOSTES['torns']['relax']) if int(semestre) == 2 else []
 
 
 def _files(base, fitxer):
@@ -302,19 +314,24 @@ def _violacio(v) -> dict:
             'detall': v.detall}
 
 
-def verifica(proposta: str = 'torns') -> dict:
-    """Passa el verificador oficial a una de les nostres propostes (2n semestre), amb el mateix mode, escenari i
-    relaxacions que el lliurament. proposta: torns (5.2), aules (5.1), imprevist (5.3), grau-nou (5.4), partida."""
+def verifica(proposta: str = 'torns', semestre: int = 2) -> dict:
+    """Passa el verificador oficial a una de les nostres propostes, amb el mateix mode, escenari i relaxacions que el
+    lliurament. proposta: torns (5.2), aules (5.1), imprevist (5.3), grau-nou (5.4), partida. Les propostes del
+    nivell 2 són del 2n semestre; el 1r semestre només es pot verificar amb torns o partida (l'horari d'avui)."""
     cfg = PROPOSTES.get(proposta)
     if not cfg:
         return {'error': f"Proposta desconeguda: {proposta}. Opcions: {', '.join(PROPOSTES)}", 'fonts': []}
-    base = _base(cfg.get('escenari'))
-    rel = llegeix_relaxacions(cfg['relax']) if cfg.get('relax') else []
+    semestre = int(semestre or 2)
+    if semestre == 1 and proposta not in ('torns', 'partida'):
+        return {'error': f"La proposta «{proposta}» només és del 2n semestre. Per al 1r semestre: torns o partida "
+                         f"(l'horari d'avui, que el 5.2 no canvia).", 'fonts': []}
+    base = _base(cfg.get('escenari'), semestre)
+    rel = llegeix_relaxacions(cfg['relax']) if cfg.get('relax') and semestre == 2 else []
     ref = _files(base, PROPOSTA_PER_DEFECTE) if proposta == 'imprevist' else None
     inf = avalua(base, _files(base, cfg['fitxer']), rel, referencia=ref, nomes_aules=cfg.get('nomes_aules', False))
     rec = inf.recompte()
     compten = [v for v in inf.violacions if v.compta]
-    return {'proposta': proposta, 'fitxer': Path(cfg['fitxer']).name, 'veredicte': inf.veredicte,
+    return {'proposta': proposta, 'semestre': semestre, 'fitxer': Path(cfg['fitxer']).name, 'veredicte': inf.veredicte,
             'compten': {k: v['compten'] for k, v in rec.items() if v['compten']},
             'declarades': {k: v['declarades'] for k, v in rec.items() if v['declarades']},
             'heretades': {k: v['heretades'] for k, v in rec.items() if v['heretades']},
@@ -323,11 +340,29 @@ def verifica(proposta: str = 'torns') -> dict:
 
 
 def que_passa_si(nou_dia: str = '', nova_hora: str = '', nova_aula: str = '', id_sessio: str = '', codi: str = '',
-                 grup: str = '', dia_actual: str = '') -> dict:
-    """Simula un canvi sobre el 5.2 (sense desar res) i el passa pel verificador abans i després. Es pot moure una
-    sessió (id_sessio) o totes les sessions del 2n semestre d'un grup (codi + grup, opcionalment només les d'un dia)."""
-    base = _base()
-    rel = llegeix_relaxacions(PROPOSTES['torns']['relax'])
+                 grup: str = '', dia_actual: str = '', semestre: int = 0) -> dict:
+    """Simula un canvi sobre l'horari actual (sense desar res) i el passa pel verificador abans i després. Es pot
+    moure una sessió (id_sessio) o totes les sessions d'un grup (codi + grup, opcionalment només les d'un dia; si el
+    grup és als dos semestres cal dir quin)."""
+    if id_sessio:
+        fila = d.sessions[d.sessions['id_sessio'] == id_sessio.strip().upper()]
+        if fila.empty:
+            return {'error': f'No hi ha cap sessió {id_sessio}.', 'fonts': []}
+        sem = int(fila['semestre'].iloc[0])
+    elif codi and grup:
+        sems = sorted(set(d.sessions.loc[(d.sessions['codi'] == str(codi).strip())
+                                         & (d.sessions['grup'] == grup.strip().upper()), 'semestre']))
+        if int(semestre or 0):
+            sems = [n for n in sems if n == int(semestre)]
+        if not sems:
+            return {'error': 'Cap sessió coincideix amb aquest codi, grup i semestre.', 'fonts': []}
+        if len(sems) > 1:
+            return {'error': 'Aquest grup té sessions als dos semestres: cal dir quin (semestre 1 o 2).', 'fonts': []}
+        sem = sems[0]
+    else:
+        return {'error': 'Cal id_sessio, o bé codi i grup.', 'fonts': []}
+    base = _base(None, sem)
+    rel = _relax(sem)
     files = _files(base, PROPOSTA_PER_DEFECTE)
     if id_sessio:
         objectiu = {id_sessio.strip().upper()}
@@ -335,10 +370,8 @@ def que_passa_si(nou_dia: str = '', nova_hora: str = '', nova_aula: str = '', id
         da = _dia(dia_actual) if dia_actual else None
         objectiu = {f.id for f in files if base.sessions[f.id].codi == str(codi).strip()
                     and base.sessions[f.id].grup == grup.strip().upper() and (not da or f.dia == da)}
-    else:
-        return {'error': 'Cal id_sessio, o bé codi i grup.', 'fonts': []}
     if not objectiu & {f.id for f in files}:
-        return {'error': 'Cap sessió del 2n semestre coincideix amb aquests filtres.', 'fonts': []}
+        return {'error': 'Cap sessió coincideix amb aquests filtres.', 'fonts': []}
     nou = []
     for f in files:
         g = type(f)(**vars(f))
@@ -358,7 +391,7 @@ def que_passa_si(nou_dia: str = '', nova_hora: str = '', nova_aula: str = '', id
     ka, kd = claus(abans), claus(despres)
     nous = [kd[k] for k in kd if k not in ka]
     resolts = [ka[k] for k in ka if k not in kd]
-    return {'sessions_mogudes': len(objectiu), 'canvi': {'dia': nou_dia, 'hora': nova_hora, 'aula': nova_aula},
+    return {'semestre': sem, 'sessions_mogudes': len(objectiu), 'canvi': {'dia': nou_dia, 'hora': nova_hora, 'aula': nova_aula},
             'veredicte_abans': abans.veredicte, 'veredicte_despres': despres.veredicte,
             'incompliments_nous': [_violacio(v) for v in nous[:15]], 'n_incompliments_nous': len(nous),
             'incompliments_resolts': len(resolts),
@@ -398,7 +431,13 @@ def resol_imprevist(tipus: str, aula: str = '', data_ini: str = '', data_fi: str
     tipus='aula_tancada' (aula, data_ini, data_fi, opcionalment h_ini/h_fi: avaria, acte...) o
     tipus='cancellacio' (id_sessio, recuperar_fins). No desa res: torna els canvis i la verificació."""
     from imprevist import Horari, repara_cancellades, repara_tancades
-    base = carrega_base(PAQUET, semestre=2)   # còpia nova: s'hi afegeix l'imprevist
+    sem = 2   # el semestre el diu la data de l'aula tancada o la sessió cancel·lada
+    if tipus == 'aula_tancada' and data_ini:
+        sem = semestre_de(_data(data_ini))
+    elif tipus == 'cancellacio' and id_sessio:
+        fila = d.sessions[d.sessions['id_sessio'] == id_sessio.strip().upper()]
+        sem = int(fila['semestre'].iloc[0]) if not fila.empty else 2
+    base = carrega_base(PAQUET, semestre=sem)   # còpia nova: s'hi afegeix l'imprevist
     files = _files(base, PROPOSTA_PER_DEFECTE)
     if tipus == 'aula_tancada':
         aula = aula.strip().upper()
@@ -410,12 +449,12 @@ def resol_imprevist(tipus: str, aula: str = '', data_ini: str = '', data_fi: str
     elif tipus == 'cancellacio':
         sid = id_sessio.strip().upper()
         if sid not in base.sessions or not recuperar_fins:
-            return {'error': 'Cal un id_sessio del 2n semestre i recuperar_fins (AAAA-MM-DD).', 'fonts': []}
+            return {'error': 'Cal un id_sessio existent i recuperar_fins (AAAA-MM-DD).', 'fonts': []}
         base.cancellades[sid] = _data(recuperar_fins)
         motiu = f'la cancel·lació de la sessió {sid} del {base.sessions[sid].data}'
     else:
         return {'error': "tipus ha de ser 'aula_tancada' o 'cancellacio'.", 'fonts': []}
-    rel = llegeix_relaxacions(PROPOSTES['torns']['relax'])
+    rel = _relax(sem)
     abans = avalua(base, files, rel)
     h = Horari(base, files)
     log: list[str] = []
@@ -437,7 +476,7 @@ def resol_imprevist(tipus: str, aula: str = '', data_ini: str = '', data_fi: str
     nous = [v for v in despres.violacions if v.compta and (v.regla, v.sessions, v.detall if not v.sessions else '')
             not in claus(abans) and v.regla not in ('R1-FIXADA', 'R7-PLAB')]
     canvis = _canvis(base, h, files)
-    return {'tipus': tipus, 'motiu': motiu, 'canvis': canvis, 'n_canvis': len(canvis),
+    return {'tipus': tipus, 'semestre': sem, 'motiu': motiu, 'canvis': canvis, 'n_canvis': len(canvis),
             'sense_solucio': [x for x in log if x.startswith('SENSE SOLUCIÓ')],
             'relaxacions_necessaries': [{'regla': 'R7-PLAB' if base.sessions[x].tipus == 'PLAB' else 'R1-FIXADA',
                                          'id_sessio': x, 'motiu': 'sessió fixada en una aula que no es pot fer servir'}
@@ -467,13 +506,13 @@ def _regex_docent(docent: str) -> str:
 
 
 def _fora_semestre(data: dt.date | None) -> str:
-    """Avís si la data no cau dins del 2n semestre (o no és lectiva); cadena buida si és un dia normal."""
+    """Avís si la data no cau dins del curs (1r i 2n semestre) o no és lectiva; cadena buida si és un dia normal."""
     if not data:
         return ''
-    h2 = d.horari[d.horari['semestre'] == 2]['data_nova']
-    ini, fi = h2.min(), h2.max()
+    tot = d.horari['data_nova']
+    ini, fi = tot.min(), tot.max()
     if data < ini or data > fi:
-        return (f"El {data} és fora del 2n semestre (de {ini} a {fi}): no hi ha classes a l'horari. "
+        return (f"El {data} és fora del període lectiu (de {ini} a {fi}): no hi ha classes a l'horari. "
                 f"Digueu una data d'aquest període.")
     c = _calendari(data, 0, 24 * 60)
     if c:
@@ -482,7 +521,7 @@ def _fora_semestre(data: dt.date | None) -> str:
 
 
 def ocupacio(hora_inici: str, data: str = '', dia: str = '', durada_min: int = 60, tipus_sessio: str = '',
-             cohort: str = '', semestre: int = 2) -> dict:
+             cohort: str = '', semestre: int = 0) -> dict:
     """Quines classes hi ha a una hora (qui té classe, a quines aules). Amb `data`: aquell dia concret; amb `dia`
     (L..V): el patró setmanal d'aquell dia de la setmana. Filtres opcionals: tipus (TE, PAUL, PLAB, SEM) i cohort."""
     if not (data or dia):
@@ -490,7 +529,7 @@ def ocupacio(hora_inici: str, data: str = '', dia: str = '', durada_min: int = 6
     ini = _hora(hora_inici)
     fi = ini + int(durada_min)
     avis = _fora_semestre(_data(data)) if data else ''
-    if 'fora del 2n semestre' in avis:
+    if 'fora del període lectiu' in avis:
         return {'trobat': False, 'avis': avis, 'fonts': []}
     h = _filtra(semestre, data, dia)
     h = h[(h['ini_min'] < fi) & (h['fi_min'] > ini) & (h['sense_espai'] != '1')]
@@ -516,7 +555,7 @@ def ocupacio(hora_inici: str, data: str = '', dia: str = '', durada_min: int = 6
     return res
 
 
-def horari_docent(docent: str, data: str = '', dia: str = '', setmana: str = '', semestre: int = 2) -> dict:
+def horari_docent(docent: str, data: str = '', dia: str = '', setmana: str = '', semestre: int = 0) -> dict:
     """Les classes d'un docent (codi tipus D380): per a una data, un dia, una setmana ISO o el patró setmanal."""
     h = _filtra(semestre, data, dia, setmana)
     h = h[h['docents'].str.contains(_regex_docent(docent), regex=True, na=False)]
@@ -534,8 +573,8 @@ def horari_docent(docent: str, data: str = '', dia: str = '', setmana: str = '',
 
 
 def cerca_assignatura(text: str) -> dict:
-    """Troba assignatures pel nom o pel codi i en dona els grups, cohorts, docents i sessions del 2n semestre."""
-    h = d.horari[d.horari['semestre'] == 2]
+    """Troba assignatures pel nom o pel codi i en dona els semestres, grups, cohorts, docents i sessions."""
+    h = d.horari
     t = text.strip()
     m = h[h['assignatura'].str.contains(t, case=False, regex=False) | (h['codi'] == t)]
     if m.empty:
@@ -544,7 +583,8 @@ def cerca_assignatura(text: str) -> dict:
                 'semblants': difflib.get_close_matches(t, noms, n=5, cutoff=0.4), 'fonts': []}
     out = []
     for (codi, nom), x in m.groupby(['codi', 'assignatura']):
-        out.append({'codi': codi, 'assignatura': nom, 'sessions': len(x), 'grups': sorted(set(x['grup'])),
+        out.append({'codi': codi, 'assignatura': nom, 'semestres': sorted({int(n) for n in x['semestre']}),
+                    'sessions': len(x), 'grups': sorted(set(x['grup'])),
                     'cohorts': sorted({c for v in x['titulacions_curs'] for c in v.split('|') if c}),
                     'docents': sorted({c for v in x['docents'] for c in v.split('|') if c}),
                     'exemples_id_sessio': x['id_sessio'].head(2).tolist()})
@@ -567,11 +607,11 @@ def info_aules(places_min: int = 0, tipus: str = '', edifici: str = '') -> dict:
         for _, r in a.head(60).iterrows()], 'fonts': a['aula'].head(MAX_LLISTA).tolist()}
 
 
-def reserva_aules(data: str = '', dia: str = '') -> dict:
+def reserva_aules(data: str = '', dia: str = '', semestre: int = 0) -> dict:
     """Comprova la regla de les 2 aules ordinàries lliures: per a una data, un dia de la setmana o tot el semestre,
     la franja amb menys aules ordinàries lliures."""
     ordinaries = set(d.aules.loc[d.aules['ordinaria'] == 1, 'aula'])
-    h2 = d.horari[d.horari['semestre'] == 2]
+    h2 = d.horari[d.horari['semestre'] == int(semestre)] if int(semestre or 0) else d.horari
     if data:
         dates = [_data(data)]
     elif dia:
@@ -596,8 +636,9 @@ def reserva_aules(data: str = '', dia: str = '') -> dict:
 
 
 def sessions_canviades(codi: str = '', grup: str = '', cohort: str = '', assignatura: str = '') -> dict:
-    """Quines sessions han canviat de dia o d'hora respecte de l'horari d'avui (partida) a causa del 5.2."""
-    h = d.horari[d.horari['semestre'] == 2]
+    """Quines sessions han canviat de dia o d'hora respecte de l'horari d'avui (partida) a causa del 5.2 (només el
+    2n semestre: el 1r no s'ha canviat)."""
+    h = d.horari
     if codi:
         h = h[h['codi'] == str(codi).strip()]
     if grup:
@@ -620,16 +661,18 @@ def sessions_canviades(codi: str = '', grup: str = '', cohort: str = '', assigna
 
 
 def calendari_info(data: str = '') -> dict:
-    """El període del 2n semestre i els dies no lectius (festius, aturades, avaluació); amb `data`, diu si és lectiu."""
-    h2 = d.horari[d.horari['semestre'] == 2]
-    cal = d.calendari[(d.calendari['data'] >= h2['data_nova'].min()) & (d.calendari['data'] <= h2['data_nova'].max())]
-    res = {'semestre_2': {'primer_dia': str(h2['data_nova'].min()), 'darrer_dia': str(h2['data_nova'].max())},
+    """Els períodes del 1r i 2n semestre i els dies no lectius (festius, aturades, avaluació); amb `data`, diu si és lectiu."""
+    sems = {f'semestre_{n}': {'primer_dia': str(x['data_nova'].min()), 'darrer_dia': str(x['data_nova'].max())}
+            for n in (1, 2) for x in [d.horari[d.horari['semestre'] == n]]}
+    tot = d.horari['data_nova']
+    cal = d.calendari[(d.calendari['data'] >= tot.min()) & (d.calendari['data'] <= tot.max())]
+    res = {'semestres': sems,
            'dies_no_lectius': [{'data': str(r['data']), 'tipus': r['tipus'], 'motiu': r['motiu']}
-                               for _, r in cal.iterrows()][:40], 'fonts': []}
+                               for _, r in cal.iterrows()][:60], 'fonts': []}
     if data:
         x = _data(data)
-        n = int((h2['data_nova'] == x).sum())
-        res['consulta'] = {'data': str(x), 'sessions_aquell_dia': n,
+        n = int((d.horari['data_nova'] == x).sum())
+        res['consulta'] = {'data': str(x), 'semestre': semestre_de(x), 'sessions_aquell_dia': n,
                            'avis': _fora_semestre(x) or ('Dia lectiu normal.' if n else 'Cap sessió aquest dia.')}
     return res
 
@@ -640,11 +683,11 @@ def aturada(data: str, h_ini: str = '00:00', h_fi: str = '', motiu: str = "una a
     docents i cohorts afectats perquè es pugui redactar l'avís. No desa res."""
     x = _data(data)
     avis = _fora_semestre(x)
-    if 'fora del 2n semestre' in avis:
+    if 'fora del període lectiu' in avis:
         return {'error': avis, 'fonts': []}
     ini = _hora(h_ini)
     fi = _hora(h_fi) if h_fi else 24 * 60
-    h = d.horari[(d.horari['semestre'] == 2) & (d.horari['data_nova'] == x) & (d.horari['sense_espai'] != '1')]
+    h = d.horari[(d.horari['data_nova'] == x) & (d.horari['sense_espai'] != '1')]
     en_curs = int(((h['ini_min'] < ini) & (h['fi_min'] > ini)).sum())   # ja començades: no s'inclouen
     h = h[(h['ini_min'] >= ini) & (h['ini_min'] < fi)]
     if h.empty:
@@ -682,13 +725,13 @@ ESQUEMES = [
     {'name': 'consulta_sql', 'description': (
         "Consulta SQL de NOMÉS LECTURA (DuckDB, una sola SELECT) sobre les taules: sessions (una fila per sessió: "
         "id_sessio, codi, assignatura, tipus TE/PAUL/PLAB/SEM, grup, data, dia, h_ini, h_fi, durada_min, alumnes, "
-        "aula_partida, titulacions_curs, torn_requerit, fixada, docents, sense_espai, semestre), aules (aula, edifici, "
+        "aula_partida, titulacions_curs, torn_requerit, fixada, docents, sense_espai, semestre 1 o 2), aules (aula, edifici, "
         "tipus, descripcio, capacitat, ordinaria), calendari (data, tipus, h_ini, h_fi, motiu) i horari (com sessions "
         "més l'horari actual: data_nova, dia_nou, h_ini_nou, h_fi_nou, ini_min, fi_min, aula_nova, setmana_nova). "
         "Inclou sempre id_sessio quan consultis sessions. Màxim 200 files."),
      'parameters': {'type': 'object', 'properties': {'sql': _S}, 'required': ['sql']}},
     {'name': 'horari_grup', 'description': (
-        "On i quan té classe un grup a l'horari actual (2n semestre per defecte). grup exacte (TE/81, PAUL/811) o "
+        "On i quan té classe un grup a l'horari actual (1r i 2n semestre; amb data no cal dir el semestre, sense data es donen els dos, cada fila amb el seu semestre). grup exacte (TE/81, PAUL/811) o "
         "número de línia (81 = TE/81 i subgrups). Es pot filtrar per codi, assignatura, cohort (p. ex. GED:1r), dia "
         "(L M X J V), data (AAAA-MM-DD) o setmana ISO (2027-W06)."),
      'parameters': {'type': 'object', 'properties': {
@@ -700,21 +743,24 @@ ESQUEMES = [
     {'name': 'aules_lliures', 'description': (
         "Aules lliures a una hora a l'horari actual, amb capacitat mínima i tipus opcional (aula, seminari, "
         "laboratori, informatica). Amb data comprova aquell dia; amb dia (L..V) comprova tots els dies d'aquell dia "
-        "de la setmana del semestre. Respecta la reserva de 2 aules ordinàries (regla 8). Amb 'aula' comprova només "
+        "de la setmana (de cada semestre, per separat, si no es diu el semestre). Respecta la reserva de 2 aules ordinàries (regla 8). Amb 'aula' comprova només "
         "aquella aula; si no existeix, ho diu i en proposa de semblants (encara que no es doni l'hora)."),
      'parameters': {'type': 'object', 'properties': {
          'hora_inici': _S, 'durada_min': _I, 'data': _S, 'dia': _S, 'places_min': _I, 'tipus': _S, 'aula': _S,
          'semestre': _I}}},
     {'name': 'verifica', 'description': (
         "Passa el verificador oficial a una proposta: torns (5.2, l'horari actual), aules (5.1), imprevist (5.3), "
-        "grau-nou (5.4) o partida (l'horari d'avui). Torna el veredicte, els incompliments per regla i exemples."),
-     'parameters': {'type': 'object', 'properties': {'proposta': {'type': 'string', 'enum': list(PROPOSTES)}}}},
+        "grau-nou (5.4) o partida (l'horari d'avui). Per defecte el 2n semestre (semestre=2); el 1r semestre (semestre=1) "
+        "només amb torns o partida. Torna el veredicte, els incompliments per regla i exemples."),
+     'parameters': {'type': 'object', 'properties': {'proposta': {'type': 'string', 'enum': list(PROPOSTES)},
+                                                     'semestre': _I}}},
     {'name': 'que_passa_si', 'description': (
         "Simula moure una sessió (id_sessio) o les sessions d'un grup (codi + grup, opcionalment dia_actual) a un altre "
         "dia (nou_dia), hora (nova_hora, HH:MM) o aula (nova_aula), i diu quines regles trencaria segons el "
         "verificador. No desa res."),
      'parameters': {'type': 'object', 'properties': {
-         'nou_dia': _S, 'nova_hora': _S, 'nova_aula': _S, 'id_sessio': _S, 'codi': _S, 'grup': _S, 'dia_actual': _S}}},
+         'nou_dia': _S, 'nova_hora': _S, 'nova_aula': _S, 'id_sessio': _S, 'codi': _S, 'grup': _S, 'dia_actual': _S,
+         'semestre': _I}}},
     {'name': 'resol_imprevist', 'description': (
         "Proposa una solució validada pel verificador per a un imprevist, canviant el mínim: tipus='aula_tancada' "
         "(aula, data_ini, data_fi; opcionalment h_ini, h_fi) per a una avaria o un acte; tipus='cancellacio' "
@@ -740,11 +786,11 @@ ESQUEMES = [
      'parameters': {'type': 'object', 'properties': {'text': _S}, 'required': ['text']}},
     {'name': 'info_aules', 'description': "Llista d'aules amb capacitat i tipus, filtrable per places_min, tipus o edifici (Q, B...). No mira l'ocupació (per això, aules_lliures).",
      'parameters': {'type': 'object', 'properties': {'places_min': _I, 'tipus': _S, 'edifici': _S}}},
-    {'name': 'reserva_aules', 'description': "Comprova la regla de les 2 aules ordinàries sempre lliures: la franja amb menys aules lliures, per a una data, un dia de la setmana o tot el semestre.",
-     'parameters': {'type': 'object', 'properties': {'data': _S, 'dia': _S}}},
+    {'name': 'reserva_aules', 'description': "Comprova la regla de les 2 aules ordinàries sempre lliures: la franja amb menys aules lliures, per a una data, un dia de la setmana o tot el curs (o només un semestre amb semestre=1 o 2).",
+     'parameters': {'type': 'object', 'properties': {'data': _S, 'dia': _S, 'semestre': _I}}},
     {'name': 'sessions_canviades', 'description': "Quines sessions han canviat de dia o hora respecte de l'horari d'avui a causa del 5.2, per grup, codi, cohort o assignatura.",
      'parameters': {'type': 'object', 'properties': {'codi': _S, 'grup': _S, 'cohort': _S, 'assignatura': _S}}},
-    {'name': 'calendari_info', 'description': "Primer i darrer dia del 2n semestre, festius i setmanes no lectives; amb data, diu si és un dia lectiu.",
+    {'name': 'calendari_info', 'description': "Primer i darrer dia del 1r i del 2n semestre, festius i setmanes no lectives; amb data, diu el semestre i si és un dia lectiu.",
      'parameters': {'type': 'object', 'properties': {'data': _S}}},
     {'name': 'aturada', 'description': (
         "ATURADA GENERAL o cancel·lació de totes les classes d'una data a partir d'una hora (h_ini) o dins d'una "

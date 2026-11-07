@@ -7,6 +7,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import dades as D  # noqa: E402
 import eines as E  # noqa: E402
 
 resultats = []
@@ -17,12 +18,12 @@ def comprova(nom, condicio, detall=''):
     print(f"{'OK ' if condicio else 'KO '} {nom}" + (f'  ({detall})' if detall and not condicio else ''))
 
 
-r = E.horari_grup(grup='81', dia='M')
+r = E.horari_grup(grup='81', dia='M', semestre=2)
 comprova('1. grup 81 dimarts: 115 sessions', r['sessions'] == 115, r.get('sessions'))
 comprova('1. inclou 104346 TE/81 a Q4/1013 a les 8.30',
          any(p['codi'] == '104346' and p['aula'] == 'Q4/1013' and p['h_ini'] == '08:30' for p in r['setmanal']))
 
-r = E.aules_lliures(hora_inici='10:00', durada_min=60, dia='J', places_min=60)
+r = E.aules_lliures(hora_inici='10:00', durada_min=60, dia='J', places_min=60, semestre=2)
 comprova('2. aules lliures dijous 10.00 (60+)', [a['aula'] for a in r['aules_lliures']] ==
          ['Q2/1009', 'Q4/0003', 'Q3/1011'], [a['aula'] for a in r['aules_lliures']])
 comprova('2. 17 dijous comprovats', r['dates_comprovades'] == 17, r['dates_comprovades'])
@@ -79,8 +80,8 @@ h2 = E.d.horari[E.d.horari['semestre'] == 2]
 x = h2[(h2['data_nova'].astype(str) == '2027-02-02') & (h2['ini_min'] < 720) & (h2['fi_min'] > 660)]
 r = E.ocupacio('11:00', data='2027-02-02')
 comprova('14. ocupacio dimarts 2/2 a les 11: mateix nombre de sessions que pandas', r['sessions'] == len(x) > 0, r.get('sessions'))
-r = E.ocupacio('11:00', data='2026-11-10')
-comprova('14. ocupacio fora del semestre: ho diu', r['trobat'] is False and 'fora del 2n semestre' in r['avis'])
+r = E.ocupacio('11:00', data='2026-08-10')
+comprova('14. ocupacio fora del curs: ho diu', r['trobat'] is False and 'fora del període lectiu' in r['avis'])
 r = E.ocupacio('11:00', dia='M', tipus_sessio='PLAB')
 comprova('14. ocupacio per dia de la setmana: patró setmanal', r['trobat'] and 'setmanal' in r)
 
@@ -95,7 +96,7 @@ comprova('16. assignatura inexistent: ho diu', E.cerca_assignatura('Quimica quan
 r = E.info_aules(places_min=150)
 comprova('17. aules de 150+ places: només Q1/1011', [a['aula'] for a in r['aules']] == ['Q1/1011'], r.get('aules'))
 
-r = E.reserva_aules()
+r = E.reserva_aules(semestre=2)
 comprova('18. reserva de 2 aules: es compleix tot el semestre', r['compleix_regla_8'] and r['dates_comprovades'] == 83, r)
 
 r = E.sessions_canviades(cohort='GEI:3r')
@@ -109,7 +110,7 @@ r = E.aturada('2027-03-09', '11:00')
 y = h2[(h2['data_nova'].astype(str) == '2027-03-09') & (h2['ini_min'] >= 660) & (h2['sense_espai'] != '1')]
 comprova('21. aturada 9/3 des de les 11: sessions que comencen a partir de les 11', r['sessions_afectades'] == len(y) > 0,
          r.get('sessions_afectades'))
-comprova('21. aturada fora del semestre: error clar', 'fora del 2n semestre' in E.aturada('2026-11-10', '11:00')['error'])
+comprova('21. aturada fora del curs: error clar', 'fora del període lectiu' in E.aturada('2026-08-10', '11:00')['error'])
 a = E.esborrany_avis(r['canvis'], 'aturada general')
 comprova("21. avís d'aturada: esborrany no enviat, diu «cancel·lada»",
          a['enviat'] is False and len(a['registre']) == r['sessions_afectades'] and 'cancel·lada' in a['registre'][0]['a'])
@@ -122,6 +123,45 @@ comprova('22. eina inexistent: error net (no cau)', 'error' in ag.executa('envia
 comprova("23. ajuda: diu què no pot fer (enviar, canviar l'horari oficial)",
          any('Enviar' in t for t in E.ajuda()['no_pot_fer']) and any('oficial' in t for t in E.ajuda()['no_pot_fer']))
 comprova('23. el prompt inclou la regla de «cap eina encaixa»', 'CAP EINA NO ENCAIXA' in A.prompts.SISTEMA)
+
+
+# ---- 1r semestre (l'horari d'avui, que el 5.2 no canvia): respostes calculades a part amb pandas
+h1 = D.carrega().horari
+h1 = h1[h1['semestre'] == 1]
+r = E.horari_grup(grup='81', dia='M', semestre=1)
+y = h1[h1['grup'].str.match(r'^[A-Z]+/81\d*$') & (h1['dia_nou'] == 'M')]
+comprova('S1-1. grup 81 dimarts al 1r semestre: mateix nombre que pandas', r['sessions'] == len(y) > 0, (r['sessions'], len(y)))
+r = E.horari_grup(grup='81', dia='M')
+comprova('S1-2. grup 81 dimarts sense semestre: surten els dos semestres, etiquetats',
+         {p['semestre'] for p in r['setmanal']} == {1, 2})
+r = E.ocupacio('11:00', data='2026-10-13')
+x = h1[(h1['data_nova'].astype(str) == '2026-10-13') & (h1['ini_min'] < 720) & (h1['fi_min'] > 660) & (h1['sense_espai'] != '1')]
+comprova('S1-3. ocupació dimarts 13/10/2026 a les 11: mateix nombre que pandas', r['sessions'] == len(x) > 0, r.get('sessions'))
+r = E.aules_lliures(hora_inici='10:00', data='2026-10-15', places_min=60)
+ocup = set(h1[(h1['data_nova'].astype(str) == '2026-10-15') & (h1['ini_min'] < 660) & (h1['fi_min'] > 600)]['aula_nova'])
+comprova("S1-4. aules lliures 15/10/2026 a les 10: cap té classe a l'horari", r['aules_lliures'] and
+         not {a['aula'] for a in r['aules_lliures']} & ocup, [a['aula'] for a in r['aules_lliures']])
+r = E.aules_lliures(hora_inici='10:00', dia='J', places_min=60)
+comprova('S1-5. aules lliures un dia de la setmana sense semestre: es donen per separat', set(r['per_semestre']) == {'semestre_1', 'semestre_2'})
+r = E.calendari_info('2026-12-08')
+comprova('S1-6. calendari: 8/12 és festiu del 1r semestre', r['consulta']['semestre'] == 1 and 'Immaculada' in r['consulta']['avis'], r['consulta'])
+r = E.verifica('torns', 1)
+comprova("S1-7. verificador del 1r semestre: NO VALIDA (l'horari d'avui, 9.287 sessions) amb R1-TORN",
+         r['veredicte'] == 'NO VALIDA' and r['compten'].get('R1-TORN', 0) > 0, (r['veredicte'], r['compten']))
+comprova('S1-8. proposta del nivell 2 al 1r semestre: error clar', 'error' in E.verifica('aules', 1))
+sid = h1['id_sessio'].iloc[0]
+r = E.que_passa_si(id_sessio=sid, nova_hora='19:30')
+comprova('S1-9. què passa si en una sessió del 1r semestre: usa el semestre 1', r.get('semestre') == 1 and 'error' not in r, r)
+r = E.resol_imprevist('aula_tancada', aula='Q1/1003', data_ini='2026-10-15')
+comprova("S1-10. imprevist al 1r semestre: tria el semestre 1 i canvia només sessions d'aquell dia",
+         r.get('semestre') == 1 and r['n_canvis'] > 0 and all(c['abans']['data'] == '2026-10-15' for c in r['canvis']), r.get('error'))
+r = E.aturada('2026-10-15', '11:00')
+y = h1[(h1['data_nova'].astype(str) == '2026-10-15') & (h1['ini_min'] >= 660) & (h1['sense_espai'] != '1')]
+comprova('S1-11. aturada al 1r semestre: sessions que comencen a partir de les 11', r['sessions_afectades'] == len(y) > 0)
+r = E.cerca_assignatura('Càlcul')
+comprova("S1-12. cerca d'assignatura: diu els semestres", all('semestres' in a for a in r['assignatures']) and
+         any(a['semestres'] == [1] for a in r['assignatures']))
+comprova('S1-13. data en català: 13 d octubre de 2026', str(E._data("13 d'octubre de 2026")) == '2026-10-13')
 
 comprova('SQL: no deixa modificar dades', 'error' in E.consulta_sql('DELETE FROM aules'))
 comprova('SQL: no deixa llegir fitxers', 'error' in E.consulta_sql("SELECT * FROM read_csv('requirements.txt')"))
