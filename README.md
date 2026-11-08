@@ -24,9 +24,10 @@ d'IA i el quadre de comandament amb què ho presentem.
 | Pregunta | Proposta | Veredicte |
 |---|---|---|
 | 5.1 Aules | `lliuraments/proposta-aules.csv` | VALIDA (`--nomes-aules`) |
-| 5.2 Torns nous | `lliuraments/proposta-torns.csv` | VALIDA AMB RELAXACIONS DECLARADES (460, totes de la regla 1, justificades) |
-| 5.3 Imprevist | `lliuraments/proposta-imprevist.csv` | VALIDA AMB RELAXACIONS DECLARADES (470) |
-| 5.4 Grau nou | `lliuraments/proposta-grau-nou.csv` | VALIDA AMB RELAXACIONS DECLARADES (460, cap de nova) |
+| 5.2 Torns nous | `lliuraments/proposta-torns.csv` | VALIDA AMB RELAXACIONS DECLARADES (459, totes de la regla 1, justificades: 458 grups fixats + S04511) |
+| 5.3 Imprevist | `lliuraments/proposta-imprevist.csv` | VALIDA AMB RELAXACIONS DECLARADES (469) |
+| 5.4 Grau nou | `lliuraments/proposta-grau-nou.csv` | VALIDA AMB RELAXACIONS DECLARADES (459, cap de nova) |
+| Curs complet | `lliuraments/proposta-completa.csv` | VALIDA AMB RELAXACIONS DECLARADES (459; el 1r semestre no en declara cap) |
 
 Les ordres exactes per tornar-ho a comprovar són a [`lliuraments/README.md`](lliuraments/README.md).
 

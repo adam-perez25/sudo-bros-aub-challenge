@@ -35,8 +35,8 @@ r = E.verifica('partida')
 comprova('4. partida: 4.541 sense aula', r['compten'].get('R5-SENSE-AULA') == 4541, r['compten'])
 
 r = E.verifica('torns')
-comprova('5. 5.2 vàlida amb 460 relaxacions', r['veredicte'] == 'VALIDA AMB RELAXACIONS DECLARADES'
-         and not r['compten'] and r['declarades'] == {'R1-TORN': 460}, (r['veredicte'], r['compten']))
+comprova('5. 5.2 vàlida amb 459 relaxacions', r['veredicte'] == 'VALIDA AMB RELAXACIONS DECLARADES'
+         and not r['compten'] and r['declarades'] == {'R1-TORN': 459}, (r['veredicte'], r['compten']))
 
 r = E.que_passa_si(codi='102750', grup='PAUL/452', nova_hora='09:30')
 regles = {v['regla'] for v in r['incompliments_nous']}
