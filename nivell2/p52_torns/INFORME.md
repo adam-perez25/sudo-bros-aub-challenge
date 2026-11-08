@@ -1,8 +1,8 @@
 # 5.2 · Torns nous: 1r i 2n al matí, 3r i 4t a la tarda
 
-**Resultat: VALIDA AMB RELAXACIONS DECLARADES**, amb **cap incompliment que compti** a cap regla. Les 460
-excepcions declarades són totes de la regla 1: 458 sessions de grups fixats que l'Escola no vol tocar i 2 sessions
-on hem **demostrat** que no hi caben. Resum per a la Junta Permanent: [`RESUM-JUNTA.md`](RESUM-JUNTA.md).
+**Resultat: VALIDA AMB RELAXACIONS DECLARADES**, amb **cap incompliment que compti** a cap regla. Les 459
+excepcions declarades són totes de la regla 1: 458 sessions de grups fixats que l'Escola no vol tocar i 1 sessió
+on hem **demostrat** que no hi cap (S04511). Resum per a la Junta Permanent: [`RESUM-JUNTA.md`](RESUM-JUNTA.md).
 
 Fitxers (a `lliuraments/`): `proposta-torns.csv`, `relaxacions.csv`, `informe-torns.json`, `violacions-torns.csv` i
 la graella setmanal per aula (`graella-setmanal.md` i `.csv`). Es regeneren amb [`torns.py`](torns.py),
@@ -48,13 +48,14 @@ de cada bloc mogut quan tot és col·locat (`replaca_blocs`, mateixa mètrica qu
 1. **458 sessions de grups fixats de GEI de 1r i 2n que avui són a la tarda.** No es poden moure (R1-FIXADA). Avui no
    tenen aula i el verificador les considera heretades; en donar-los l'aula que els falta (obligatori, regla 5)
    deixen de ser-ho. Qualsevol proposta vàlida ha de declarar-les.
-2. **2 sessions on està demostrat que no hi caben** (regla 11, «hem demostrat que no existeix»):
-   - **S02839** (102730 TE/7): el 31/5/2027 és l'únic dia lectiu de la seva setmana i els docents D214 i D398 hi tenen
-     480 minuts de classes que han de ser a la tarda, que només en té 390. Algú s'ha de quedar fora de la tarda: és
-     aquesta classe, que compta una sola fila (la doble TE/51 en comptaria dues).
+2. **1 sessió on està demostrat que no hi cap** (regla 11, «hem demostrat que no existeix»):
    - **S04511** (102750 PAUL/452): el 9/4/2027 és l'únic dia on es pot moure (del 5 al 8/4 és la setmana
      d'avaluació). Necessita una aula d'informàtica (34 alumnes), i totes dues estan ocupades de 15.00 a 19.00 per
      grups fixats; el docent D380 té tres PAUL d'una hora per a les dues hores que queden (19.00-21.00).
 
 Les 248 sessions de doble titulació que avui es fan amb un grup de matí s'han pogut passar totes a la tarda: no cal
 cap excepció per a elles.
+
+La **S02839** (102730 TE/7, 31/5/2027), que en versions anteriors també declaràvem, ara hi cap: es fa el dilluns a
+les 15.30 a la mateixa hora que la TE/320, amb els mateixos docents (D214 i D398), que ja coincidien a l'horari
+d'avui. El verificador marca aquest solapament com a heretat i no compta.

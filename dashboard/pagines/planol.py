@@ -23,7 +23,9 @@ PRESETS = {
     'Dilluns 15/3: Q3/0013 tancada (5.3)': ('5.3 · Imprevist', dt.date(2027, 3, 15), '12:30', None),
     'Dimecres 10/3: avaria a Q1/1003 (5.3)': ('5.3 · Imprevist', dt.date(2027, 3, 10), '10:30', None),
     'Dimarts 10.30: grau nou (5.4)': ('5.4 · Grau nou de 40 places', dt.date(2027, 2, 9), '10:30', None),
+    'Divendres 9/4: per què S04511 no hi cap': ('5.2 · Torns nous', dt.date(2027, 4, 9), '16:00', None),
 }
+DIA_S04511 = dt.date(2027, 4, 9)
 HORES = [comu.hm(8 * 60 + 30 + 30 * i) for i in range(24)]          # 8.30 ... 20.00 cada mitja hora
 NOMS = list(comu.HORARIS)
 
@@ -122,6 +124,18 @@ AMPLADA = 620
 if mode == 'Un moment concret':
     st.markdown(f"**{comu.NOM_DIA[comu.DIES[data.weekday()]] if data.weekday() < 5 else 'Cap de setmana'} "
                 f"{data:%d/%m/%Y}, {hora}.** Passeu el ratolí per sobre d'una aula per veure qui hi ha.")
+    if data == DIA_S04511 and nom.startswith('5.2'):
+        st.info("**L'única relaxació demostrada: S04511** (Sistemes i Tecnologies Web, PAUL/452, 34 alumnes, docent "
+                "D380). El 9/4 és l'únic dia de la seva setmana on es pot moure (del 5 al 8/4 és setmana "
+                "d'avaluació) i, com que és a la tarda, ha d'anar a una aula d'informàtica de 34 places o més: només "
+                "**Q1/0007** i **Q1/0019**.\n\n"
+                "- **15.00-17.00** i **17.00-19.00**: totes dues ocupades per grups fixats de Programació 2 "
+                "(S15066, S15095, S15124, S15153), que no es poden moure (regla 1).\n"
+                "- **14.30-15.00**: mitja hora, massa curt.\n"
+                "- **19.00-21.00**: Q1/0007 queda lliure, però el docent D380 hi fa la PAUL/453 (S04526, 19 h) i la "
+                "PAUL/451 (S04496, 20 h): són **dues hores per a tres classes seves**.\n\n"
+                "Proveu les hores 16:00, 17:30, 19:00 i 20:00. No hi ha cap franja possible: per això es declara, "
+                "en lloc de dir que no l'hem trobada.")
 if compara and nom2:
     # dos horaris de costat, una planta
     planta = st.segmented_control('Planta', ['1', '0'], default='1', key='pl_planta',

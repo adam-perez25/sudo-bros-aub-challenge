@@ -139,9 +139,13 @@ def main() -> None:
              f"L'Escola ha dit que no es toquen; només els donem l'aula que no tenien. Motiu: mantenir aquests grups "
              f"tal com són.")
     if residus:
-        L.append(f"2. **{len(residus)} sessions on hem demostrat que no hi caben** ({', '.join(residus)}): setmanes amb un "
-                 f"sol dia lectiu (31/5 i 9/4) on un docent té més hores de tarda que la franja (480 de 390 minuts) o "
-                 f"les úniques aules vàlides estan ocupades per grups fixats. Prova detallada a `relaxacions.csv`.")
+        motiu = ("el 9/4/2027 és l'únic dia mòbil de la seva setmana (del 5 al 8/4 és setmana d'avaluació); com a "
+                 "PAUL de 34 alumnes a la tarda només pot anar a Q1/0007 o Q1/0019, ocupades de 15 a 19 h per grups "
+                 "fixats, i de 19 a 21 h el docent D380 ja hi té dues de les seves tres PAUL"
+                 if residus == ['S04511'] else "el motiu de cadascuna és a `relaxacions.csv`")
+        L.append(f"2. **{len(residus)} {'sessió' if len(residus) == 1 else 'sessions'} on hem demostrat que no hi "
+                 f"{'cap' if len(residus) == 1 else 'caben'}** ({', '.join(residus)}): {motiu}. Prova detallada a "
+                 f"`relaxacions.csv`.")
     L.append(f"\nA més, els laboratoris PLAB fixats que són a l'altre torn es queden on són sense declarar-ho (el "
              f"verificador els considera heretats): {', '.join(f'{c}: {k}' for c, k in plab.most_common(6))}.\n")
     L.append("**Quant costa cada regla:** passar 3r, 4t, dobles i màsters a la tarda vol dir moure 1.774 sessions; portar "

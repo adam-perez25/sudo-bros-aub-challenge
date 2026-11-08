@@ -33,7 +33,7 @@ l'ordre del jurat (`--escenari grau-nou-40`, amb les relaxacions del 5.2):
 
 | | |
 |---|---|
-| **Veredicte** | **VALIDA AMB RELAXACIONS DECLARADES**: les mateixes 460 del 5.2, **cap de nova** per al grau nou |
+| **Veredicte** | **VALIDA AMB RELAXACIONS DECLARADES**: les mateixes 459 del 5.2, **cap de nova** per al grau nou |
 | Sessions del grau nou col·locades | **235 de 235**, totes al dia i a l'hora que porten (0 mogudes) |
 | Sessions dels graus actuals que canvien | **0** |
 | Incompliments de les sessions noves / nous a la resta | **0 / 0** |

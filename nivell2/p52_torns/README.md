@@ -50,9 +50,10 @@ It reuses the timetable engine of 5.3 (`nivell2/p53_imprevist/imprevist.py`) wit
 | TE↔PAUL changes outside the corridor | 1,397 before the local search | **339** |
 | Extra theory rooms per group (R6) | 79 | **47** |
 
-Declared (460, all R1-TORN): 458 fixed GEI 1st/2nd-year sessions that are in the afternoon today (unavoidable: they
-can't move, and giving them the room they lack makes the verifier stop calling them inherited), plus **2 sessions
-proven impossible** by counting (31/5 and 9/4, weeks with a single possible day). Details in `INFORME.md` and in the
+Declared (459, all R1-TORN): 458 fixed GEI 1st/2nd-year sessions that are in the afternoon today (unavoidable: they
+can't move, and giving them the room they lack makes the verifier stop calling them inherited), plus **1 session
+proven impossible** (S04511, 9/4, the only possible day of its week; S02839 is now placed with an inherited teacher
+overlap). Details in `INFORME.md` and in the
 justification column of `lliuraments/relaxacions.csv`.
 
 ## Room quality: the CP-SAT pass

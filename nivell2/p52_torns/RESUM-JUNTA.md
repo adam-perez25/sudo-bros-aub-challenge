@@ -1,6 +1,6 @@
 # Resum per a la Junta Permanent · Torns nous al 2n semestre
 
-**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (460 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.083 de les 7.739 sessions canvien de franja i 222 d'aula; les hores mortes baixen de 72.930 a 49.995 minuts (−31 %).
+**Proposta:** 1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda. **Veredicte del verificador oficial: VALIDA AMB RELAXACIONS DECLARADES** (459 excepcions declarades, totes a la regla 1; cap altra regla incomplerta). 2.084 de les 7.739 sessions canvien de franja i 222 d'aula; les hores mortes baixen de 72.930 a 49.995 minuts (−31 %).
 
 ## 1. Pic de sessions simultànies davant de les aules ordinàries disponibles
 
@@ -31,8 +31,8 @@ Les classes que no van a una aula ordinària van a seminaris, laboratoris integr
 |---|---|---|---|
 | GEI:3r | 884 | 1.381 | 64 % |
 | GEI:4t | 775 | 1.217 | 64 % |
-| GEST:3r | 496 | 527 | 94 % |
-| GEET:3r | 207 | 238 | 87 % |
+| GEST:3r | 497 | 527 | 94 % |
+| GEET:3r | 208 | 238 | 87 % |
 | GEQ:3r | 163 | 163 | 100 % |
 | GCIS:2n | 124 | 124 | 100 % |
 | GEST:4t | 112 | 112 | 100 % |
@@ -52,7 +52,7 @@ Una sessió compartida per dues cohorts compta per a totes dues. Les que més ho
 ## 4. Excepcions a la regla 1 que demanem
 
 1. **458 sessions de grups fixats de 1r i 2n que avui són a la tarda** (GEI:2n: 281, GEI:1r: 163, GEI:?: 14). L'Escola ha dit que no es toquen; només els donem l'aula que no tenien. Motiu: mantenir aquests grups tal com són.
-2. **2 sessions on hem demostrat que no hi caben** (S02839, S04511): setmanes amb un sol dia lectiu (31/5 i 9/4) on un docent té més hores de tarda que la franja (480 de 390 minuts) o les úniques aules vàlides estan ocupades per grups fixats. Prova detallada a `relaxacions.csv`.
+2. **1 sessió on hem demostrat que no hi cap** (S04511): el 9/4/2027 és l'únic dia mòbil de la seva setmana (del 5 al 8/4 és setmana d'avaluació); com a PAUL de 34 alumnes a la tarda només pot anar a Q1/0007 o Q1/0019, ocupades de 15 a 19 h per grups fixats, i de 19 a 21 h el docent D380 ja hi té dues de les seves tres PAUL. Prova detallada a `relaxacions.csv`.
 
 A més, els laboratoris PLAB fixats que són a l'altre torn es queden on són sense declarar-ho (el verificador els considera heretats): GEI:3r: 349, GEI:4t: 349, GEI:2n: 98, GIA:2n: 54, GEI:1r: 50, GIA:1r: 40.
 
