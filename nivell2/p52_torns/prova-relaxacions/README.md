@@ -31,3 +31,10 @@ Rebuild: `python nivell2/p52_torns/prova-relaxacions/construeix.py` writes `prop
 (`imprevist.py --anticipa-52`): web **77** (#328). `proposta-test-53.csv` + `relaxacions-test-53.csv` = the 5.3 repair
 built on it (1 slot + 10 rooms vs that reference): web **79** (#329, reference #328), i.e. **one point below** our real
 5.3 (80, #266, built on the real 5.2). So the declared-relaxations trick does not carry over to 5.3.
+
+## 5.4 on top of the test (also not a deliverable)
+
+`proposta-test-54.csv` = the new 40-student degree placed by `grau_nou.py` on `proposta-test-cercalocal.csv`, checked
+with `relaxacions-test.csv`: all 235 new sessions fit (margin 2 free ordinary rooms in the tightest morning slot, the
+minimum, because 3rd/4th year stay in the morning here), web **77** (#330) vs **73** for our real 5.4 (#125). Like 5.2,
+5.4 rewards the declared-relaxations trick; 5.3 does not (79 vs 80).
