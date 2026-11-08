@@ -38,3 +38,6 @@ dashboard/.cache/
 
 nivell2/p52_torns/web-lot/ronda*/
 nivell2/p52_torns/web-lot/resultats.jsonl
+
+# Final deliverables derived from the pseudonymised challenge data: local / zip only, not public
+lliuraments/
