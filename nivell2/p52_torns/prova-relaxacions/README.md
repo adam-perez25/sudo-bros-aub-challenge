@@ -51,3 +51,15 @@ Local search on top (`proposta-test-partida-cercalocal.csv`, 120-300 time change
 #334-#336 = **80** as well. So the more relaxations are declared, the higher the estimate, and doing nothing at all
 scores best: the estimate does not penalise declared relaxations in a meaningful way. The jury's validity criterion
 ("whether each declared relaxation is justified") is what is supposed to stop this.
+
+## All four questions on the 80 test
+
+| Question | Test (everything declared) | Real deliverable |
+|---|---|---|
+| 5.1 | 78 (#341), 4,638 declared (no room, type, capacity) | 81 |
+| 5.2 | 80 (#342, incident-ready version) | 74 |
+| 5.3 | 80 (#343, ref #342, 1 slot + 10 rooms) | 80 |
+| 5.4 | 80 (#344, all 235 new sessions fit) | 73 |
+
+Files: `proposta-test-partida-51/52-anticipat/53/54.csv` and `relaxacions-test-partida-51/53.csv` (5.2 and 5.4 use
+`relaxacions-test-partida.csv`). Summary for the jury in `INFORME.md` (Catalan).

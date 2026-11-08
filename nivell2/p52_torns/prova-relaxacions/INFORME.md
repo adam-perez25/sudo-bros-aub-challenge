@@ -15,8 +15,17 @@ regles que incompleix treu més punts que una solució que les compleix:
 | #333 | **L'horari d'avui sense tocar**, totes les infraccions declarades | 6.659 | 0 | **80** |
 | #334-#336 | #333 millorat amb cerca local (hores mortes ~54.000, desplaçaments ~420) | ~6.500 | 120-300 | 80 |
 
-El mateix passa al 5.4 (grau nou sobre la prova de 77: **77**, davant del 73 de la nostra 5.4 real). Al 5.3 no
-(**79**, davant del nostre 80).
+### Les quatre preguntes sobre la prova de 80 (horari d'avui sense tocar, tot declarat)
+
+| Pregunta | Prova (tot declarat) | Relaxacions declarades | **El nostre lliurament real** |
+|---|---|---|---|
+| 5.1 Aules | 78 (#341) | 4.638 (sense aula, tipus, aforament) | **81** |
+| 5.2 Torns nous | **80** (#342) | 6.659 | 74 |
+| 5.3 Imprevistos | 80 (#343, referència #342; 1 franja + 10 aules) | 6.669 | **80** |
+| 5.4 Grau nou | **80** (#344; hi caben les 235 sessions noves) | 6.659 | 73 |
+
+Al 5.2 i al 5.4 la prova treu més punts que la solució real; al 5.3 empata; al 5.1 en treu menys (78 contra 81). Sobre
+la prova de 77 (només torn i finestra declarats) el 5.4 fa **77** i el 5.3 **79**.
 
 ## Com s'ha fet
 
@@ -51,6 +60,10 @@ Totes les justificacions d'aquestes relaxacions diuen obertament que són una pr
 | `proposta-test-54.csv` | 5.4 sobre la prova | 77 (#330) |
 | `proposta-test-partida.csv`, `relaxacions-test-partida.csv` | Horari d'avui sense tocar, tot declarat | 80 (#333) |
 | `proposta-test-partida-cercalocal.csv` | L'anterior amb cerca local | 80 (#334) |
+| `proposta-test-partida-51.csv`, `relaxacions-test-partida-51.csv` | 5.1 (només aules) sobre l'horari d'avui, tot declarat | 78 (#341) |
+| `proposta-test-partida-52-anticipat.csv` | La prova de 80 preparada per als imprevistos del 5.3 (relaxacions: `relaxacions-test-partida.csv`) | 80 (#342) |
+| `proposta-test-partida-53.csv`, `relaxacions-test-partida-53.csv` | 5.3 sobre l'anterior (1 franja + 10 aules) | 80 (#343) |
+| `proposta-test-partida-54.csv` | 5.4 sobre la prova de 80 (relaxacions: `relaxacions-test-partida.csv`) | 80 (#344) |
 | `construeix.py`, `lot.py` | Generen la primera prova i les variants de cerca local | |
 
 Detall tècnic en anglès a `README.md`.
