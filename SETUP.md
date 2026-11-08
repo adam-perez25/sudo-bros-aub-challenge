@@ -6,8 +6,8 @@ If you don't have it, install it from https://www.python.org/downloads/ (on Wind
 ## 1. Get the code
 
 ```bash
-git clone https://github.com/adam-perez25/sudo-bros-aub-challenge.git
-cd sudo-bros-aub-challenge
+git clone https://github.com/adam-perez25/sudo-bros-uab-challenge.git
+cd sudo-bros-uab-challenge
 ```
 
 ## 1b. Get the data (NOT in GitHub)
