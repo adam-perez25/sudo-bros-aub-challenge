@@ -3,8 +3,10 @@ import streamlit as st
 st.title("Horaris i espais de l'Escola d'Enginyeria")
 st.markdown('<div class="resposta"><b>La pregunta:</b> hi cap el model nou de torns (1r i 2n al matí; 3r, 4t, '
             'dobles titulacions i màsters a la tarda; sempre dues aules ordinàries lliures)? '
-            '<b>Sí</b>, amb una proposta que el verificador oficial dona per vàlida amb 460 relaxacions declarades '
-            '(totes de la regla 1, cadascuna justificada) i que aguanta imprevistos i un grau nou.</div>', unsafe_allow_html=True)
+            '<b>Sí</b>, amb una proposta que el verificador oficial dona per vàlida amb <b>una sola excepció '
+            'demostrada</b> a la regla 1 (un PAUL que no té cap aula d\'informàtica lliure a la tarda), a més dels '
+            'grups fixats de 1r i 2n que es queden a la tarda, i que aguanta imprevistos i un grau nou. També hem fet '
+            'el curs complet: el 1r semestre hi cap sense cap excepció.</div>', unsafe_allow_html=True)
 
 TARGETES = [
     ('pagines/nivell1.py', "1 · Les dades d'avui", 'Com s\'usen les aules avui',

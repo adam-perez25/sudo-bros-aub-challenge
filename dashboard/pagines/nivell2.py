@@ -50,7 +50,7 @@ RESTRICCIONS = [
     ('R7 · PLAB', 'Els laboratoris fixats es queden on són.'),
     ('R8 · Reserva', 'A cada franja, 2 de les 21 aules ordinàries lliures.'),
     ('Excepcions', f"Només {n(inf['5.2']['restriccions']['R1-TORN']['declarades'])} declarades, totes a la R1: "
-                   "458 grups fixats i 2 sessions demostrades impossibles."),
+                   "458 grups fixats (heretats al web) i 1 sessió demostrada impossible (S04511)."),
 ]
 for fila in (RESTRICCIONS[:4], RESTRICCIONS[4:]):
     for col, (t, txt) in zip(st.columns(4), fila):
@@ -108,9 +108,13 @@ with t52:
 
     st.markdown('#### Les excepcions a la regla 1 que demanem a la Junta')
     st.markdown("1. **458 sessions de grups fixats de 1r i 2n que avui són a la tarda** (GEI 1r i 2n). L'Escola ha dit "
-                "que no es toquen: només els donem l'aula que no tenien.\n"
-                "2. **2 sessions on hem demostrat que no hi caben** (S02839, S04511): setmanes amb un sol dia lectiu on "
-                "un docent té més hores de tarda que la franja.")
+                "que no es toquen: només els donem l'aula que no tenien. El verificador web les compta com a heretades.\n"
+                "2. **1 sessió on hem demostrat que no hi cap** (S04511, PAUL/452 del 9/4): és l'únic dia mòbil de la "
+                "setmana, les dues aules d'informàtica són de grups fixats de 15 a 19 h i de 19 a 21 h només hi caben "
+                "dues de les tres classes del docent.\n\n"
+                "La S02839 (TE/7 del 31/5), que abans també era una excepció, ara sí que hi cap: es fa a la tarda a la "
+                "mateixa hora que la TE/320, amb els mateixos docents, que ja coincidien a l'horari d'avui (solapament "
+                "heretat, no compta).")
 
 # --------------------------------------------------------------------------------------------------- 5.3
 with t53:
@@ -193,17 +197,22 @@ with tcomp:
 
 # ------------------------------------------------------------------------------------------------ prova
 with tprova:
-    st.subheader("Què puntua l'estimació web quan es declaren relaxacions")
-    st.markdown('<div class="resposta">L&#8217;estimació gairebé no penalitza les relaxacions declarades: un horari que '
-                '<b>no canvia res</b> i ho declara tot treu més punts que el que compleix les regles. '
-                '<b>No és cap lliurament</b>, és un experiment (7-8 de novembre).</div>', unsafe_allow_html=True)
+    st.subheader("Com puntua l'estimació web nova (8 de novembre)")
+    st.markdown('<div class="resposta">L&#8217;avaluador web ara segueix l&#8217;ordre del §7: primer les propostes '
+                '<b>VALIDA</b> (70-100, segons els objectius), després les que declaren relaxacions (40-69, com menys '
+                'en declaren, més amunt) i al final les no vàlides (0-39). Per passar de 69 cal arribar a <b>0 '
+                'relaxacions</b>: millorar hores mortes o aules ja no mou la xifra.</div>', unsafe_allow_html=True)
     c = st.columns(4)
-    c[0].metric('La nostra 5.2 real', '74', '2.083 canvis de franja', delta_color='off', border=True)
-    c[1].metric('Només torn i finestra declarats', '77', '0 canvis de franja', delta_color='off', border=True)
-    c[2].metric("Horari d'avui, tot declarat", '80', '6.659 relaxacions', delta_color='off', border=True)
-    c[3].metric('Canvis de franja que fan baixar la nota', '255 → 77', '414 → 76 · 2.000 → 74', delta_color='off',
-                border=True)
-    st.markdown('#### Prova de 80 contra el nostre lliurament real')
+    c[0].metric('5.2 · 2 relaxacions', '66', 'S02839 i S04511 · 10 variants', delta_color='off', border=True)
+    c[1].metric('5.2 · 1 relaxació', '69', 'S04511 · 19 variants', delta_color='off', border=True)
+    c[2].metric('Curs complet · 1 relaxació', '69', '1r semestre sense cap', delta_color='off', border=True)
+    c[3].metric('S04511 sense declarar', '38', 'NO VÀLIDA (R3-TIPUS)', delta_color='off', border=True)
+    st.markdown("Al web els grups fixats de 1r i 2n compten com a heretats, no com a declarats. La prova de posar la "
+                "S04511 en una aula docent sense declarar-la confirma que el web també exigeix aula d'informàtica "
+                "per a aquest PAUL, així que l'única excepció que queda està ben declarada.")
+    st.markdown("#### L'experiment amb l'avaluador antic (7-8 de novembre, ja no s'aplica)")
+    st.caption("L'estimació antiga gairebé no penalitzava les relaxacions declarades: un horari que no canviava res i "
+               "ho declarava tot treia 80, més que el nostre lliurament (74). No va ser mai un lliurament.")
     st.dataframe(pd.DataFrame([
         ['5.1 Aules', 78, 81, '4.638'],
         ['5.2 Torns nous', 80, 74, '6.659'],
@@ -211,14 +220,5 @@ with tprova:
         ['5.4 Grau nou', 80, 73, '6.659'],
     ], columns=['Pregunta', 'Prova (tot declarat)', 'Lliurament real', 'Relaxacions declarades a la prova']),
         hide_index=True, use_container_width=True)
-    a, b = st.columns(2, gap='large')
-    with a:
-        st.markdown('#### Què en traiem')
-        st.markdown("- A l'estimació, els **canvis de franja** pesen molt més que les **relaxacions declarades**.\n"
-                    "- La cerca local millora hores mortes i aules, però la nota no passa de 77 ni de 80.\n"
-                    "- Al 5.2 i al 5.4 la prova treu més que la solució real; al 5.3 empata; al 5.1 en treu menys.")
-    with b:
-        st.markdown('#### Per què no ho fem servir')
-        st.markdown("L'enunciat diu que la validesa mira **si cada relaxació declarada està justificada**. Les 6.659 "
-                    "de la prova no ho estan: les sessions es poden moure. Els lliuraments només declaren el que "
-                    "no hi cap, i la prova diu obertament a les justificacions que és un experiment.")
+    st.caption("Les xifres d'aquesta taula són de l'estimació antiga («legacy» a l'historial). Els organitzadors la van "
+               "corregir: ara una proposta vàlida sense relaxacions sempre passa per davant.")

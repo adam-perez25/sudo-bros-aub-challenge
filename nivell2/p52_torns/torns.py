@@ -1008,9 +1008,10 @@ def main(argv=None) -> int:
     ap.add_argument('--informe', help='resum en JSON')
     ap.add_argument('--paquet', default=str(PAQUET))
     ap.add_argument('--sense-cpsat', action='store_true', help="no passa la reassignació d'aules amb CP-SAT")
+    ap.add_argument('--semestre', type=int, choices=(1, 2), default=2, help='semestre a planificar (per data)')
     a = ap.parse_args(argv)
 
-    base = carrega_base(Path(a.paquet), semestre=2)
+    base = carrega_base(Path(a.paquet), semestre=a.semestre)
     b = base
     files_csv, _ = llegeix_files_csv(Path(a.partida))
     files_in = [a_fila(r, i) for i, r in enumerate(files_csv, start=2) if r['id_sessio'].strip() in base.sessions]
