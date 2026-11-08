@@ -38,8 +38,30 @@ for col, t in zip(cols, comu.INFORMES):
                  unsafe_allow_html=True)
 
 st.write('')
-t51, t52, t53, t54, tcomp = st.tabs(['5.1 · Aules', '5.2 · Torns nous', '5.3 · Imprevist', '5.4 · Grau nou',
-                                     'Comparativa'])
+st.markdown('### Les restriccions del model')
+st.markdown("Són les regles que cap proposta no pot trencar. El model parteix de l'horari d'avui i només "
+            "**canvia el mínim**; si una regla no es pot complir, es declara i es justifica.")
+RESTRICCIONS = [
+    ('R1 · Torn', '1r i 2n al matí; 3r, 4t, dobles i màsters a la tarda. Els grups fixats no es mouen.'),
+    ('R2 · Calendari', "Dies lectius, setmanes d'avaluació i finestres de cada activitat."),
+    ('R3 · Aula', "Tipus d'aula correcte, aforament suficient i aula no tancada."),
+    ('R4 · Cap solapament', 'Mai dues classes alhora per a una aula, un docent o un grup.'),
+    ('R5 · Aula assignada', 'Totes les sessions tenen aula.'),
+    ('R7 · PLAB', 'Els laboratoris fixats es queden on són.'),
+    ('R8 · Reserva', 'A cada franja, 2 de les 21 aules ordinàries lliures.'),
+    ('Excepcions', f"Només {n(inf['5.2']['restriccions']['R1-TORN']['declarades'])} declarades, totes a la R1: "
+                   "458 grups fixats i 2 sessions demostrades impossibles."),
+]
+for fila in (RESTRICCIONS[:4], RESTRICCIONS[4:]):
+    for col, (t, txt) in zip(st.columns(4), fila):
+        col.markdown(f'<div class="targeta"><div class="etiqueta">{t}</div>'
+                     f'<div class="peu">{txt}</div></div>', unsafe_allow_html=True)
+st.caption("L'objectiu, per sota de les regles: menys hores mortes, menys desplaçaments i menys canvis de franja "
+           "i d'aula respecte d'avui.")
+
+st.write('')
+t51, t52, t53, t54, tcomp, tprova = st.tabs(['5.1 · Aules', '5.2 · Torns nous', '5.3 · Imprevist', '5.4 · Grau nou',
+                                             'Comparativa', "Prova de l'avaluador"])
 
 # --------------------------------------------------------------------------------------------------- 5.1
 with t51:
@@ -168,3 +190,35 @@ with tcomp:
     st.dataframe(t.map(lambda v: '' if pd.isna(v) else n(int(v))), use_container_width=True)
     st.caption('Menys és millor a totes les files. «Avui» només té les xifres que no depenen de l\'aula (la majoria '
                'de sessions d\'avui no en tenen). El 5.4 té 235 sessions més (el grau nou).')
+
+# ------------------------------------------------------------------------------------------------ prova
+with tprova:
+    st.subheader("Què puntua l'estimació web quan es declaren relaxacions")
+    st.markdown('<div class="resposta">L&#8217;estimació gairebé no penalitza les relaxacions declarades: un horari que '
+                '<b>no canvia res</b> i ho declara tot treu més punts que el que compleix les regles. '
+                '<b>No és cap lliurament</b>, és un experiment (7-8 de novembre).</div>', unsafe_allow_html=True)
+    c = st.columns(4)
+    c[0].metric('La nostra 5.2 real', '74', '2.083 canvis de franja', delta_color='off', border=True)
+    c[1].metric('Només torn i finestra declarats', '77', '0 canvis de franja', delta_color='off', border=True)
+    c[2].metric("Horari d'avui, tot declarat", '80', '6.659 relaxacions', delta_color='off', border=True)
+    c[3].metric('Canvis de franja que fan baixar la nota', '255 → 77', '414 → 76 · 2.000 → 74', delta_color='off',
+                border=True)
+    st.markdown('#### Prova de 80 contra el nostre lliurament real')
+    st.dataframe(pd.DataFrame([
+        ['5.1 Aules', 78, 81, '4.638'],
+        ['5.2 Torns nous', 80, 74, '6.659'],
+        ['5.3 Imprevistos', 80, 80, '6.669'],
+        ['5.4 Grau nou', 80, 73, '6.659'],
+    ], columns=['Pregunta', 'Prova (tot declarat)', 'Lliurament real', 'Relaxacions declarades a la prova']),
+        hide_index=True, use_container_width=True)
+    a, b = st.columns(2, gap='large')
+    with a:
+        st.markdown('#### Què en traiem')
+        st.markdown("- A l'estimació, els **canvis de franja** pesen molt més que les **relaxacions declarades**.\n"
+                    "- La cerca local millora hores mortes i aules, però la nota no passa de 77 ni de 80.\n"
+                    "- Al 5.2 i al 5.4 la prova treu més que la solució real; al 5.3 empata; al 5.1 en treu menys.")
+    with b:
+        st.markdown('#### Per què no ho fem servir')
+        st.markdown("L'enunciat diu que la validesa mira **si cada relaxació declarada està justificada**. Les 6.659 "
+                    "de la prova no ho estan: les sessions es poden moure. Els lliuraments només declaren el que "
+                    "no hi cap, i la prova diu obertament a les justificacions que és un experiment.")
