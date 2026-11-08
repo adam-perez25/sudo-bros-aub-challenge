@@ -180,6 +180,7 @@ def main(argv=None) -> int:
     ap.add_argument('--escenari', help="carrega també aquest escenari (p. ex. paquet/escenaris/contingencies): cap "
                     "moviment no posa una classe en una aula tancada ni en una aula massa petita per al grup que creix, "
                     "així el 5.2 que en surt continua preparat per als imprevistos del 5.3")
+    ap.add_argument('--semestre', type=int, choices=(1, 2), default=2, help='semestre a optimitzar (per data)')
     ap.add_argument('--segons', type=float, default=300)
     ap.add_argument('--llavor', type=int, default=1)
     ap.add_argument('--temperatura', type=float, default=30.0, help='temperatura inicial del recuit (unitats de cost)')
@@ -192,14 +193,14 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     pesos = {k: getattr(a, f'pes_{k}') for k in ('mortes', 'desplac', 'edifici', 'passadis', 'franja', 'aula', 'extra')}
 
-    base = carrega_base(Path(a.paquet), semestre=2, escenari=Path(a.escenari) if a.escenari else None)
+    base = carrega_base(Path(a.paquet), semestre=a.semestre, escenari=Path(a.escenari) if a.escenari else None)
     b = base
     files_csv, _ = llegeix_files_csv(Path(a.proposta))
     files_in = [a_fila(r, i) for i, r in enumerate(files_csv, start=2) if r['id_sessio'].strip() in base.sessions]
     h = HorariT(base, files_in)
     if a.escenari and base.cancellades:
         # al 5.2 la sessió que l'escenari cancel·la encara existeix al seu lloc: s'hi deixa, fixa, com a obstacle
-        base0 = carrega_base(Path(a.paquet), semestre=2)
+        base0 = carrega_base(Path(a.paquet), semestre=a.semestre)
         h0 = HorariT(base0, [f for f in files_in if f.id in base.cancellades])
         for sid in base.cancellades:
             if sid not in h.pos and sid in h0.pos:
