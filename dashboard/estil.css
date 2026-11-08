@@ -103,13 +103,21 @@ button[data-variant="segmented_control"][data-selected="true"] {
 [data-testid="stPopoverBody"] [data-stale="true"] { opacity: 1 !important; transition: none !important; }
 .st-key-bombolla button { transition: none; }
 
-/* Pàgina gran de l'assistent: el xat creix amb la finestra; les converses anteriors, com el registre d'una làmina */
-.st-key-xat_gran { height: calc(100dvh - 15rem) !important; min-height: 360px; }
+/* Pàgina gran de l'assistent: quadrícula de 3 files (capçalera, cos, peu) i 2 columnes. La llista i el xat fan
+   la mateixa alçada i creixen amb la finestra; totes les files de la llista fan el mateix. */
+.st-key-xat_gran, .st-key-xat_llista { height: calc(100dvh - 17rem) !important; min-height: 340px; }
+.xat-cap {
+    height: 2.6rem; display: flex; align-items: center; font-family: var(--tecnica); font-weight: 600; font-size: 1.1rem;
+    color: var(--tinta); border-bottom: 2px solid var(--verd); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+.st-key-xat_llista [data-testid="stHorizontalBlock"] { gap: 0.4rem; }
+.st-key-xat_llista button { min-height: 2.5rem; justify-content: flex-start; text-align: left; }
+[class*="st-key-bombolla_obre_"] button, [class*="st-key-bombolla_obre_"] button > div { justify-content: flex-start !important; text-align: left; }
+.st-key-xat_llista button p { text-align: left; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .st-key-xat_gran [data-testid="stChatMessage"] {
     border-radius: 6px; padding: 0.8rem 1rem; margin-bottom: 0.6rem; border: 1px solid var(--linia); background: #ffffff;
 }
 .st-key-xat_gran [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { background: var(--verd-clar); border-color: #b9d6c6; }
-.xat-llista-titol { font-family: var(--tecnica); font-weight: 600; color: var(--tinta-2); margin: 1rem 0 0.3rem 0; padding-bottom: 0.3rem; border-bottom: 2px solid var(--verd); }
 [data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"]:focus { background: var(--verd) !important; border-color: var(--verd) !important; color: #ffffff !important; }
 [data-testid="stBaseButton-primary"]:hover { background: var(--verd-fosc) !important; border-color: var(--verd-fosc) !important; }
 [data-testid="stChatInput"] { border-color: var(--verd) !important; }
