@@ -24,3 +24,10 @@ openly). The board summary would also make no sense.
 
 Rebuild: `python nivell2/p52_torns/prova-relaxacions/construeix.py` writes `proposta-test.csv` (= the 5.1 file) and
 `relaxacions-test.csv`; `lot.py` is the batch runner used for the local-search variants (`decl` / `aules` modes).
+
+## 5.3 on top of the test (also not a deliverable)
+
+`proposta-test-52-anticipat.csv` = `proposta-test-cercalocal.csv` with the 5.3 incident rooms already applied
+(`imprevist.py --anticipa-52`): web **77** (#328). `proposta-test-53.csv` + `relaxacions-test-53.csv` = the 5.3 repair
+built on it (1 slot + 10 rooms vs that reference): web **79** (#329, reference #328), i.e. **one point below** our real
+5.3 (80, #266, built on the real 5.2). So the declared-relaxations trick does not carry over to 5.3.
