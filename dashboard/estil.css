@@ -69,9 +69,8 @@ hr { border-color: var(--linia) !important; }
 [data-baseweb="tab"] { font-family: var(--tecnica); font-size: 1.02rem; }
 [data-baseweb="tab-highlight"] { background-color: var(--verd) !important; }
 [data-baseweb="tab"][aria-selected="true"] { color: var(--verd-fosc); }
-[data-testid="stSegmentedControl"] button[aria-checked="true"],
-[data-testid="stSegmentedControl"] button[aria-pressed="true"],
-[data-testid="stSegmentedControl"] [data-testid^="stBaseButton-segmented_controlActive"] {
+button[data-variant="segmented_control"][aria-checked="true"],
+button[data-variant="segmented_control"][data-selected="true"] {
     background: var(--verd) !important; color: #ffffff !important; border-color: var(--verd) !important;
 }
 [data-testid="stPageLink"] a { color: var(--verd-fosc); font-weight: 600; border-radius: 3px; }
@@ -114,4 +113,5 @@ textarea:focus-visible, [tabindex]:focus-visible {
     h1 { font-size: 1.9rem !important; }
     .resposta { font-size: 1.05rem; padding: 0.8rem 1rem; }
     .targeta { min-height: 0; }
+    [data-testid="stMetricLabel"] p { white-space: normal; }
 }
