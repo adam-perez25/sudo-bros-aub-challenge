@@ -47,5 +47,3 @@ python nivell3/main.py
 
 Xat de l'assistent al terminal. Necessita la configuració local del LLM de l'event, que no és a git (vegeu
 `nivell3/README.md`). Comprovació sense LLM: `python nivell3/proves/prova_eines.py` (ha de sortir 63 de 63).
-
-El pla de treball i l'estat de cada tasca són a [`PLAN.md`](PLAN.md).
