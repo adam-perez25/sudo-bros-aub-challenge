@@ -261,6 +261,43 @@ def mou_bloc(h: HorariT, bloc: list[str], log: list) -> bool:
         unitats[b.sessions[x].unitat].append(x)
     unitats = sorted(unitats.values(), key=lambda u: b.sessions[u[0]].data)
     sense_espai = all(b.sessions[x].sense_espai for x in bloc)
+    # experiment (TORNS_PREF_AULA_AVUI=N): entre les N millors franges, primer la primera on cada unitat pot fer-se a
+    # la seva aula d'avui (així no compta a `canvis_aula`); si no n'hi ha cap, el criteri de sempre
+    n_pref = int(os.environ.get('TORNS_PREF_AULA_AVUI', 0))
+    if n_pref and not sense_espai:
+        for _, k, t in cands[:n_pref]:
+            pla = []
+            for u in unitats:
+                s = b.sessions[u[0]]
+                d = data_objectiu(s, k)
+                fi = t + s.durada
+                if dia_bloquejat(b, s, d, t, fi):
+                    d = s.data
+                    if dia_bloquejat(b, s, d, t, fi):
+                        pla = None
+                        break
+                a = s.aula if (s.aula in b.aules and not s.sense_espai) else None
+                if a is None or not all(h.persones_lliures(x, d, t, fi) for x in u):
+                    pla = None
+                    break
+                pla.append((u, d, a))
+            if not pla:
+                continue
+            posades = []
+            for u, d, a in pla:
+                fi = t + b.sessions[u[0]].durada
+                if not (all(h.persones_lliures(x, d, t, fi) for x in u) and h.aula_valida(u, a, d, t, fi)):
+                    break
+                for x in u:
+                    h.mou(x, data=d, ini=t, aula=a)
+                posades.append(u)
+            if len(posades) == len(pla):
+                log.append(f'Bloc {s0.codi} {s0.grup} ({len(bloc)} ses.): {DIES[k0]} {fmt(s0.ini)} -> {DIES[k]} '
+                           f'{fmt(t)} (aula d\'avui)')
+                return True
+            for u in posades:
+                for x in u:
+                    h.treu(x)
     for _, k, t in cands:
         pla = []   # (unitat, data)
         ok = True
@@ -930,7 +967,9 @@ def replaca_blocs(h: HorariT, bls: list[list[str]], log: list, passades: int = 6
                     if not all(h.persones_lliures(x, d, tt, fi) for x in u):
                         ok = False
                         break
-                    a = next((a for a in ([orig] if orig else []) + h.candidates(u, orig)
+                    propia = b.sessions[u[0]].aula
+                    primeres = ([propia] if os.environ.get('TORNS_PREF_AULA_AVUI') and propia in b.aules else [])
+                    a = next((a for a in primeres + ([orig] if orig else []) + h.candidates(u, orig)
                               if h.aula_valida(u, a, d, tt, fi)), None)
                     if a is None:
                         ok = False
@@ -1051,6 +1090,21 @@ def main(argv=None) -> int:
         n1 = sum(1 for x, (d, i, au) in h.pos.items() if not b.sessions[x].fixada and b.sessions[x].tipus != 'PLAB'
                  and not b.sessions[x].sense_espai and not h.persones_lliures(x, d, i, i + b.sessions[x].durada))
         log.append(f'Solapaments heretats: {n0} sessions no fixades amb xoc -> {n1}')
+    # opcional (TORNS_PER_SETMANA=1): les sessions que ja canvien d'hora (ja compten a `canvis_franja`) es poden
+    # re-col·locar setmana a setmana, cadascuna a la franja del seu torn que deixa menys hores mortes al grup
+    if os.environ.get('TORNS_PER_SETMANA') == '1':
+        mogudes = {x for x, (d, i, au) in h.pos.items() if (d, i) != (b.sessions[x].data, b.sessions[x].ini)
+                   and not b.sessions[x].fixada and b.sessions[x].tipus != 'PLAB'
+                   and fora_de_torn(b.sessions[x], b.sessions[x].ini, b.sessions[x].ini + b.sessions[x].durada)}
+        per_unitat = {}
+        for x in sorted(mogudes):
+            u = b.sessions[x].unitat
+            if u not in per_unitat:
+                xs = [y for y in h.unitats[u] if y in h.pos]
+                if all(y in mogudes for y in xs):
+                    per_unitat[u] = xs
+        replaca_blocs(h, list(per_unitat.values()), log, passades=int(os.environ.get('TORNS_PER_SETMANA_PASSADES', 3)),
+                      cost_canvi=1000.0)
     # fase 4: qualitat de les aules (només les que hem triat nosaltres: les aules d'avui no es toquen)
     lliures = {x for x in h.pos if not b.sessions[x].sense_espai and b.sessions[x].tipus != 'PLAB'
                and not (b.sessions[x].aula and h.pos[x][2] == b.sessions[x].aula)
