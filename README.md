@@ -6,8 +6,6 @@ Pregunta del repte: hi cap el model nou de torns (1r i 2n al matí; 3r, 4t, dobl
 sempre dues aules ordinàries lliures)? Aquest repositori conté el nostre anàlisi, les propostes d'horari, l'assistent
 d'IA i el quadre de comandament amb què ho presentem.
 
-![](/assets/claude.png)
-
 ## Què hi ha a cada carpeta
 
 | Carpeta | Contingut |
