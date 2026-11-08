@@ -103,6 +103,17 @@ button[data-variant="segmented_control"][data-selected="true"] {
 [data-testid="stPopoverBody"] [data-stale="true"] { opacity: 1 !important; transition: none !important; }
 .st-key-bombolla button { transition: none; }
 
+/* Pàgina gran de l'assistent: el xat creix amb la finestra; les converses anteriors, com el registre d'una làmina */
+.st-key-xat_gran { height: calc(100dvh - 15rem) !important; min-height: 360px; }
+.st-key-xat_gran [data-testid="stChatMessage"] {
+    border-radius: 6px; padding: 0.8rem 1rem; margin-bottom: 0.6rem; border: 1px solid var(--linia); background: #ffffff;
+}
+.st-key-xat_gran [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) { background: var(--verd-clar); border-color: #b9d6c6; }
+.xat-llista-titol { font-family: var(--tecnica); font-weight: 600; color: var(--tinta-2); margin: 1rem 0 0.3rem 0; padding-bottom: 0.3rem; border-bottom: 2px solid var(--verd); }
+[data-testid="stBaseButton-primary"], [data-testid="stBaseButton-primary"]:focus { background: var(--verd) !important; border-color: var(--verd) !important; color: #ffffff !important; }
+[data-testid="stBaseButton-primary"]:hover { background: var(--verd-fosc) !important; border-color: var(--verd-fosc) !important; }
+[data-testid="stChatInput"] { border-color: var(--verd) !important; }
+
 /* Accessibilitat: focus visible a tot arreu i moviment reduït */
 a:focus-visible, button:focus-visible, [role="tab"]:focus-visible, [role="radio"]:focus-visible, input:focus-visible,
 textarea:focus-visible, [tabindex]:focus-visible {

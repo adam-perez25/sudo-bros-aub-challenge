@@ -15,6 +15,8 @@ from xat import estat, vistes  # noqa: E402
 from xat.exemples import EXEMPLES  # noqa: E402
 
 AMPLADA_PLANOL = 395        # el plànol dins la bombolla (el quadre d'un missatge fa uns 420 px)
+AMPLADA_PLANOL_GRAN = 720   # el plànol a la pàgina de l'assistent
+PAGINA_GRAN = 'assistent'   # url_path de la pàgina gran (pagines/assistent.py)
 ALCADA_XAT = 440            # alçada de la zona de missatges (amb desplaçament)
 MAX_CONVERSES = 40          # converses anteriors que es mostren (les més recents)
 
@@ -30,7 +32,7 @@ def _envia() -> None:
     st.session_state.bombolla_text = ''
 
 
-def _respon(pregunta: str) -> None:
+def _respon(pregunta: str, amplada_planol: int = AMPLADA_PLANOL) -> None:
     vistes.missatge_usuari(pregunta)
     st.session_state.historial.append({'rol': 'user', 'text': pregunta})
     agent = st.session_state.agent
@@ -39,7 +41,7 @@ def _respon(pregunta: str) -> None:
             agent.ultim_avis = None
             r = agent.respon(pregunta)
             r['avis'] = agent.ultim_avis
-        vistes.mostra_resposta(r, False, AMPLADA_PLANOL)
+        vistes.mostra_resposta(r, False, amplada_planol)
     st.session_state.historial.append({'rol': 'assistant', 'r': r})
     estat.desa_conversa(pregunta)
 
@@ -58,10 +60,10 @@ def _obre(id_: str) -> None:
     _vista('xat')
 
 
-def _converses() -> None:
+def _converses(alcada: int = ALCADA_XAT + 62) -> None:
     """Llista de converses anteriors: obrir-ne una (torna al xat) o esborrar-la."""
     desades = historial.llista()
-    with st.container(height=ALCADA_XAT + 62, border=False):
+    with st.container(height=alcada, border=False):
         if not desades:
             st.caption("Encara no n'hi ha cap: es desen soles a mesura que preguntes.")
         for c in desades[:MAX_CONVERSES]:
@@ -79,12 +81,15 @@ def _converses() -> None:
 
 
 @st.fragment
-def _contingut() -> None:
+def _contingut(pagina_gran=None) -> None:
     """Fragment: canviar de vista (xat/converses), enviar o esborrar només re-executa la bombolla, no tota la
     pàgina; així no hi ha el parpelleig de contingut vell i nou barrejats mentre la pàgina es recalcula."""
     en_converses = st.session_state.get('bombolla_vista') == 'converses'
     cap, hist, nova = st.columns([2.6, 2.1, 1.5], vertical_alignment='center')
     cap.markdown("**🗓️ Assistent**")
+    if pagina_gran is not None:
+        st.page_link(pagina_gran, label='Amplia a pantalla gran', icon=':material/open_in_full:',
+                     help="Obre l'assistent en una pàgina pròpia, amb la mateixa conversa")
     if en_converses:
         hist.button('Al xat', icon=':material/chat:', on_click=_vista, args=('xat',), use_container_width=True,
                     help='Torna a la conversa actual')
@@ -121,9 +126,48 @@ def _contingut() -> None:
         c2.form_submit_button('Envia', icon=':material/send:', on_click=_envia, use_container_width=True)
 
 
-def munta() -> None:
-    """Dibuixa el botó flotant i, quan s'obre, el xat. S'ha de cridar a cada execució, a qualsevol pàgina."""
+def munta(pagina_gran=None) -> None:
+    """Dibuixa el botó flotant i, quan s'obre, el xat. S'ha de cridar a cada execució, a qualsevol pàgina.
+    Amb pagina_gran (la st.Page de l'assistent) la bombolla hi porta un enllaç; a la pàgina gran no es dibuixa."""
     estat.inicia()
+    if pagina_gran is not None and st.context.url.rstrip('/').endswith('/' + PAGINA_GRAN):
+        return
     with st.container(key='bombolla'):
         with st.popover('💬 Assistent', use_container_width=False):
-            _contingut()
+            _contingut(pagina_gran)
+
+
+def pagina() -> None:
+    """La pàgina gran de l'assistent: les converses a l'esquerra i el xat a tot l'ample, per a converses llargues.
+    Fa servir el mateix estat que la bombolla, així que la conversa començada allà continua aquí i a l'inrevés."""
+    estat.inicia()
+    st.session_state.bombolla_vista = 'xat'
+    esq, dre = st.columns([1.45, 3.2], gap='large')
+
+    with esq:
+        st.button('Nova conversa', icon=':material/add:', type='primary', use_container_width=True, on_click=estat.nova_conversa)
+        st.markdown('<div class="xat-llista-titol">Converses anteriors</div>', unsafe_allow_html=True)
+        _converses(alcada=520)
+        st.caption('Es desen només en aquest ordinador.')
+
+    with dre:
+        vistes.avis_pendent()
+        falten = config.comprova()
+        if falten:
+            st.error(f"Falta configurar {', '.join(falten)} (vegeu nivell3/README.md).")
+        pendent = st.session_state.pop('bombolla_pendent', None)
+        with st.container(height=560, border=False, key='xat_gran'):
+            if not st.session_state.historial and not pendent:
+                st.markdown('<div class="targeta-buida"><div class="gran">💬</div><b>Com us puc ajudar?</b><br>'
+                            'Escriviu una pregunta o proveu un exemple.</div>', unsafe_allow_html=True)
+                cols = st.columns(2)
+                for i, (etiqueta, pregunta) in enumerate(EXEMPLES[:6]):
+                    cols[i % 2].button(etiqueta, key=f'gran_ex_{etiqueta}', on_click=_pregunta, args=(pregunta,),
+                                       use_container_width=True)
+            vistes.historial_xat(False, AMPLADA_PLANOL_GRAN)
+            if pendent:
+                _respon(pendent, AMPLADA_PLANOL_GRAN)
+        nova = st.chat_input("Escriviu una pregunta sobre l'horari…", key='gran_text')
+        if nova and nova.strip():
+            _pregunta(nova.strip())
+            st.rerun()

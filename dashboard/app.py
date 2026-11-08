@@ -1,5 +1,5 @@
 # Tauler per a la presentació: nivell 1 (les dades d'avui), nivell 2 (els horaris nous) i el plànol de l'edifici Q, en
-# aquest ordre (menú de dalt). L'assistent del nivell 3 és una bombolla flotant a baix a la dreta, a totes les pàgines.
+# aquest ordre (menú de dalt). L'assistent del nivell 3 és una bombolla flotant a baix a la dreta, a totes les pàgines, i una pàgina pròpia («Assistent») per a converses llargues.
 #
 #   streamlit run dashboard/app.py        (des de l'arrel del projecte, amb el .venv actiu)
 #
@@ -25,11 +25,13 @@ if falten:
     st.stop()
 
 PAGINES = AQUI / 'pagines'
+pagina_xat = st.Page(PAGINES / 'assistent.py', title='Assistent', icon=':material/forum:', url_path=bombolla.PAGINA_GRAN)
 pg = st.navigation([
     st.Page(PAGINES / 'inici.py', title='Inici', icon=':material/home:', default=True),
     st.Page(PAGINES / 'nivell1.py', title="1 · Les dades d'avui", icon=':material/query_stats:'),
     st.Page(PAGINES / 'nivell2.py', title='2 · Els horaris nous', icon=':material/calendar_month:'),
     st.Page(PAGINES / 'planol.py', title="3 · L'edifici Q", icon=':material/map:'),
+    pagina_xat,
 ], position='top')
-bombolla.munta()      # abans de pg.run(): una pàgina que fa st.stop() no pot amagar la bombolla
+bombolla.munta(pagina_xat)      # abans de pg.run(): una pàgina que fa st.stop() no pot amagar la bombolla
 pg.run()
