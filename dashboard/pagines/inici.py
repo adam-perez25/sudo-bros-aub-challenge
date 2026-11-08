@@ -13,8 +13,8 @@ TARGETES = [
      "El 74 % de les sessions del 2n semestre no tenen aula, 2.008 sessions són al torn equivocat i el límit "
      "real és el pic del dimarts al matí."),
     ('pagines/nivell2.py', '2 · Els horaris nous', '5.1, 5.2, 5.3 i 5.4',
-     'El 5.1 és vàlid sense relaxar res; el 5.2, 5.3 i 5.4 són vàlids amb relaxacions declarades. Hores mortes −22 %, cap desplaçament d\'edifici, imprevistos resolts '
-     'amb 56 canvis i el grau nou hi cap sense moure res.'),
+     'El 5.1 és vàlid sense relaxar res; el 5.2, 5.3 i 5.4 són vàlids amb relaxacions declarades. Hores mortes −31 %, cap desplaçament d\'edifici, imprevistos resolts '
+     'amb 11 canvis (1 franja i 10 aules) i el grau nou hi cap sense moure res.'),
     ('pagines/planol.py', "3 · L'edifici Q", 'Els plànols, amb l\'horari a sobre',
      'Qui hi ha a cada aula a qualsevol hora, avui i amb cada proposta. També les aules tancades del 5.3.'),
     (None, '4 · Assistent', 'Preguntes en directe',
