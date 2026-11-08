@@ -19,13 +19,13 @@ def comprova(nom, condicio, detall=''):
 
 
 r = E.horari_grup(grup='81', dia='M', semestre=2)
-comprova('1. grup 81 dimarts: 115 sessions', r['sessions'] == 115, r.get('sessions'))
+comprova('1. grup 81 dimarts: 121 sessions', r['sessions'] == 121, r.get('sessions'))
 comprova('1. inclou 104346 TE/81 a Q4/1013 a les 8.30',
          any(p['codi'] == '104346' and p['aula'] == 'Q4/1013' and p['h_ini'] == '08:30' for p in r['setmanal']))
 
 r = E.aules_lliures(hora_inici='10:00', durada_min=60, dia='J', places_min=60, semestre=2)
-comprova('2. aules lliures dijous 10.00 (60+)', [a['aula'] for a in r['aules_lliures']] ==
-         ['Q4/0003'], [a['aula'] for a in r['aules_lliures']])
+comprova('2. aules lliures dijous 10.00 (60+): cap', [a['aula'] for a in r['aules_lliures']] == [],
+         [a['aula'] for a in r['aules_lliures']])
 comprova('2. 17 dijous comprovats', r['dates_comprovades'] == 17, r['dates_comprovades'])
 
 r = E.consulta_sql('SELECT count(*) AS n FROM sessions WHERE semestre = 2')
@@ -40,8 +40,8 @@ comprova('5. 5.2 vàlida amb 460 relaxacions', r['veredicte'] == 'VALIDA AMB REL
 
 r = E.que_passa_si(codi='102750', grup='PAUL/452', nova_hora='09:30')
 regles = {v['regla'] for v in r['incompliments_nous']}
-comprova('6. moure PAUL/452 a les 9.30 trenca R1-TORN i R4-PLAB',
-         r['n_incompliments_nous'] == 26 and regles == {'R1-TORN', 'R4-PLAB'}, (r['n_incompliments_nous'], regles))
+comprova('6. moure PAUL/452 a les 9.30 trenca R1-TORN i R4-AULA',
+         r['n_incompliments_nous'] == 26 and regles == {'R1-TORN', 'R4-AULA'}, (r['n_incompliments_nous'], regles))
 
 r = E.resol_imprevist('aula_tancada', aula='Q1/1003', data_ini='2027-03-10')
 noves = {c['id_sessio']: c['despres']['aula'] for c in r['canvis']}
@@ -64,7 +64,8 @@ r = E.consulta_sql("SELECT capacitat FROM aules WHERE aula = 'Q4/0011'")
 comprova('10. Q4/0011 té 117 places', r['files'] == [['117']], r.get('files'))
 
 r = E.horari_aula('Q1/1011', data='2027-02-08')
-comprova('11. Q1/1011 el 8/2: cap classe', r['sessions'] == 0 and 'avis' in r, r.get('sessions'))
+comprova('11. Q1/1011 el 8/2: 2 classes de TE/21 (S11519, S11610)', r['sessions'] == 2
+         and set(r.get('fonts', [])) == {'S11519', 'S11610'}, r.get('sessions'))
 
 r = E.aules_lliures(aula='-2')
 comprova("12. aula inexistent: ho diu sense demanar l'hora", r.get('trobat') is False and 'No hi ha cap aula' in r['avis'])

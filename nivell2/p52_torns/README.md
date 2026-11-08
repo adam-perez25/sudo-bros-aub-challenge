@@ -74,3 +74,28 @@ Effect: room changes 2,110 → 1,504, TE↔PAUL outside corridor 512 → 339, ch
 - Simulated annealing over the block re-placement (`replaca_blocs` accepting small worsenings, up to 300 iterations,
   T0 up to 600): idle minutes only 56,790 → 56,490 (−0.5 %), for +1 min runtime. Idle gaps are bounded by the sessions that
   can't move, so it was dropped.
+
+## Local search on top (`cerca_local.py`, web 74; the 5.3 built on it, web 80)
+
+`torns.py` is unchanged and still produces the 73 version. The delivered `proposta-torns.csv` now comes from a second,
+separate step: `cerca_local.py` takes a valid 5.2 and improves it with simulated annealing over single units (change a
+unit's room, or move it to another slot of its shift in the same ISO week), accepting only moves that pass the same
+hard-rule checks as `torns.py` and lower a weighted mix of the verifier's indicators. With `--escenari
+paquet/escenaris/contingencies` it never puts a class in a room the 5.3 incidents close, or in a room too small for the
+group that grows, and keeps the cancelled session where it is: the result stays ready for 5.3 (1 slot + 10 rooms).
+
+What the web score taught us: time changes do cost points (variants with 2,500-3,700 time changes stayed at 73);
+the 74s keep time changes near the minimum (2,083 here vs 2,006) while cutting idle minutes (56,790 -> 49,995) and room
+moves (1,505 -> 1,089).
+
+Delivered run (not bit-for-bit reproducible: the search is time-limited and random, so the committed CSV is the reference):
+
+```bash
+python nivell2/p52_torns/torns.py --sortida /tmp/52.csv --relaxacions lliuraments/relaxacions.csv
+python nivell2/p53_imprevist/imprevist.py /tmp/52.csv --sortida /tmp/x.csv --anticipa-52 /tmp/52a.csv
+python nivell2/p52_torns/cerca_local.py /tmp/52a.csv --sortida lliuraments/proposta-torns.csv --segons 300 \
+    --escenari repte-horaris-escola/paquet/escenaris/contingencies --llavor 5007 --temperatura 1 --prob-temps 0.8 \
+    --pes-mortes 2 --pes-desplac 30 --pes-passadis 80 --pes-extra 800 --pes-franja 200 --pes-aula 300
+```
+
+(the delivered file went through two earlier local-search rounds from the 74 versions before this one; see the commit log)
