@@ -35,3 +35,6 @@ nivell3/xats/
 
 # Floor-plan images rendered from planols/ by the dashboard (same rule as planols/: local only)
 dashboard/.cache/
+
+nivell2/p52_torns/web-lot/ronda*/
+nivell2/p52_torns/web-lot/resultats.jsonl
