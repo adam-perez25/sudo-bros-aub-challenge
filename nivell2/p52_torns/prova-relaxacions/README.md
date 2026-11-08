@@ -38,3 +38,16 @@ built on it (1 slot + 10 rooms vs that reference): web **79** (#329, reference #
 with `relaxacions-test.csv`: all 235 new sessions fit (margin 2 free ordinary rooms in the tightest morning slot, the
 minimum, because 3rd/4th year stay in the morning here), web **77** (#330) vs **73** for our real 5.4 (#125). Like 5.2,
 5.4 rewards the declared-relaxations trick; 5.3 does not (79 vs 80).
+
+## Even more relaxations: today's timetable untouched (also not a deliverable)
+
+`proposta-test-partida.csv` = `paquet/proposta_partida.csv` exactly as it is (nothing moved, 4,541 sessions still
+without a room), with **every** violation declared in `relaxacions-test-partida.csv`: R1-TORN 2,006, R5-SENSE-AULA 4,541,
+R3-TIPUS 54, R3-AFORAMENT 43, R2-FINESTRA 13 (6,659 in total). Locally "VALIDA AMB RELAXACIONS DECLARADES", all
+objectives at today's values (0 time changes, 0 room changes, 544 room moves). Web: **80** (#333), above the ranking's
+79 and above every real solution of ours (74).
+
+Local search on top (`proposta-test-partida-cercalocal.csv`, 120-300 time changes, idle ~54k, room moves ~420):
+#334-#336 = **80** as well. So the more relaxations are declared, the higher the estimate, and doing nothing at all
+scores best: the estimate does not penalise declared relaxations in a meaningful way. The jury's validity criterion
+("whether each declared relaxation is justified") is what is supposed to stop this.
