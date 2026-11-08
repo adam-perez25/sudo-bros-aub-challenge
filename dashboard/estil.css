@@ -83,9 +83,12 @@ button[data-variant="segmented_control"][data-selected="true"] {
     background: var(--verd-fosc); color: #ffffff; border: 2px solid var(--groc); border-radius: 999px;
     padding: 0.7rem 1.3rem; font-weight: 600; box-shadow: 0 6px 22px rgba(0, 75, 43, 0.38);
 }
-.st-key-bombolla button:hover { background: var(--verd); color: #ffffff; border-color: var(--groc); }
+.st-key-bombolla button:hover, .st-key-bombolla button:active, .st-key-bombolla button:focus, .st-key-bombolla button[aria-expanded="true"] {
+    background: var(--verd-fosc) !important; color: #ffffff !important; border-color: var(--groc) !important;
+}
+.st-key-bombolla button:hover { background: var(--verd) !important; }
 .st-key-bombolla button p { color: #ffffff; font-family: var(--tecnica); font-size: 1.05rem; }
-[data-testid="stPopoverBody"] { width: min(540px, 94vw); max-height: 88vh; border-radius: 6px; padding: 1rem 1.1rem; border-top: 4px solid var(--verd); }
+[data-testid="stPopoverBody"] { width: min(540px, 94vw); max-height: 88vh; min-height: min(585px, 88vh); border-radius: 6px; padding: 1rem 1.1rem; border-top: 4px solid var(--verd); }
 [data-testid="stPopoverBody"] [data-testid="stForm"] { padding: 0; }
 [data-testid="stPopoverBody"] [data-testid="stChatMessage"] {
     border-radius: 6px; padding: 0.7rem 0.9rem; margin-bottom: 0.5rem; border: 1px solid var(--linia);
@@ -96,6 +99,9 @@ button[data-variant="segmented_control"][data-selected="true"] {
 .targeta-buida { text-align: center; padding: 0.6rem 0 0.8rem 0; color: var(--tinta-2); }
 .targeta-buida .gran { font-size: 2rem; }
 [data-testid="stPopoverBody"] [data-testid="InputInstructions"] { display: none; }
+/* Dins la bombolla, el contingut vell no es difumina mentre es refresca: només canvia quan ja és el nou */
+[data-testid="stPopoverBody"] [data-stale="true"] { opacity: 1 !important; transition: none !important; }
+.st-key-bombolla button { transition: none; }
 
 /* Accessibilitat: focus visible a tot arreu i moviment reduït */
 a:focus-visible, button:focus-visible, [role="tab"]:focus-visible, [role="radio"]:focus-visible, input:focus-visible,
