@@ -184,6 +184,8 @@ def main(argv=None) -> int:
     ap.add_argument('--llavor', type=int, default=1)
     ap.add_argument('--temperatura', type=float, default=30.0, help='temperatura inicial del recuit (unitats de cost)')
     ap.add_argument('--prob-temps', type=float, default=0.5, help='probabilitat de proposar un canvi de franja')
+    ap.add_argument('--prob-intercanvi', type=float, default=0.0,
+                    help="probabilitat de proposar un intercanvi d'aules entre dues unitats que coincideixen en el temps")
     for nom, defecte in (('mortes', 1.0), ('desplac', 30.0), ('edifici', 2000.0), ('passadis', 30.0),
                          ('franja', 20.0), ('aula', 60.0), ('extra', 150.0)):
         ap.add_argument(f'--pes-{nom}', type=float, default=defecte)
@@ -215,6 +217,55 @@ def main(argv=None) -> int:
         s = b.sessions[u[0]]
         vell = {x: list(h.pos[x]) for x in u}
         d0, t0_, a0 = vell[u[0]]
+        if a.prob_intercanvi and a0 and rnd.random() < a.prob_intercanvi:
+            # intercanvi d'aules amb l'única unitat que ocupa l'aula triada a la mateixa hora (cap canvi d'hora)
+            fi_u = t0_ + s.durada
+            cands = [x for x in h.candidates(u, a0)[:15] if x != a0]
+            if not cands:
+                continue
+            rb = rnd.choice(cands)
+            occ = [o for o, (x, y) in h.per_aula.get((rb, d0), {}).items() if x < fi_u and y > t0_]
+            uvs = {b.sessions[o].unitat for o in occ}
+            if len(uvs) != 1:
+                continue
+            v = [x for x in h.unitats[next(iter(uvs))] if x in h.pos]
+            if (not v or v[0] in u or any(b.sessions[x].fixada or b.sessions[x].tipus == 'PLAB' or b.sessions[x].sense_espai
+                                          or x in base.cancellades for x in v)):
+                continue
+            vell_v = {x: list(h.pos[x]) for x in v}
+            dv, tv, _av = vell_v[v[0]]
+            fi_v = tv + b.sessions[v[0]].durada
+            tots = u + v
+            claus = cost.claus(tots)
+            te_keys = cost.te_claus(tots)
+            abans = cost.local(tots, claus, te_keys)
+            cost.te_actualitza(tots, -1)
+            for x in tots:
+                h.mou(x, aula='')
+            ok = h.aula_valida(u, rb, d0, t0_, fi_u)
+            if ok:
+                for x in u:
+                    h.mou(x, aula=rb)
+                ok = h.aula_valida(v, a0, dv, tv, fi_v)
+                if ok:
+                    for x in v:
+                        h.mou(x, aula=a0)
+            if ok:
+                cost.te_actualitza(tots, +1)
+                delta = cost.local(tots, claus, te_keys) - abans
+                temp = a.temperatura * max(0.0, 1 - (time.time() - t0) / a.segons)
+                if delta < 0 or (temp > 0 and rnd.random() < math.exp(-delta / temp)):
+                    accepta += 1
+                    total_delta += delta
+                    millora_a += delta < 0
+                    continue
+                cost.te_actualitza(tots, -1)
+            for x in u:
+                h.mou(x, aula=vell[x][2])
+            for x in v:
+                h.mou(x, aula=vell_v[x][2])
+            cost.te_actualitza(tots, +1)
+            continue
         if rnd.random() < a.prob_temps:
             nou = proposa_temps(h, u, rnd)
             if nou is None:
