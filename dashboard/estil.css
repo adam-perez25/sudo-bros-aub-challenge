@@ -105,6 +105,10 @@ button[data-variant="segmented_control"][data-selected="true"] {
 
 /* Pàgina gran de l'assistent: quadrícula de 3 files (capçalera, cos, peu) i 2 columnes. La llista i el xat fan
    la mateixa alçada i creixen amb la finestra; totes les files de la llista fan el mateix. */
+/* La pàgina gran fa servir tot l'ample de la finestra (a la resta, el contingut té un màxim de 1400 px) */
+.block-container:has(.st-key-xat_gran), [data-testid="stMainBlockContainer"]:has(.st-key-xat_gran) {
+    max-width: none; padding-left: 2.5rem; padding-right: 2.5rem;
+}
 .st-key-xat_gran, .st-key-xat_llista { height: calc(100dvh - 17rem) !important; min-height: 340px; }
 .xat-cap {
     height: 2.6rem; display: flex; align-items: center; font-family: var(--tecnica); font-weight: 600; font-size: 1.1rem;
