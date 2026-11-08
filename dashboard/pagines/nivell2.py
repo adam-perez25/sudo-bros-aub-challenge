@@ -38,9 +38,30 @@ for col, t in zip(cols, comu.INFORMES):
                  unsafe_allow_html=True)
 
 st.write('')
-t51, t52, t53, t54, tcomp, trest, tprova = st.tabs(['5.1 · Aules', '5.2 · Torns nous', '5.3 · Imprevist',
-                                                    '5.4 · Grau nou', 'Comparativa', 'Restriccions del model',
-                                                    "Prova de l'avaluador"])
+st.markdown('### Les restriccions del model')
+st.markdown("Són les regles que cap proposta no pot trencar. El model parteix de l'horari d'avui i només "
+            "**canvia el mínim**; si una regla no es pot complir, es declara i es justifica.")
+RESTRICCIONS = [
+    ('R1 · Torn', '1r i 2n al matí; 3r, 4t, dobles i màsters a la tarda. Els grups fixats no es mouen.'),
+    ('R2 · Calendari', "Dies lectius, setmanes d'avaluació i finestres de cada activitat."),
+    ('R3 · Aula', "Tipus d'aula correcte, aforament suficient i aula no tancada."),
+    ('R4 · Cap solapament', 'Mai dues classes alhora per a una aula, un docent o un grup.'),
+    ('R5 · Aula assignada', 'Totes les sessions tenen aula.'),
+    ('R7 · PLAB', 'Els laboratoris fixats es queden on són.'),
+    ('R8 · Reserva', 'A cada franja, 2 de les 21 aules ordinàries lliures.'),
+    ('Excepcions', f"Només {n(inf['5.2']['restriccions']['R1-TORN']['declarades'])} declarades, totes a la R1: "
+                   "458 grups fixats i 2 sessions demostrades impossibles."),
+]
+for fila in (RESTRICCIONS[:4], RESTRICCIONS[4:]):
+    for col, (t, txt) in zip(st.columns(4), fila):
+        col.markdown(f'<div class="targeta"><div class="etiqueta">{t}</div>'
+                     f'<div class="peu">{txt}</div></div>', unsafe_allow_html=True)
+st.caption("L'objectiu, per sota de les regles: menys hores mortes, menys desplaçaments i menys canvis de franja "
+           "i d'aula respecte d'avui.")
+
+st.write('')
+t51, t52, t53, t54, tcomp, tprova = st.tabs(['5.1 · Aules', '5.2 · Torns nous', '5.3 · Imprevist', '5.4 · Grau nou',
+                                             'Comparativa', "Prova de l'avaluador"])
 
 # --------------------------------------------------------------------------------------------------- 5.1
 with t51:
@@ -169,41 +190,6 @@ with tcomp:
     st.dataframe(t.map(lambda v: '' if pd.isna(v) else n(int(v))), use_container_width=True)
     st.caption('Menys és millor a totes les files. «Avui» només té les xifres que no depenen de l\'aula (la majoria '
                'de sessions d\'avui no en tenen). El 5.4 té 235 sessions més (el grau nou).')
-
-# ------------------------------------------------------------------------------------------- restriccions
-with trest:
-    st.subheader('Què ha de complir el model perquè un horari sigui vàlid')
-    st.markdown("El model (cerca + CP-SAT) parteix de l'horari d'avui i només **canvia el mínim**. Les restriccions "
-                "dures no es poden trencar mai; l'objectiu va per sota i es mesura amb els indicadors del verificador.")
-    a, b = st.columns(2, gap='large')
-    with a:
-        st.markdown('#### Restriccions dures')
-        st.dataframe(pd.DataFrame([
-            ['R1 · Torn', '1r i 2n al matí; 3r, 4t, dobles titulacions i màsters a la tarda'],
-            ['R1 · Grups fixats', "Les sessions fixades no es mouen (els grups de GEI 1r i 2n que avui són a la tarda)"],
-            ['R2 · Calendari i finestres', "Dies lectius, setmanes d'avaluació i setmana ISO respectats"],
-            ['R3 · Aula', "Tipus d'aula correcte, aforament suficient i aula no tancada"],
-            ['R4 · Cap solapament', "Una aula, un docent o un grup d'alumnes no poden tenir dues classes alhora"],
-            ['R5 · Aula assignada', 'Totes les sessions han de tenir aula'],
-            ['R7 · PLAB', 'Els laboratoris fixats es queden on són'],
-            ['R8 · Reserva', 'A cada franja queden lliures com a mínim 2 de les 21 aules ordinàries'],
-        ], columns=['Regla', 'Què exigeix']), hide_index=True, use_container_width=True)
-    with b:
-        st.markdown('#### Què optimitza (menys és millor)')
-        st.markdown("- **Hores mortes** de l'alumnat entre classes.\n"
-                    "- **Desplaçaments** entre aules i entre edificis de les classes seguides d'un grup.\n"
-                    "- **Canvis de franja** i **canvis d'aula** respecte d'avui.\n"
-                    "- **Aules de teoria extra** per grup i canvis TE↔PAUL fora del passadís.")
-        st.markdown('#### Com ho resolem')
-        st.markdown("1. Es manté tot el que ja compleix.\n"
-                    "2. Aules primer per a les sessions que no canvien d'hora.\n"
-                    "3. Les activitats fora de torn es mouen **en bloc** (mateix dia i hora cada setmana).\n"
-                    "4. Reparació local i cerca local sobre les hores mortes.\n"
-                    "5. CP-SAT per dia per triar les aules, amb les restriccions dures com a condicions.\n"
-                    "6. Verificador oficial al final: només es declara el que **s'ha demostrat** que no hi cap.")
-    st.markdown('#### Excepcions declarades a la regla 1')
-    st.markdown("Només **460**: 458 sessions de grups fixats i 2 que hem demostrat que no hi caben "
-                "(S02839 i S04511). La resta de regles, **0 incompliments**.")
 
 # ------------------------------------------------------------------------------------------------ prova
 with tprova:
