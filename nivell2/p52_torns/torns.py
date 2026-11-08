@@ -1105,6 +1105,19 @@ def main(argv=None) -> int:
                     per_unitat[u] = xs
         replaca_blocs(h, list(per_unitat.values()), log, passades=int(os.environ.get('TORNS_PER_SETMANA_PASSADES', 3)),
                       cost_canvi=1000.0)
+    # opcional (TORNS_PER_SETMANA_TOT=minuts): qualsevol sessió no fixada (no PLAB) es pot re-col·locar setmana a
+    # setmana si l'estalvi d'hores mortes supera aquests minuts per sessió que deixa la seva hora d'avui
+    cost_tot = float(os.environ.get('TORNS_PER_SETMANA_TOT', 0))
+    if cost_tot:
+        per_unitat = {}
+        for x in sorted(h.pos):
+            s = b.sessions[x]
+            if s.fixada or s.tipus == 'PLAB' or s.sense_espai or s.unitat in per_unitat:
+                continue
+            xs = [y for y in h.unitats[s.unitat] if y in h.pos]
+            if not any(b.sessions[y].fixada or b.sessions[y].tipus == 'PLAB' for y in xs):
+                per_unitat[s.unitat] = xs
+        replaca_blocs(h, list(per_unitat.values()), log, passades=2, cost_canvi=cost_tot)
     # fase 4: qualitat de les aules (només les que hem triat nosaltres: les aules d'avui no es toquen)
     lliures = {x for x in h.pos if not b.sessions[x].sense_espai and b.sessions[x].tipus != 'PLAB'
                and not (b.sessions[x].aula and h.pos[x][2] == b.sessions[x].aula)
