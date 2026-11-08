@@ -7,15 +7,16 @@ import pandas as pd
 
 SERIE = ['#2a78d6', '#eb6834', '#1baf7a']           # categòrica, en aquest ordre fix
 BLAUS = ['#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b']   # seqüencial
-GRIS = '#c3c2b7'
+GRIS = '#c0c9c3'
 CRITIC = '#d03b3b'
-TINTA, TINTA2, APAGAT, QUADRICULA = '#0b0b0b', '#52514e', '#898781', '#e1e0d9'
+TINTA, TINTA2, APAGAT, QUADRICULA = '#12201a', '#46544d', '#7f8a84', '#dde3df'
 DIES = ['L', 'M', 'X', 'J', 'V']
 NOM_DIA = {'L': 'Dl', 'M': 'Dt', 'X': 'Dc', 'J': 'Dj', 'V': 'Dv'}
 
 
 def estil(c: alt.Chart, alcada: int = 300) -> alt.Chart:
     return (c.properties(height=alcada)
+            .configure(background='#ffffff', font='Segoe UI')
             .configure_view(strokeWidth=0)
             .configure_axis(labelColor=TINTA2, titleColor=TINTA2, gridColor=QUADRICULA, domainColor=GRIS,
                             tickColor=GRIS, labelFontSize=13, titleFontSize=13, titleFontWeight='normal')

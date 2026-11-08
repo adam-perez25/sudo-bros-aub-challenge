@@ -1,51 +1,123 @@
-/* Estil del tauler (dashboard/app.py): net i llegible des del fons d'una sala. */
+/* Estil del tauler (dashboard/app.py): full de plànol. Paper vegetal, tinta verda i el verd UAB; lletra tècnica
+   (Bahnschrift, tipus DIN) per a títols i xifres. Net i llegible des del fons d'una sala. */
+:root {
+    --paper: #f3f6f4;
+    --tinta: #12201a;
+    --tinta-2: #46544d;
+    --verd: #00693c;
+    --verd-fosc: #004b2b;
+    --verd-clar: #e3efe8;
+    --linia: #c9d2cc;
+    --groc: #f2b705;
+    --tecnica: "Bahnschrift", "DIN Alternate", "Arial Narrow", "Segoe UI", sans-serif;
+    --cos: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
 [data-testid="stStatusWidget"],
 [data-testid="stAppDeployButton"],
 [data-testid="stDecoration"],
 #MainMenu,
 footer { display: none !important; }
 
+.stApp { background: var(--paper); color: var(--tinta); font-family: var(--cos); }
 .block-container { padding-top: 3.2rem; max-width: 1400px; }
-h1 { font-size: 2.0rem !important; font-weight: 700; letter-spacing: -0.01em; }
-h3 { margin-top: 0.6rem !important; }
 
-/* Resposta curta, a dalt de cada pàgina */
+/* Tipografia */
+h1, h2, h3, h4 { font-family: var(--tecnica) !important; color: var(--tinta); }
+h1 { font-size: 2.5rem !important; font-weight: 600 !important; letter-spacing: -0.005em; line-height: 1.1 !important; }
+h2, [data-testid="stHeading"] h2 { font-size: 1.55rem !important; font-weight: 600 !important; }
+h3 { margin-top: 0.6rem !important; font-size: 1.3rem !important; font-weight: 600 !important; }
+h4 { font-size: 1.1rem !important; font-weight: 600 !important; }
+.stMarkdown p, .stMarkdown li { line-height: 1.55; }
+[data-testid="stCaptionContainer"] { color: var(--tinta-2); }
+hr { border-color: var(--linia) !important; }
+
+/* Menú de dalt: l'apartat actiu es marca amb una línia verda (com el rètol d'una làmina) */
+[data-testid="stHeader"] { background: var(--paper); border-bottom: 1px solid var(--linia); }
+[data-testid="stHeader"] a, [data-testid="stNavigation"] a { font-family: var(--tecnica); font-size: 1.02rem; color: var(--tinta-2); border-radius: 0; }
+[data-testid="stHeader"] a[aria-current="page"], [data-testid="stNavigation"] a[aria-current="page"] {
+    color: var(--verd-fosc); font-weight: 600; background: transparent; box-shadow: inset 0 -3px 0 var(--verd);
+}
+[data-testid="stHeader"] a:hover { color: var(--verd-fosc); background: var(--verd-clar); }
+
+/* Resposta curta, a dalt de cada pàgina: el «caixetí» de la làmina */
 .resposta {
-    background: #eef4ff; border: 1px solid #d4e3ff; border-radius: 12px;
-    padding: 0.9rem 1.2rem; font-size: 1.12rem; color: #0b0b0b; margin: 0.2rem 0 1.2rem 0;
+    background-color: #ffffff;
+    background-image: linear-gradient(var(--verd-clar) 1px, transparent 1px), linear-gradient(90deg, var(--verd-clar) 1px, transparent 1px);
+    background-size: 24px 24px;
+    border: 1px solid var(--linia); border-left: 8px solid var(--verd); border-radius: 3px;
+    padding: 1rem 1.3rem; font-size: 1.15rem; line-height: 1.5; color: var(--tinta); margin: 0.4rem 0 1.4rem 0;
 }
 
 /* Xifres grans */
-[data-testid="stMetric"] { background: #fcfcfb; border-radius: 12px; }
-[data-testid="stMetricValue"] { font-size: 2.1rem; }
-[data-testid="stMetricLabel"] p { font-size: 0.98rem; color: #52514e; }
+[data-testid="stMetric"] { background: #ffffff; border-radius: 3px; border-left: 4px solid var(--verd); }
+[data-testid="stMetricValue"] { font-family: var(--tecnica); font-size: 2.3rem; font-weight: 600; color: var(--verd-fosc); }
+[data-testid="stMetricLabel"] p { font-size: 0.98rem; color: var(--tinta-2); }
 
 /* Targetes de veredicte i de portada */
 .targeta {
-    border: 1px solid #e1e0d9; border-radius: 12px; padding: 0.9rem 1.1rem; background: #fcfcfb; min-height: 205px;
+    border: 1px solid var(--linia); border-top: 4px solid var(--verd); border-radius: 3px;
+    padding: 0.9rem 1.1rem; background: #ffffff; min-height: 205px;
 }
-.targeta .etiqueta { color: #52514e; font-size: 0.9rem; }
-.targeta .gran { font-size: 1.35rem; font-weight: 700; margin: 0.15rem 0 0.35rem 0; }
-.targeta .peu { color: #52514e; font-size: 0.95rem; }
-.ok { color: #006300; }
-.nota { color: #52514e; font-size: 0.93rem; }
+.targeta .etiqueta { color: var(--tinta-2); font-size: 0.92rem; }
+.targeta .gran { font-family: var(--tecnica); font-size: 1.4rem; font-weight: 600; margin: 0.15rem 0 0.35rem 0; color: var(--verd-fosc); }
+.targeta .peu { color: var(--tinta-2); font-size: 0.97rem; line-height: 1.5; }
+.ok { color: var(--verd); }
+.nota { color: var(--tinta-2); font-size: 0.95rem; }
+
+/* Pestanyes, control segmentat i botons */
+[data-baseweb="tab"] { font-family: var(--tecnica); font-size: 1.02rem; }
+[data-baseweb="tab-highlight"] { background-color: var(--verd) !important; }
+[data-baseweb="tab"][aria-selected="true"] { color: var(--verd-fosc); }
+button[data-variant="segmented_control"][aria-checked="true"],
+button[data-variant="segmented_control"][data-selected="true"] {
+    background: var(--verd) !important; color: #ffffff !important; border-color: var(--verd) !important;
+}
+[data-testid="stPageLink"] a { color: var(--verd-fosc); font-weight: 600; border-radius: 3px; }
+[data-testid="stPageLink"] a:hover { background: var(--verd-clar); }
+[data-testid="stDataFrame"] { border: 1px solid var(--linia); border-radius: 3px; }
 
 /* Bombolla de l'assistent: botó flotant a baix a la dreta i xat que s'hi obre a sobre */
 .st-key-bombolla { position: fixed; bottom: 1.3rem; right: 1.5rem; z-index: 1000; width: auto !important; }
 .st-key-bombolla button {
-    background: #1f6feb; color: #ffffff; border: none; border-radius: 999px; padding: 0.7rem 1.3rem;
-    font-weight: 600; box-shadow: 0 6px 22px rgba(31, 111, 235, 0.38);
+    background: var(--verd-fosc); color: #ffffff; border: 2px solid var(--groc); border-radius: 999px;
+    padding: 0.7rem 1.3rem; font-weight: 600; box-shadow: 0 6px 22px rgba(0, 75, 43, 0.38);
 }
-.st-key-bombolla button:hover { background: #1a5fcb; color: #ffffff; }
-.st-key-bombolla button p { color: #ffffff; font-size: 1.02rem; }
-[data-testid="stPopoverBody"] { width: min(540px, 94vw); max-height: 88vh; border-radius: 16px; padding: 1rem 1.1rem; }
+.st-key-bombolla button:hover, .st-key-bombolla button:active, .st-key-bombolla button:focus, .st-key-bombolla button[aria-expanded="true"] {
+    background: var(--verd-fosc) !important; color: #ffffff !important; border-color: var(--groc) !important;
+}
+.st-key-bombolla button:hover { background: var(--verd) !important; }
+.st-key-bombolla button p { color: #ffffff; font-family: var(--tecnica); font-size: 1.05rem; }
+[data-testid="stPopoverBody"] { width: min(540px, 94vw); max-height: 88vh; min-height: min(585px, 88vh); border-radius: 6px; padding: 1rem 1.1rem; border-top: 4px solid var(--verd); }
 [data-testid="stPopoverBody"] [data-testid="stForm"] { padding: 0; }
 [data-testid="stPopoverBody"] [data-testid="stChatMessage"] {
-    border-radius: 14px; padding: 0.7rem 0.9rem; margin-bottom: 0.5rem; border: 1px solid #e3e9f2;
+    border-radius: 6px; padding: 0.7rem 0.9rem; margin-bottom: 0.5rem; border: 1px solid var(--linia);
 }
 [data-testid="stPopoverBody"] [data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-    background: #eef4ff; border-color: #d4e3ff;
+    background: var(--verd-clar); border-color: #b9d6c6;
 }
-.targeta-buida { text-align: center; padding: 0.6rem 0 0.8rem 0; color: #52514e; }
+.targeta-buida { text-align: center; padding: 0.6rem 0 0.8rem 0; color: var(--tinta-2); }
 .targeta-buida .gran { font-size: 2rem; }
 [data-testid="stPopoverBody"] [data-testid="InputInstructions"] { display: none; }
+/* Dins la bombolla, el contingut vell no es difumina mentre es refresca: només canvia quan ja és el nou */
+[data-testid="stPopoverBody"] [data-stale="true"] { opacity: 1 !important; transition: none !important; }
+.st-key-bombolla button { transition: none; }
+
+/* Accessibilitat: focus visible a tot arreu i moviment reduït */
+a:focus-visible, button:focus-visible, [role="tab"]:focus-visible, [role="radio"]:focus-visible, input:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible {
+    outline: 3px solid var(--verd) !important; outline-offset: 2px !important; box-shadow: 0 0 0 5px #ffffff !important;
+}
+.st-key-bombolla button:focus-visible { outline-color: var(--groc) !important; box-shadow: 0 0 0 5px var(--verd-fosc) !important; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Pantalles estretes */
+@media (max-width: 760px) {
+    .block-container { padding-top: 2.4rem; padding-left: 1rem; padding-right: 1rem; }
+    h1 { font-size: 1.9rem !important; }
+    .resposta { font-size: 1.05rem; padding: 0.8rem 1rem; }
+    .targeta { min-height: 0; }
+    [data-testid="stMetricLabel"] p { white-space: normal; }
+}

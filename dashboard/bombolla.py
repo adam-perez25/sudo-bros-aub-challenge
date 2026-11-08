@@ -78,7 +78,10 @@ def _converses() -> None:
             st.caption(f'Es mostren les {MAX_CONVERSES} més recents de {len(desades)}.')
 
 
+@st.fragment
 def _contingut() -> None:
+    """Fragment: canviar de vista (xat/converses), enviar o esborrar només re-executa la bombolla, no tota la
+    pàgina; així no hi ha el parpelleig de contingut vell i nou barrejats mentre la pàgina es recalcula."""
     en_converses = st.session_state.get('bombolla_vista') == 'converses'
     cap, hist, nova = st.columns([2.6, 2.1, 1.5], vertical_alignment='center')
     cap.markdown("**🗓️ Assistent**")
