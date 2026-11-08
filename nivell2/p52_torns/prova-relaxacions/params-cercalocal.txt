@@ -1,0 +1,1 @@
+--llavor 11010 --temperatura 0 --prob-temps 0.8 --pes-mortes 4 --pes-desplac 30 --pes-passadis 80 --pes-extra 800 --pes-franja 200 --pes-aula 150 --pes-edifici 5000
